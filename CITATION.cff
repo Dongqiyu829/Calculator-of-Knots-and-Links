@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+title: "Calculator of Knots and Links"
+message: "If you use this repository in academic work, please cite it using the metadata from this file."
+type: software
+authors:
+  - family-names: "Dong"
+    given-names: "Qiyu"
+repository-code: "https://github.com/Dongqiyu829/Calculator-of-Knots-and-Links"
+url: "https://github.com/Dongqiyu829/Calculator-of-Knots-and-Links"
+abstract: "A repository for the Calculator of Knots and Links project."
+keywords:
+  - knot theory
+  - links
+  - calculator
+  - topology
+license: "NOASSERTION"
