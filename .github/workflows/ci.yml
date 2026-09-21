@@ -22,7 +22,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install baseline test dependencies
-        run: python -m pip install --upgrade pip pytest
+        run: python -m pip install --upgrade pip pytest sympy
 
       - name: Run recovery and regression tests
         run: python -m pytest -q

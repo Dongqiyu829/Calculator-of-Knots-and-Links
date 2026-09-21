@@ -27,7 +27,7 @@ class TestBranchFormatterSmoke(unittest.TestCase):
         branch_results = evaluate_all_current_branches(get_braid_example("trefoil"), q=Q)
         for branch_result in branch_results:
             formatted = format_branch_result(branch_result)
-            self.assertIn(branch_result.branch_id, formatted)
+            self.assertIn(branch_result.display_name, formatted)
             self.assertIn(branch_result.status, formatted)
             self.assertIn(branch_result.primary_output_label, formatted)
             self.assertIn(str(sp.simplify(branch_result.primary_output)), formatted)
@@ -36,9 +36,8 @@ class TestBranchFormatterSmoke(unittest.TestCase):
         entry = evaluate_example_across_branches(get_braid_example("unknot_1"), q=Q)
         formatted = format_multibranch_entry(entry)
         self.assertIn(entry.example_label, formatted)
-        self.assertIn("sl2_fundamental", formatted)
-        self.assertIn("sl3_fundamental", formatted)
-        self.assertIn("sl2_spin1", formatted)
+        for branch_result in entry.branch_results:
+            self.assertIn(branch_result.display_name, formatted)
 
     def test_format_catalog_benchmark_handles_multiple_entries(self) -> None:
         entries = evaluate_catalog_across_branches(

@@ -29,6 +29,12 @@ FAST_Q = sp.Integer(2)
 
 
 class TestGuiDataflowSmoke(unittest.TestCase):
+    def _create_tk_root(self) -> tk.Tk:
+        try:
+            return tk.Tk()
+        except tk.TclError as exc:
+            self.skipTest(f"Tk is unavailable in this test environment: {exc}")
+
     def test_default_gui_example_is_trefoil(self) -> None:
         self.assertEqual(get_default_gui_example_label(), "trefoil")
         self.assertEqual(get_gui_example_labels(), ("unknot_1", "trefoil", "figure_eight"))
@@ -118,7 +124,7 @@ class TestGuiDataflowSmoke(unittest.TestCase):
         self.assertTrue(hasattr(DemoLauncherApp, "_apply_custom_braid"))
 
     def test_catalog_selection_updates_pending_preview_state(self) -> None:
-        root = tk.Tk()
+        root = self._create_tk_root()
         root.withdraw()
         try:
             app = DemoLauncherApp(root)
@@ -135,7 +141,7 @@ class TestGuiDataflowSmoke(unittest.TestCase):
             root.destroy()
 
     def test_loading_builtin_example_into_custom_updates_pending_preview_state(self) -> None:
-        root = tk.Tk()
+        root = self._create_tk_root()
         root.withdraw()
         try:
             app = DemoLauncherApp(root)

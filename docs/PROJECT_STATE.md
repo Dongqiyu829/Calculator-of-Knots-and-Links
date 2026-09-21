@@ -67,9 +67,9 @@ Future direction (not implemented by the recovery pass):
 - The sl2 3D branch is explicitly a candidate normalization and still requests
   comparison with an external reference.
 - Stored P01 and P04 results disagree with their expected metadata; they are audit cases, not validated conclusions.
-- Three historical tests have stale output expectations, and two GUI tests cannot
-  create a Tk root in the current Anaconda/Tcl installation. These were preserved,
-  not rewritten to force a green result.
+- The current Anaconda/Tcl installation cannot create a Tk root. GUI tests retain
+  their assertions but skip environment-dependent root creation when Tk is
+  unavailable.
 
 ## Current milestone
 

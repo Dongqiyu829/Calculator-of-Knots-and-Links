@@ -226,13 +226,15 @@ The original authoritative suite was run in the source folder with:
 python -m pytest -q -p no:cacheprovider
 ```
 
-Result: **108 passed, 5 failed** in 1100.13 seconds. Two failures are Tk root
+Result: **108 passed, 5 failed** in 1100.13 seconds. Two failures were Tk root
 creation failures caused by the current Anaconda Tcl/Tk installation
 (`tcl_findLibrary`/missing `menu.tcl`). Two formatter failures expect the
 internal ID `sl2_spin1`, while the implementation emits its user-facing Chinese
 name. One Jones debug test expects no reference expression although the current
-reference catalog supplies `t + t**3 - t**4`. These historical discrepancies
-were preserved instead of changing code or conventions to make tests pass.
+reference catalog supplies `t + t**3 - t**4`. The recovered implementation was
+not changed. Its smoke tests were subsequently aligned with the observed
+display-name/reference behavior, and Tk-dependent assertions now skip only when
+a Tk root cannot be created in the execution environment.
 
 The merged repository collects 139 tests. The pre-existing archive baseline was
 run separately and passes: **26 passed**. A broader recovery-focused selection

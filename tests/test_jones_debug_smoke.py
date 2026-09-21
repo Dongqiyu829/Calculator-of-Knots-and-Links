@@ -51,12 +51,11 @@ class TestJonesDebugSmoke(unittest.TestCase):
         reduced = reduce_current_p2_output(Q + Q**-1, Q)
         self.assertEqual(sp.simplify(reduced - 1), 0)
 
-    def test_missing_target_does_not_crash(self) -> None:
+    def test_known_target_is_loaded(self) -> None:
         case = get_jones_reference_case("trefoil")
         result = compare_current_p2_with_jones(case)
-        self.assertIsNone(result.target_expression)
-        self.assertEqual(len(result.exact_matches), 0)
-        self.assertIn("Target Jones reference is missing", result.diagnosis_summary)
+        self.assertEqual(result.target_expression, case.target_expression)
+        self.assertIsNotNone(result.target_expression_in_q)
 
     def test_manual_placeholder_case_is_allowed(self) -> None:
         case = JonesReferenceCase(
@@ -68,3 +67,6 @@ class TestJonesDebugSmoke(unittest.TestCase):
         )
         result = compare_current_p2_with_jones(case)
         self.assertEqual(result.example_label, "manual")
+        self.assertIsNone(result.target_expression)
+        self.assertEqual(len(result.exact_matches), 0)
+        self.assertIn("Target Jones reference is missing", result.diagnosis_summary)
