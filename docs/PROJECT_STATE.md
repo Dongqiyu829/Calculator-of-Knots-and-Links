@@ -13,7 +13,7 @@ The repository should eventually support both:
 
 ## Current stage
 
-**Stage 0 — repository recovery and normalization (authoritative source recovered)**
+**Stage 1 — package and test baseline (established)**
 
 The original ZIP remains at `archive/report_bundle.zip`. Issue #5 recovered the
 authoritative historical tree from `C:\cpp\comp2012\Quantum Group Knot` without
@@ -31,9 +31,10 @@ The archived P01 and P03 symbolic audit JSON outputs also reproduce exactly.
 
 ## Immediate objective
 
-Review and merge the recovery without altering the historical mathematics. After
-that baseline is accepted, add packaging and begin deliberate separation of the
-mathematical engine, application services, and desktop UI in later issues.
+Maintain the installable Python baseline and practical test tiers while retaining
+the recovered `src` package and its mathematical behavior. The remaining M1
+work is to broaden explicit regression cases and recorded reference outputs.
+Core/service/UI separation and any PySide6 work remain later milestones.
 
 ## Architecture direction
 
@@ -59,8 +60,8 @@ Future direction (not implemented by the recovery pass):
 
 - The recovered GUI is Tkinter and mixes evaluator helpers with UI code; the
   workbench service layer imports the GUI launcher.
-- No dependency manifest, lock file, CI configuration, or packaging metadata was
-  present in the authoritative source.
+- The recovered import package is named `src`; it is retained for compatibility
+  and will not be moved merely to satisfy packaging conventions.
 - The source establishes that positive integers mean positive Artin generators;
   therefore P01's added `-2` is a negative stabilization and its archived
   “positive stabilization” label is inconsistent with the implementation.
@@ -91,3 +92,10 @@ Recovery status:
   duplicates were intentionally excluded; see `docs/AUTHORITATIVE_RECOVERY.md`.
 - The original ZIP remains archived as provenance even though its numeric outputs
   have now been reproduced.
+
+### M1 — Package and test baseline
+
+The project now has explicit package metadata, runtime/test dependency groups,
+pytest configuration, and separate fast versus extended test workflows. The
+historical `src` package remains in place. M2 refactoring and PySide6 migration
+are not part of this milestone.

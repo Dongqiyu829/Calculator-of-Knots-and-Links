@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "calculator-of-knots-and-links"
+version = "0.0.0"
+description = "Recovered research software for computing knot and link invariants."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Qiyu Dong" }]
+dependencies = ["sympy>=1.12,<2"]
+
+[project.optional-dependencies]
+test = ["pytest>=7.4,<9"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src", "src.*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = [
+  "gui: Tkinter and workbench smoke coverage; use a display server such as Xvfb on Linux.",
+  "slow: symbolic or multi-branch mathematical regression coverage kept out of normal PR CI.",
+]
