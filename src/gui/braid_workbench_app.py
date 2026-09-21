@@ -11,7 +11,6 @@ from typing import Any
 
 import sympy as sp
 
-from src.catalog.braid_examples import get_braid_example, get_standard_braid_examples
 from src.gui import demo_launcher as current_gui
 from src.gui.braid_preview_renderer import (
     PRESENTATION_PREVIEW_STYLE,
@@ -19,7 +18,13 @@ from src.gui.braid_preview_renderer import (
     render_braid_preview,
     save_braid_preview_svg,
 )
-from src.services import ApplicationBraidResult, evaluate_braid_result, parse_generator_text
+from src.services import (
+    ApplicationBraidResult,
+    evaluate_braid_result,
+    get_catalog_example,
+    list_catalog_examples,
+    parse_generator_text,
+)
 from src.workbench.comparison import WORKBENCH_CLASSIFICATION_LABELS, evaluate_workbench_pair
 from src.workbench.experiment_log import ExperimentLog, ExperimentLogRecord
 from src.workbench.runner import (
@@ -108,7 +113,7 @@ class ManualBraidCard:
 
 
 def get_workbench_example_labels() -> tuple[str, ...]:
-    return tuple(example.label for example in get_standard_braid_examples())
+    return tuple(example.label for example in list_catalog_examples())
 
 
 def parse_workbench_q_parameter(parameter_text: str) -> sp.Expr:
@@ -516,7 +521,7 @@ class BraidWorkbenchApp:
         label_var = tk.StringVar(value=(source_card.label_var.get() if source_card is not None else example_label))
         example_var = tk.StringVar(value=example_label)
         notes_var = tk.StringVar(value=(source_card.notes_var.get() if source_card is not None else ""))
-        example = get_braid_example(example_label)
+        example = get_catalog_example(example_label)
         num_strands_var = tk.IntVar(value=source_card.num_strands_var.get() if source_card is not None else example.num_strands)
         generators_var = tk.StringVar(
             value=(
@@ -623,7 +628,7 @@ class BraidWorkbenchApp:
         self.status_var.set(f"Deleted manual braid card {card.card_id}.")
 
     def _load_example_into_manual_card(self, card: ManualBraidCard) -> None:
-        example = get_braid_example(card.example_var.get())
+        example = get_catalog_example(card.example_var.get())
         self._suspend_card_tracking = True
         try:
             card.label_var.set(example.label)

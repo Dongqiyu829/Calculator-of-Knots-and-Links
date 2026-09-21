@@ -1,34 +1,46 @@
 # Application Service API
 
-`src.services` is the explicit, frontend-neutral application API. Frontends
-should import only names listed in `src.services.__all__`, rather than reaching
-into mathematical evaluator modules or GUI adapters.
+`src.services` is the explicit, frontend-neutral application API. Maintained
+frontends and workbench code import the names listed in `src.services.__all__`.
+The intended direction is `braid / algebra / rmatrix / invariants / catalog ->
+services -> GUI / workbench`.
 
-The supported surface covers:
+`src.gui.demo_launcher_legacy` is a documented historical compatibility
+exception: it retains direct catalog and formatter use to preserve recovered
+behavior. It is not a model for M3 code.
 
-- `list_evaluation_branches`, `get_evaluation_model`, and
-  `get_evaluation_branch` for the current model catalog;
-- parsing generator text and building validated catalog or custom braid input;
-- evaluating a catalog example, arbitrary `BraidWord`, or `BraidInputState`;
-- immutable application result DTOs, deterministic JSON serialization, and
-  frontend-neutral text reports;
-- structured `ApplicationServiceError` subclasses for input, unknown catalog,
-  unknown branch, and unknown model failures.
+## Stable frontend API for M3
 
-The catalog is the sole frontend-neutral source for current mapping and status
-facts. It records `sl2_fundamental` and `sl3_fundamental` as formal, and maps
-the workbench model `sl2_3d_9x9` to internal branch `sl2_spin1`, which remains
-candidate. Its notes describe existing program behavior only; they do not add
-external mathematical claims or change conventions in
-`docs/MATH_CONVENTIONS.md`.
+The M3 contract consists of branch discovery (`list_evaluation_branches`,
+`get_evaluation_model`, `get_evaluation_branch`,
+`DEFAULT_EVALUATION_MODEL_IDS`, and `branch_ids_for_models`); built-in example
+discovery (`ApplicationCatalogExample`, `list_catalog_examples`, and
+`get_catalog_example`); input construction/parsing (`BraidInputState`,
+`parse_generator_text`, `build_catalog_braid_input`, `build_custom_braid_word`,
+and `build_custom_braid_input`); result-returning evaluation
+(`evaluate_catalog_result`, `evaluate_braid_result`, `evaluate_custom_result`,
+and `evaluate_braid_input_result`); result reporting
+(`ApplicationBranchResult`, `ApplicationBraidResult`, filtering, formatting,
+and serialization helpers); and all `ApplicationServiceError` subclasses.
 
-Tkinter-specific colors, controls, and layouts remain in `src.gui`. Existing
-GUI helper functions remain compatibility adapters over this API. Mathematical
-builders, R-matrix construction, and normalization details are intentionally
-not part of the application API.
+Catalog snapshots expose labels, braid data, display word, notes, expected
+components/crossing count, and recovered display metadata without exposing
+catalog objects. Result and catalog DTOs are frozen/read-only at the dataclass
+field level; their metadata dictionaries deliberately are not recursively
+immutable and callers must treat them as read-only. Service text reports are
+the application report format, not byte-for-byte historical formatter
+compatibility.
 
-The maintained `demo_launcher`, `braid_workbench_app`, and workbench runner use
-the DTO/reporting surface rather than importing invariant result or formatter
-implementations. The recovered `demo_launcher_legacy` remains a historical
-compatibility entrypoint and intentionally retains its original internal
-formatter dependencies; it is not the maintained frontend path.
+The service catalog is the sole frontend authority for branch/model mapping and
+status facts. It records `sl2_fundamental` and `sl3_fundamental` as formal, and
+maps `sl2_3d_9x9` to internal `sl2_spin1`, which remains candidate. It does not
+change mathematical claims or `docs/MATH_CONVENTIONS.md`.
+
+## Compatibility and internals
+
+`evaluate_catalog_example`, `evaluate_braid_word`, `evaluate_custom_braid`,
+`evaluate_braid_input`, and the `application_*_from_internal` converters remain
+exported only for recovered Tkinter/test compatibility; new M3 code uses the
+stable result-returning surface. Service submodules, catalog storage, invariant
+evaluators, mathematical builders, R-matrices, normalization, and legacy
+helpers such as `braid_word_from_entry` are implementation details.

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 
-from src.catalog.braid_examples import get_braid_example
+from src.services import build_catalog_braid_input
 from src.gui.braid_workbench_app import (
     BraidWorkbenchApp,
     WORKBENCH_DEFAULT_Q_TEXT,
@@ -34,8 +34,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.compare:
         q_parameter = parse_workbench_q_parameter(args.q)
-        left = get_braid_example(args.compare[0]).to_braid_word()
-        right = get_braid_example(args.compare[1]).to_braid_word()
+        left = build_catalog_braid_input(args.compare[0]).braid_word
+        right = build_catalog_braid_input(args.compare[1]).braid_word
         print(evaluate_workbench_pair(left, right, q=q_parameter).summary())
         return 0
 

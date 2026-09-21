@@ -32,12 +32,11 @@ The archived P01 and P03 symbolic audit JSON outputs also reproduce exactly.
 ## Immediate objective
 
 Maintain the installable Python baseline and practical test tiers while retaining
-the recovered `src` package and its mathematical behavior. M2 now has an
-explicit `src.services` application API: a UI-independent boundary for input
-parsing/evaluation plus a frontend-neutral catalog of the current branches.
-Both workbench computation and Tkinter compatibility adapters call that shared
-path. Core refactoring beyond these focused boundary steps and any PySide6 work
-remain later milestones.
+the recovered `src` package and its mathematical behavior. M2 is complete: its
+`src.services` API supplies input parsing/evaluation, branch and built-in-example
+discovery, structured errors, result DTOs, and application reports. Maintained
+workbench and Tkinter compatibility adapters share that path. The immediate next
+milestone is M3 — PySide6 desktop application.
 
 ## Architecture direction
 
@@ -108,7 +107,7 @@ the established symbolic sl2 cases are centralized in
 `docs/REPRESENTATIVE_REGRESSIONS.md` for scope and provenance. M2 refactoring
 and PySide6 migration are not part of this milestone.
 
-### M2 — Core refactor
+### M2 — Core refactor (complete)
 
 The initial dependency-direction repair is complete: `src.services` owns the
 small provisional API for generator parsing, validated custom braid creation,
@@ -131,5 +130,12 @@ changed by this reporting boundary.
 
 Maintained pair comparison now uses the same service DTO evaluations as batch
 workbench execution, keeping the branch/model association at the application
-boundary. Its legacy comparison result, classifications, and output expressions
-are retained unchanged.
+boundary. Maintained frontend catalog access also uses service catalog snapshots.
+Architecture tests prevent service/workbench GUI dependencies, workbench branch
+evaluator imports, and maintained frontend catalog implementation imports.
+
+M2 exit criteria are satisfied: no R-matrix, braid, q, trace, framing,
+eigenvalue, polynomial, formal/candidate, or representative-regression behavior
+changed. The candidate sl2 spin-1 normalization remains deliberately unresolved
+research but does not block an M3 frontend that displays its established status.
+There is no known engineering dependency blocking M3.

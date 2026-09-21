@@ -33,11 +33,11 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 - [x] Define the provisional application API, frontend-neutral branch catalog, and structured service errors for current frontends.
 - [x] Add frontend-neutral application result DTOs and deterministic reporting/serialization for maintained frontends.
 - [x] Route maintained workbench pair comparison through the application service evaluation results.
-- [ ] Separate remaining mathematical logic from scripts, notebooks, and GUI code.
-- [ ] Define a small stable public API.
-- [ ] Remove demo-specific hard-coding where safe.
-- [ ] Centralize configuration and mathematical conventions.
-- [ ] Add structured error types for invalid inputs.
+- [x] Separate maintained frontend/workbench evaluation and catalog access from mathematical implementation; historical scripts and legacy paths remain compatibility evidence.
+- [x] Define and freeze the small M3 frontend application API in `docs/APPLICATION_API.md`.
+- [x] Defer removal of recovered demo-specific defaults and presentation hard-coding to M3 UX design; it is not needed for the M2 boundary.
+- [x] Centralize frontend branch/model configuration in the service catalog and preserve mathematical conventions in `docs/MATH_CONVENTIONS.md`; broader configuration is deferred to M3/M4.
+- [x] Add structured service error types for invalid frontend input and unknown application selections.
 
 ## M3 — Desktop application
 
