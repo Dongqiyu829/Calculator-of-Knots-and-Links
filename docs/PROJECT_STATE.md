@@ -13,25 +13,31 @@ The repository should eventually support both:
 
 ## Current stage
 
-**Stage 0 — repository recovery and normalization (partial recovery complete)**
+**Stage 0 — repository recovery and normalization (authoritative source recovered)**
 
-The original ZIP has been inspected and retained at `archive/report_bundle.zip`. Its recoverable implementation is now exposed as normal files:
+The original ZIP remains at `archive/report_bundle.zip`. Issue #5 recovered the
+authoritative historical tree from `C:\cpp\comp2012\Quantum Group Knot` without
+redesigning or changing its mathematical conventions. The repository now contains:
 
-- `src/benchmark_lab/` — seven Python modules for registry loading, branch adaptation, profile runs, summaries, audits, and output helpers
-- `examples/benchmark_lab/` — two intended CLI entry points
-- `data/benchmark_lab/` — CSV and JSON benchmark registries
-- `tests/` — snapshot-integrity and stored-output regression coverage
-- `docs/SOURCE_INVENTORY.md` and `docs/MATH_CONVENTIONS.md` — recovery evidence and convention audit
+- the braid, algebra, R-matrix, invariant, catalog, experiment, GUI, and workbench modules under `src/`;
+- the historical examples, benchmark inputs, tests, and report-bundle tool;
+- the previously recovered `benchmark_lab` snapshot and its archived outputs; and
+- an exact recovery record in `docs/AUTHORITATIVE_RECOVERY.md`.
 
-The snapshot is not the complete application described by its own README. It omits `src.braid`, `src.invariants`, the GUI/workbench, its original tests, and its bundle-creation tool. As a result, the benchmark CLIs remain blocked at import time and stored mathematical outputs cannot yet be recomputed.
+The formerly missing `BraidWord`, `src.braid`, `src.invariants`, sl2 fundamental,
+sl2 spin-1/3D, and sl3 fundamental evaluators now import and run. The recovered
+benchmark CLI reproduces the archived q=2, q=3, and q=5 JSON outputs exactly.
+The archived P01 and P03 symbolic audit JSON outputs also reproduce exactly.
 
 ## Immediate objective
 
-Obtain the missing braid and invariant evaluator source (or another authoritative snapshot), reproduce the archived benchmark outputs, and only then continue normalization into an installable Python project. The recovered benchmark files must remain byte-for-byte stable until that baseline is reproducible.
+Review and merge the recovery without altering the historical mathematics. After
+that baseline is accepted, add packaging and begin deliberate separation of the
+mathematical engine, application services, and desktop UI in later issues.
 
 ## Architecture direction
 
-Tentative direction, subject to revision after source recovery:
+Future direction (not implemented by the recovery pass):
 
 - mathematical engine: plain Python / SymPy-compatible modules
 - application layer: thin service boundary
@@ -51,11 +57,19 @@ Tentative direction, subject to revision after source recovery:
 
 ## Current risks
 
-- Core mathematical implementations referenced by the recovered benchmark layer are absent.
-- The ZIP's “positive stabilization” description conflicts with the sign/writhe visible in its P01 data, so braid sign/orientation remains unresolved.
-- R-matrix, tensor ordering, Markov/framing, eigenvalue, and polynomial normalizations cannot be established from the recovered files.
+- The recovered GUI is Tkinter and mixes evaluator helpers with UI code; the
+  workbench service layer imports the GUI launcher.
+- No dependency manifest, lock file, CI configuration, or packaging metadata was
+  present in the authoritative source.
+- The source establishes that positive integers mean positive Artin generators;
+  therefore P01's added `-2` is a negative stabilization and its archived
+  “positive stabilization” label is inconsistent with the implementation.
+- The sl2 3D branch is explicitly a candidate normalization and still requests
+  comparison with an external reference.
 - Stored P01 and P04 results disagree with their expected metadata; they are audit cases, not validated conclusions.
-- Refactoring or recreating the missing evaluators before authoritative source is found could silently change knot/link invariants.
+- The current Anaconda/Tcl installation cannot create a Tk root. GUI tests retain
+  their assertions but skip environment-dependent root creation when Tk is
+  unavailable.
 
 ## Current milestone
 
@@ -72,6 +86,8 @@ Exit criteria:
 
 Recovery status:
 
-- Complete for all source/data actually contained in `report_bundle.zip`.
-- Blocked for a runnable mathematical program because the snapshot omitted required internal modules.
-- The original ZIP must remain archived until the missing source is recovered and the stored outputs are independently reproduced.
+- Complete for the authoritative historical source supplied for issue #5.
+- Generated artifacts, caches, IDE settings, compiled bytecode, and bundled report
+  duplicates were intentionally excluded; see `docs/AUTHORITATIVE_RECOVERY.md`.
+- The original ZIP remains archived as provenance even though its numeric outputs
+  have now been reproduced.

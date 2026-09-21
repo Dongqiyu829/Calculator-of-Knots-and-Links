@@ -5,21 +5,24 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 ## M0 — Repository recovery
 
 - [x] Extract `report_bundle.zip` into a temporary working area and inventory every source, notebook, report, asset, generated file, and dependency.
-- [x] Identify all current executable entry points and document how to run them (both recovered CLIs are currently blocked by missing internal modules).
+- [x] Identify all current executable entry points and document how to run them (the benchmark CLIs became runnable after issue #5 recovery).
 - [x] Move actual source files into a normal repository structure without changing behaviour.
 - [x] Add an appropriate `.gitignore` and exclude caches/build output.
 - [x] Preserve the original bundle temporarily under `archive/report_bundle.zip` until the recovered source tree is verified.
 - [x] Create `docs/SOURCE_INVENTORY.md` describing the recovered project.
 - [x] Create `docs/MATH_CONVENTIONS.md` from evidence in the existing implementation.
-- [ ] Recover the missing `src.braid` and `src.invariants` implementations from an authoritative source; do not reconstruct their conventions from guesses.
-- [ ] Re-run the documented benchmark CLIs and compare their results with the archived output fixture.
+- [x] Recover the missing `src.braid` and `src.invariants` implementations from the authoritative historical source supplied for issue #5.
+- [x] Recover `BraidWord`, all three branch evaluators, the Tkinter GUI/workbench, historical tests, examples, data, and the report-bundle tool without refactoring them.
+- [x] Re-run the documented numeric benchmark CLIs at q=2, q=3, and q=5 and compare their JSON results exactly with the archived output fixture.
+- [x] Run and record the symbolic benchmark reproduction; preserve any observed runtime/result evidence in `docs/AUTHORITATIVE_RECOVERY.md`.
+- [x] Document recovered entry points, dependencies, established mathematical conventions, documentation discrepancies, and GUI/workbench architecture.
 
 ## M1 — Baseline and tests
 
 - [ ] Create a minimal `pyproject.toml`.
 - [ ] Introduce a `src/` layout only after existing imports and entry points are understood.
 - [ ] Add pytest.
-- [ ] Convert known-good calculations into executable regression tests once the missing evaluators are recovered. Stored q=2/3/5 and symbolic outputs are already frozen as archive-backed fixtures.
+- [ ] Convert additional known-good calculations into executable regression tests. Stored q=2/3/5 and symbolic outputs remain frozen as archive-backed fixtures.
 - [ ] Record expected outputs for representative knots/links and braid words.
 - [ ] Add smoke tests for all current entry points.
 

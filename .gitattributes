@@ -1,7 +1,8 @@
-# Preserve recovered snapshot line endings byte-for-byte across platforms.
-# The archived historical snapshot uses CRLF for these text files.
-# Force CRLF in the worktree so archive-integrity tests are platform-independent.
-/src/benchmark_lab/** text eol=crlf
-/examples/benchmark_lab/** text eol=crlf
-/data/benchmark_lab/** text eol=crlf
+# Keep source and documentation reproducible across checkout platforms. The
+# archived Windows snapshot retains its original CRLF bytes; source comparisons
+# normalize CRLF/LF while the archive itself is verified by exact SHA-256.
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.csv text eol=lf
 /archive/report_bundle.zip binary
