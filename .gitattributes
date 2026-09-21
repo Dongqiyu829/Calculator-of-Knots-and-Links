@@ -1,5 +1,8 @@
-# Preserve recovered snapshot files byte-for-byte across platforms.
-/src/benchmark_lab/** -text whitespace=cr-at-eol
-/examples/benchmark_lab/** -text whitespace=cr-at-eol
-/data/benchmark_lab/** -text whitespace=cr-at-eol
+# Keep source and documentation reproducible across checkout platforms.  The
+# archived Windows snapshot retains its original CRLF bytes; comparisons with
+# the live tree normalize line endings and still verify the archive hash.
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.csv text eol=lf
 /archive/report_bundle.zip binary

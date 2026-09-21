@@ -4,9 +4,14 @@ Calculator of Knots and Links is a project for computing knot and link invariant
 
 ## Project status
 
-The first recovery pass over the bundled research snapshot is complete. The recoverable benchmark source, scripts, and data now live in normal repository paths.
+The authoritative historical source recovery is complete. The braid, R-matrix,
+invariant, benchmark, GUI/workbench, example, and test code now lives in normal
+repository paths.
 
-The snapshot was incomplete: it references braid and invariant evaluators, a GUI, and a workbench that were not included in the ZIP or repository history. The restored benchmark CLIs therefore cannot run until those internal modules are recovered. No mathematical implementation has been guessed or replaced.
+The first archived ZIP was incomplete, but issue #5 recovered its missing modules
+from the authoritative local source. No mathematical implementation was guessed,
+refactored, or normalized during that pass. The historical GUI uses Tkinter;
+PySide6 work is intentionally deferred.
 
 See:
 
@@ -14,14 +19,15 @@ See:
 - `docs/PROJECT_STATE.md` — current project state
 - `docs/TASKS.md` — prioritized task queue
 - `docs/SOURCE_INVENTORY.md` — complete snapshot inventory, entry points, dependencies, and recovery gaps
+- `docs/AUTHORITATIVE_RECOVERY.md` — exact issue #5 recovery manifest and verification record
 - `docs/MATH_CONVENTIONS.md` — conventions evidenced by the recovered files and unresolved normalization questions
 
 ## Repository contents
 
-- `src/benchmark_lab/` — byte-for-byte recovered benchmark/profile/audit layer
-- `examples/benchmark_lab/` — recovered command-line entry scripts
-- `data/benchmark_lab/` — recovered benchmark registries
-- `tests/` — archive-integrity and stored-output regression tests
+- `src/` — recovered mathematical engine, benchmark layers, and Tkinter workbench
+- `examples/` — historical CLI/demo/GUI entry scripts
+- `data/` — historical benchmark registries
+- `tests/` — historical tests plus archive-integrity regression tests
 - `archive/report_bundle.zip` — original snapshot retained as recovery evidence
 - `CITATION.cff` — citation metadata
 
@@ -31,7 +37,8 @@ Run the currently available recovery tests with:
 python -m pytest
 ```
 
-The intended benchmark commands and their current blocker are documented in `docs/SOURCE_INVENTORY.md`.
+Historical entry points and benchmark reproduction commands are documented in
+`docs/AUTHORITATIVE_RECOVERY.md`.
 
 ## Development principle
 

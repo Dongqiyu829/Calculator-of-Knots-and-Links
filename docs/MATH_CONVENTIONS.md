@@ -2,19 +2,68 @@
 
 Last updated: 2026-09-21
 
-This document records only conventions evidenced by `archive/report_bundle.zip`. It does not fill gaps by inference. The evaluator modules that define the braid representations, R-matrices, traces, and invariant normalizations are missing from the snapshot.
+This document records conventions evidenced by the recovered authoritative
+source. The incomplete `archive/report_bundle.zip` supplied output evidence;
+issue #5 supplied the implementations that resolve the earlier unknowns. This
+is a recovery record, not an attempt to improve or reconcile the mathematics.
 
 ## Braid representation
 
 - A braid side is stored as `num_strands` plus an ordered list of signed integers called `generators`.
 - The data labels `[1, 1, 1, 1, 1]` on two strands as the closure of `sigma_1^5`.
 - Generator order is preserved exactly as listed; no commutation, cancellation, conjugation, or braid-relation simplification occurs in the recovered benchmark layer.
-- The maximum permitted index and the meaning of the sign are delegated to the missing `BraidWord.from_iterable` implementation.
+- Positive `i` means `sigma_i`; negative `-i` means `sigma_i^-1`.
+- A braid has at least one strand; a one-strand braid must be the identity;
+  generator zero and indices greater than `num_strands - 1` are rejected.
 - Stored audits report writhe as the sum of generator signs: for example, five `1` entries give writhe 5, `[1, 1, 1, 1, 1, -2]` gives 4, and the two P03 words both give 1.
 
-### Unresolved sign/orientation ambiguity
+### Historical sign-label discrepancy
 
-P01 side B is described as a “Positive stabilization candidate of 5_1”, but its added generator is `-2` and its stored writhe decreases from 5 to 4. Without `BraidWord` and the branch evaluators, the archive does not establish whether positive integers mean positive crossings in the conventional geometric sense. Do not rename or invert generators until that source is recovered.
+P01 side B is described as a “Positive stabilization candidate of 5_1”, but its
+added generator is `-2` and its stored writhe decreases from 5 to 4. The
+recovered `BraidWord` and operator builder establish that `-2` uses the inverse
+of the local braid matrix. P01 is therefore a negative stabilization under the
+actual program convention. The historical data and label remain unchanged.
+
+## Operator and basis conventions
+
+- `RMatrixData.matrix` stores the raw literature-facing R matrix.
+- `RMatrixData.braid_matrix` stores the local braid generator obtained as the
+  tensor-factor swap times the raw matrix (`P R`).
+- The global braid operator uses only `braid_matrix`; negative generators use
+  its inverse.
+- Embedded generators are multiplied from left to right in the order supplied
+  by `BraidWord.generators`.
+- Representation bases are ordered from highest to lowest weight. Tensor-product
+  bases use the induced lexicographic order.
+
+## R-matrix eigenvalue conventions
+
+- sl2 fundamental: J=1/symmetric eigenvalue `q`; J=0/antisymmetric eigenvalue
+  `-q^-1`.
+- sl2 spin-1 (3D/9x9): on basis `(w_1,w_0,w_-1)` and its lexicographic tensor
+  square, J=2 has `q^4`, J=1 has `-1`, and J=0 has `q^-2`.
+- sl3 fundamental: the symmetric 6 has `q`; the antisymmetric 3-bar has
+  `-q^-1`.
+
+The source builds both sl2 cases from the same universal-R normalization. It
+also explicitly marks the spin-1 channel normalization for future external
+reference comparison; recovery does not upgrade that claim.
+
+## Trace and invariant normalizations
+
+The implemented EYB formula is
+`alpha^-w beta^-n Tr(braid_operator * mu^(tensor n))`.
+
+- sl2 fundamental uses `mu=diag(q^-1,q)`, `alpha=q^2`, and `beta=1`.
+- sl3 fundamental uses `mu=diag(q^-2,1,q^2)`, `alpha=q^3`, and `beta=1`.
+- The sl2 fundamental branch divides the current P2 expression by its
+  one-strand unknot value. Its Jones variable convention is `t=q^-2`.
+- The sl2 spin-1/3D branch uses `mu=diag(q^-2,1,q^2)`, `alpha=q^4`, and
+  `beta=1`, then divides by its one-strand unknot value. It is intentionally
+  labelled a candidate colored-Jones normalization, not a theorem-level final
+  convention. Knot Atlas comparison substitutes `q -> q^2`.
+- Ordinary raw closure trace is diagnostic output and is not Markov normalized.
 
 ## Fixed branch order and profile encoding
 
@@ -60,17 +109,13 @@ P01 and P04 must remain audit cases:
 - P04 has stored profile `(1,1,1)` at those numeric values, while its metadata expects `(0,0,0)`.
 - P05 is a placeholder and must be skipped because it is marked `needs_audit` and contains zero-strand, empty-generator inputs.
 
-## Normalizations that cannot be recovered
+## Discrepancies from the pre-recovery document
 
-The snapshot provides branch names and final SymPy expressions but no implementation or derivation for any of the following:
+The earlier version correctly left sign, operator, tensor, trace, eigenvalue, and
+polynomial conventions unresolved because the ZIP lacked their source. The
+authoritative files now establish the conventions above. Two caveats remain:
 
-- braid-generator orientation/sign convention;
-- R-matrix entries or normalization;
-- tensor-factor ordering;
-- Markov trace normalization;
-- framing/writhe correction;
-- eigenvalue ordering;
-- Laurent-polynomial variable or normalization convention;
-- the precise relationship between `sl2_3d_9x9` and the internal `sl2_spin1` branch.
-
-No claim about those conventions should be added until the missing evaluator source or equivalent primary evidence is recovered. Future implementations must treat the exact stored baselines as compatibility evidence, while recognizing that P01/P04 expose unresolved convention or input issues rather than authoritative invariant values.
+- `sl2_3d_9x9` is the benchmark-facing model ID for the internal
+  `sl2_spin1` branch, whose normalization is expressly candidate status.
+- P01 and P04 remain audit/metadata mismatches rather than validated invariant
+  conclusions. No convention was changed to make their expected profiles pass.

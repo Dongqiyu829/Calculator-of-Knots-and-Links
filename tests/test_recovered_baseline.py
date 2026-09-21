@@ -2,7 +2,9 @@
 
 The mathematical evaluators referenced by ``benchmark_lab`` were not included
 in ``report_bundle.zip``. These tests therefore preserve what can be verified:
-the byte-for-byte recovered inputs/source and the stored known-good outputs.
+the content-identical recovered inputs/source and the stored known-good outputs.
+The archive was produced on Windows, so source comparisons normalize CRLF/LF;
+the archive itself remains protected by its recorded SHA-256 digest.
 """
 
 from __future__ import annotations
@@ -53,7 +55,8 @@ def test_archived_snapshot_has_recorded_hash() -> None:
 def test_recovered_file_matches_archived_snapshot(relative_path: str) -> None:
     with ZipFile(ARCHIVE_PATH) as archive:
         archived = archive.read(ARCHIVE_PREFIX + relative_path)
-    assert (PROJECT_ROOT / relative_path).read_bytes() == archived
+    checked_out = (PROJECT_ROOT / relative_path).read_bytes()
+    assert checked_out.replace(b"\r\n", b"\n") == archived.replace(b"\r\n", b"\n")
 
 
 @pytest.mark.parametrize("relative_path", [path for path in RECOVERED_FILES if path.endswith(".py")])
