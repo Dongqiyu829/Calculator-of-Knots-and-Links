@@ -8,11 +8,7 @@ from typing import Any
 import sympy as sp
 
 from src.braid.braid_word import BraidWord
-from src.invariants.branch_registry import (
-    evaluate_sl2_fundamental_branch,
-    evaluate_sl2_spin1_branch,
-    evaluate_sl3_fundamental_branch,
-)
+from src.services import ApplicationBraidResult, evaluate_braid_result
 
 
 WORKBENCH_CLASSIFICATION_LABELS = (
@@ -40,6 +36,17 @@ WORKBENCH_CLASSIFICATION_DESCRIPTIONS = {
 
 def _simplified_equal(left: sp.Expr, right: sp.Expr) -> bool:
     return sp.simplify(left - right) == 0
+
+
+def _primary_output_for_model(entry: ApplicationBraidResult, model_id: str) -> sp.Expr:
+    """Return one application-result output using its public model identity."""
+
+    for result in entry.branch_results:
+        if result.model_id == model_id:
+            if result.primary_output is None:
+                raise ValueError(f"Model '{model_id}' did not provide a primary output.")
+            return sp.simplify(sp.sympify(result.primary_output))
+    raise ValueError(f"Evaluation result did not include model '{model_id}'.")
 
 
 def classify_workbench_pair(jones_same: bool, sl2_3d_same: bool, sl3_same: bool) -> str:
@@ -138,12 +145,14 @@ def evaluate_workbench_pair(
 ) -> WorkbenchPairComparisonResult:
     """Evaluate one braid pair across Jones, sl2 3D, and sl3 branches."""
 
-    jones_a = sp.simplify(evaluate_sl2_fundamental_branch(braid_a, q=q).primary_output)
-    jones_b = sp.simplify(evaluate_sl2_fundamental_branch(braid_b, q=q).primary_output)
-    sl2_3d_a = sp.simplify(evaluate_sl2_spin1_branch(braid_a, q=q).primary_output)
-    sl2_3d_b = sp.simplify(evaluate_sl2_spin1_branch(braid_b, q=q).primary_output)
-    sl3_a = sp.simplify(evaluate_sl3_fundamental_branch(braid_a, q=q).primary_output)
-    sl3_b = sp.simplify(evaluate_sl3_fundamental_branch(braid_b, q=q).primary_output)
+    result_a = evaluate_braid_result(braid_a, q=q)
+    result_b = evaluate_braid_result(braid_b, q=q)
+    jones_a = _primary_output_for_model(result_a, "sl2_fundamental")
+    jones_b = _primary_output_for_model(result_b, "sl2_fundamental")
+    sl2_3d_a = _primary_output_for_model(result_a, "sl2_3d_9x9")
+    sl2_3d_b = _primary_output_for_model(result_b, "sl2_3d_9x9")
+    sl3_a = _primary_output_for_model(result_a, "sl3_fundamental")
+    sl3_b = _primary_output_for_model(result_b, "sl3_fundamental")
 
     jones_same = _simplified_equal(jones_a, jones_b)
     sl2_3d_same = _simplified_equal(sl2_3d_a, sl2_3d_b)

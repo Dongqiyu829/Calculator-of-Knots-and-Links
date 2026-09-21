@@ -128,3 +128,8 @@ invariant result/formatter classes. The service facade provides deterministic
 JSON serialization and text reports; the legacy launcher remains an explicitly
 documented historical compatibility path. No mathematical objects or values are
 changed by this reporting boundary.
+
+Maintained pair comparison now uses the same service DTO evaluations as batch
+workbench execution, keeping the branch/model association at the application
+boundary. Its legacy comparison result, classifications, and output expressions
+are retained unchanged.
