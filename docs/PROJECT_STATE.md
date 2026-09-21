@@ -32,12 +32,12 @@ The archived P01 and P03 symbolic audit JSON outputs also reproduce exactly.
 ## Immediate objective
 
 Maintain the installable Python baseline and practical test tiers while retaining
-the recovered `src` package and its mathematical behavior. The first M2 step
-now provides `src.services.braid_evaluation`: a UI-independent application
-boundary for parsing braid input and evaluating catalog or custom braids through
-the existing branches. Both workbench computation and Tkinter compatibility
-adapters call that shared path. Core refactoring beyond this focused boundary
-and any PySide6 work remain later milestones.
+the recovered `src` package and its mathematical behavior. M2 now has an
+explicit `src.services` application API: a UI-independent boundary for input
+parsing/evaluation plus a frontend-neutral catalog of the current branches.
+Both workbench computation and Tkinter compatibility adapters call that shared
+path. Core refactoring beyond these focused boundary steps and any PySide6 work
+remain later milestones.
 
 ## Architecture direction
 
@@ -116,3 +116,9 @@ catalog/custom evaluation, selected branch execution, and reusable input-source
 metadata. `src.workbench.runner` and the Tkinter GUI use this service without
 altering recovered branch behavior or mathematical conventions. Further core
 refactoring remains deliberately out of scope until separately planned.
+
+The API now has an explicit facade, structured application errors, and one
+frontend-neutral branch catalog. It records the formal sl2/sl3 branches and the
+workbench `sl2_3d_9x9` to internal `sl2_spin1` candidate mapping. See
+`docs/APPLICATION_API.md`. GUI styling remains local to `src.gui`; no
+mathematical claims or conventions changed.

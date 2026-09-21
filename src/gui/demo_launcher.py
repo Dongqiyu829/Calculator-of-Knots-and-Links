@@ -28,6 +28,7 @@ from src.invariants.sl2_3d_colored_jones_candidate import (
     SL2_3D_KNOT_ATLAS_TREFOIL_RELATION,
     SL2_3D_KNOT_ATLAS_VERIFICATION_NOTE,
 )
+from src.services import get_evaluation_branch
 from src.services import braid_evaluation as braid_service
 
 
@@ -64,32 +65,27 @@ class GuiBranchSpec:
 GuiActiveBraidState = braid_service.BraidInputState
 
 
-GUI_BRANCH_SPECS = (
-    GuiBranchSpec(
-        branch_id="sl2_fundamental",
-        title="Jones / sl2 fundamental",
-        subtitle="Use this branch when you want the current Jones-compatible polynomial.",
-        accent_color=ACCENT_COLOR,
-        user_hint="Primary output here = current Jones-compatible comparison output.",
-    ),
-    GuiBranchSpec(
-        branch_id="sl3_fundamental",
-        title="sl3 fundamental",
-        subtitle="Current formal sl3 branch for cross-Lie-algebra comparison.",
-        accent_color=SUCCESS_COLOR,
-        user_hint="Primary output here = current formal sl3 comparison branch.",
-    ),
-    GuiBranchSpec(
-        branch_id="sl2_spin1",
-        title="sl2 的3维表示下的9x9矩阵",
-        subtitle=(
-            "当前这条线是 colored Jones candidate branch；Knot Atlas 用 J_n 表示 (n+1) 维 sl2 表示，所以这里当前对照的是 n=2 数据。"
-        ),
-        accent_color=EXPLORATORY_COLOR,
-        user_hint=(
-            "当前已确认 3_1 对应 q^6 J_2(3_1; q^2)、5_1 对应 q^10 J_2(5_1; q^2)；5_2 仍在 verification，且全局最终归一化尚未定案。"
-        ),
-    ),
+GUI_BRANCH_ACCENT_COLORS = {
+    "sl2_fundamental": ACCENT_COLOR,
+    "sl3_fundamental": SUCCESS_COLOR,
+    "sl2_spin1": EXPLORATORY_COLOR,
+}
+
+
+def _build_gui_branch_spec(branch_id: str) -> GuiBranchSpec:
+    descriptor = get_evaluation_branch(branch_id)
+    return GuiBranchSpec(
+        branch_id=descriptor.branch_id,
+        title=descriptor.display_name,
+        subtitle=descriptor.user_note,
+        accent_color=GUI_BRANCH_ACCENT_COLORS[descriptor.branch_id],
+        user_hint=descriptor.user_note,
+    )
+
+
+GUI_BRANCH_SPECS = tuple(
+    _build_gui_branch_spec(branch_id)
+    for branch_id in ("sl2_fundamental", "sl3_fundamental", "sl2_spin1")
 )
 
 PROGRAM_STATUS_TEXT = (
