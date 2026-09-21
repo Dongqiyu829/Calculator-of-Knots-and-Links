@@ -22,8 +22,8 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 - [x] Create a minimal `pyproject.toml` with runtime and test dependencies.
 - [x] Confirm the recovered `src` import package and retain it without a style-only move.
 - [x] Add explicit pytest configuration and test tiers.
-- [ ] Convert additional known-good calculations into executable regression tests. Stored q=2/3/5 and symbolic outputs remain frozen as archive-backed fixtures.
-- [ ] Record expected outputs for representative knots/links and braid words.
+- [x] Convert additional known-good calculations into executable regression tests. Stored q=2/3/5 and symbolic outputs remain frozen as archive-backed fixtures.
+- [x] Record expected outputs for representative knots/links and braid words in the fixture-backed compatibility manifest.
 - [x] Add non-interactive smoke tests for the principal current executable entry points.
 - [x] Keep fast/core, GUI smoke, and slow/extended mathematical test coverage separately runnable and documented.
 

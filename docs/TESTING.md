@@ -20,7 +20,7 @@ display server. On Linux, use `xvfb-run -a` for GUI coverage.
 
 | Tier | Command | Purpose |
 | --- | --- | --- |
-| Fast core regression | `python -m pytest -q -m "not slow and not gui"` | Archive integrity, registry, braid, R-matrix, invariant, and numerical regression checks suitable for pull requests. |
+| Fast core regression | `python -m pytest -q -m "not slow and not gui"` | Archive integrity, registry, braid, R-matrix, invariant, q=2 representative-manifest, and numerical regression checks suitable for pull requests. |
 | GUI smoke | `xvfb-run -a python -m pytest -q -m gui` | Tkinter launch/workbench/preview and GUI-adjacent data-flow checks. |
 | Extended mathematics | `xvfb-run -a python -m pytest -q -m slow` | Symbolic, multi-branch, and candidate-branch regressions that take materially longer. |
 | Complete suite | `xvfb-run -a python -m pytest -q` | Every recovered and baseline test. |
@@ -29,11 +29,17 @@ The normal pull-request workflow runs the fast tier. The `Extended tests`
 workflow preserves the complete suite for manual runs and the weekly main-branch
 schedule; it does not delete or weaken slow coverage.
 
-On the recovered Windows development environment, the tier runs measured about
-2:42 for fast core (51 tests), 4:49 for GUI smoke (53 passed and one
-environment-specific Tk skip), and 17:29 for extended mathematics (51 tests).
-The GUI and slow sets intentionally overlap, so their union with fast core is
-the complete 141-test suite.
+The representative invariant manifest tests keep the all-branch q=2 contract
+in the fast tier and its symbolic sl2 Jones-compatible cases in the extended
+tier. See `docs/REPRESENTATIVE_REGRESSIONS.md`; these are recovered-program
+compatibility values, not new external mathematical reference claims.
+
+On the recovered Windows development environment, the tier runs originally
+measured about 2:42 for fast core (now 53 tests after the q=2 manifest), 4:49
+for GUI smoke (53 passed and one environment-specific Tk skip), and 17:29 for
+extended mathematics (now 52 tests after the symbolic manifest). The GUI and
+slow sets intentionally overlap, so their union with fast core is the complete
+144-test suite.
 
 ## Historical recovery note
 
