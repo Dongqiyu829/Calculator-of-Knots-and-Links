@@ -1,0 +1,31 @@
+"""Architecture checks for the UI-independent application boundary."""
+
+from __future__ import annotations
+
+import ast
+from pathlib import Path
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _imports_gui_module(source_path: Path) -> bool:
+    tree = ast.parse(source_path.read_text(encoding="utf-8"), filename=str(source_path))
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            if any(alias.name == "src.gui" or alias.name.startswith("src.gui.") for alias in node.names):
+                return True
+        if isinstance(node, ast.ImportFrom) and node.module:
+            if node.module == "src.gui" or node.module.startswith("src.gui."):
+                return True
+    return False
+
+
+def test_workbench_and_services_do_not_depend_on_gui() -> None:
+    checked_paths = sorted(
+        list((PROJECT_ROOT / "src" / "workbench").glob("*.py"))
+        + list((PROJECT_ROOT / "src" / "services").glob("*.py"))
+    )
+    assert checked_paths
+    violations = [path.relative_to(PROJECT_ROOT).as_posix() for path in checked_paths if _imports_gui_module(path)]
+    assert violations == []

@@ -20,6 +20,7 @@ from src.gui.braid_preview_renderer import (
     save_braid_preview_svg,
 )
 from src.invariants.multibranch_benchmark import MultiBranchBenchmarkEntry
+from src.services.braid_evaluation import evaluate_braid_word, parse_generator_text
 from src.workbench.comparison import WORKBENCH_CLASSIFICATION_LABELS, evaluate_workbench_pair
 from src.workbench.experiment_log import ExperimentLog, ExperimentLogRecord
 from src.workbench.runner import (
@@ -120,7 +121,7 @@ def evaluate_single_workbench_braid(
     *,
     q: sp.Expr | None = None,
 ) -> MultiBranchBenchmarkEntry:
-    return current_gui.evaluate_gui_braid_word(
+    return evaluate_braid_word(
         braid_word,
         branch_ids=tuple(spec.branch_id for spec in WORKBENCH_MODEL_SPECS.values()),
         q=q,
@@ -654,7 +655,7 @@ class BraidWorkbenchApp:
 
     def _undo_manual_card_generator(self, card: ManualBraidCard) -> None:
         try:
-            generators = list(current_gui.parse_generator_text(card.generators_var.get()))
+            generators = list(parse_generator_text(card.generators_var.get()))
         except ValueError:
             generators = []
         if generators:
@@ -692,7 +693,7 @@ class BraidWorkbenchApp:
 
     def _manual_card_to_spec(self, card: ManualBraidCard) -> WorkbenchBraidSpec:
         try:
-            generators = list(current_gui.parse_generator_text(card.generators_var.get()))
+            generators = list(parse_generator_text(card.generators_var.get()))
         except ValueError as exc:
             raise WorkbenchInputValidationError(f"Braid '{card.label_var.get()}' has invalid generators: {exc}") from exc
         return normalize_braid_spec_data(

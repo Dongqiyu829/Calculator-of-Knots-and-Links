@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import tkinter as tk
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from tkinter import messagebox, ttk
 from typing import Any
 
@@ -19,9 +19,8 @@ from src.invariants.branch_formatter import (
     format_catalog_benchmark,
     format_multibranch_entry,
 )
-from src.invariants.branch_registry import evaluate_current_branches
 from src.invariants.branch_results import InvariantBranchResult
-from src.invariants.multibranch_benchmark import MultiBranchBenchmarkEntry, evaluate_example_across_branches
+from src.invariants.multibranch_benchmark import MultiBranchBenchmarkEntry
 from src.invariants.sl2_3d_colored_jones_candidate import (
     SL2_3D_KNOT_ATLAS_COMPARISON_RULE,
     SL2_3D_KNOT_ATLAS_FIVE_ONE_RELATION,
@@ -29,6 +28,7 @@ from src.invariants.sl2_3d_colored_jones_candidate import (
     SL2_3D_KNOT_ATLAS_TREFOIL_RELATION,
     SL2_3D_KNOT_ATLAS_VERIFICATION_NOTE,
 )
+from src.services import braid_evaluation as braid_service
 
 
 APP_BACKGROUND = "#f3f6fb"
@@ -61,17 +61,7 @@ class GuiBranchSpec:
     user_hint: str
 
 
-@dataclass(frozen=True, slots=True)
-class GuiActiveBraidState:
-    """Track the currently active braid source shared by evaluator, summary, and preview."""
-
-    source_mode: str
-    source_label: str
-    braid_word: BraidWord
-    notes: str = ""
-    expected_components: int | None = None
-    expected_crossing_count: int | None = None
-    metadata: dict[str, Any] = field(default_factory=dict)
+GuiActiveBraidState = braid_service.BraidInputState
 
 
 GUI_BRANCH_SPECS = (
@@ -152,16 +142,9 @@ def build_program_status_text() -> str:
 
 
 def parse_generator_text(generator_text: str) -> tuple[int, ...]:
-    """Parse a manual generator string such as '1 1 -2' or '1,1,-2'."""
+    """Compatibility adapter for the shared application input parser."""
 
-    cleaned = generator_text.replace(",", " ").strip()
-    if not cleaned:
-        return ()
-    tokens = [token for token in cleaned.split() if token]
-    try:
-        return tuple(int(token) for token in tokens)
-    except ValueError as exc:
-        raise ValueError("Generators must be integers such as 1 1 -2.") from exc
+    return braid_service.parse_generator_text(generator_text)
 
 
 def build_custom_braid_word(
@@ -171,16 +154,9 @@ def build_custom_braid_word(
     label: str = "custom_braid",
     notes: str = "Custom braid created from the GUI input panel.",
 ) -> BraidWord:
-    """Build a validated braid word from the GUI custom-input controls."""
+    """Compatibility adapter for shared custom-braid construction."""
 
-    generators = parse_generator_text(generator_text)
-    return BraidWord.from_iterable(
-        num_strands=num_strands,
-        generators=generators,
-        label=label,
-        notes=notes,
-        metadata={"input_mode": "custom_gui"},
-    )
+    return braid_service.build_custom_braid_word(num_strands, generator_text, label=label, notes=notes)
 
 
 def evaluate_gui_example(
@@ -189,22 +165,9 @@ def evaluate_gui_example(
     branch_ids: tuple[str, ...] | list[str] | None = None,
     q: sp.Expr | None = None,
 ) -> MultiBranchBenchmarkEntry:
-    """Evaluate one GUI-selectable example through the current multi-branch skeleton."""
+    """Compatibility adapter for shared catalog evaluation."""
 
-    example = get_braid_example(example_label)
-    return MultiBranchBenchmarkEntry(
-        example_label=example.label,
-        branch_results=tuple(evaluate_current_branches(example, branch_ids=branch_ids, q=q)),
-        notes=example.notes,
-        metadata={
-            "input_mode": "catalog",
-            "braid_word": example.to_braid_word().to_dict(),
-            "expected_components": example.expected_components,
-            "expected_crossing_count": example.expected_crossing_count,
-            "example_metadata": dict(example.metadata),
-            "selected_branch_ids": list(branch_ids) if branch_ids is not None else None,
-        },
-    )
+    return braid_service.evaluate_catalog_example(example_label, branch_ids=branch_ids, q=q)
 
 
 def evaluate_gui_braid_word(
@@ -213,18 +176,9 @@ def evaluate_gui_braid_word(
     branch_ids: tuple[str, ...] | list[str] | None = None,
     q: sp.Expr | None = None,
 ) -> MultiBranchBenchmarkEntry:
-    """Evaluate one custom braid word across the current branches."""
+    """Compatibility adapter for shared arbitrary-braid evaluation."""
 
-    return MultiBranchBenchmarkEntry(
-        example_label=braid_word.label or "custom_braid",
-        branch_results=tuple(evaluate_current_branches(braid_word, branch_ids=branch_ids, q=q)),
-        notes=braid_word.notes,
-        metadata={
-            "input_mode": "custom",
-            "braid_word": braid_word.to_dict(),
-            "selected_branch_ids": list(branch_ids) if branch_ids is not None else None,
-        },
-    )
+    return braid_service.evaluate_braid_word(braid_word, branch_ids=branch_ids, q=q)
 
 
 def evaluate_gui_custom_braid(
@@ -234,37 +188,21 @@ def evaluate_gui_custom_braid(
     branch_ids: tuple[str, ...] | list[str] | None = None,
     q: sp.Expr | None = None,
 ) -> MultiBranchBenchmarkEntry:
-    """Evaluate a custom GUI braid directly from strand count and generator text."""
+    """Compatibility adapter for shared custom-braid evaluation."""
 
-    return evaluate_gui_braid_word(build_custom_braid_word(num_strands, generator_text), branch_ids=branch_ids, q=q)
+    return braid_service.evaluate_custom_braid(num_strands, generator_text, branch_ids=branch_ids, q=q)
 
 
 def build_catalog_active_braid_state(example_label: str) -> GuiActiveBraidState:
-    """Build the active braid state for one built-in catalog example."""
+    """Compatibility adapter for shared catalog input metadata."""
 
-    example = get_braid_example(example_label)
-    return GuiActiveBraidState(
-        source_mode="catalog",
-        source_label=example.label,
-        braid_word=example.to_braid_word(),
-        notes=example.notes,
-        expected_components=example.expected_components,
-        expected_crossing_count=example.expected_crossing_count,
-        metadata={"example_metadata": dict(example.metadata)},
-    )
+    return braid_service.build_catalog_braid_input(example_label)
 
 
 def build_custom_active_braid_state(num_strands: int, generator_text: str) -> GuiActiveBraidState:
-    """Build the active braid state for the current custom braid controls."""
+    """Compatibility adapter for shared custom input metadata."""
 
-    braid_word = build_custom_braid_word(num_strands, generator_text)
-    return GuiActiveBraidState(
-        source_mode="custom",
-        source_label=braid_word.label or "custom_braid",
-        braid_word=braid_word,
-        notes=braid_word.notes,
-        metadata={"braid_word": braid_word.to_dict()},
-    )
+    return braid_service.build_custom_braid_input(num_strands, generator_text)
 
 
 def evaluate_gui_active_braid(
@@ -273,47 +211,19 @@ def evaluate_gui_active_braid(
     branch_ids: tuple[str, ...] | list[str] | None = None,
     q: sp.Expr | None = None,
 ) -> MultiBranchBenchmarkEntry:
-    """Evaluate the currently active GUI braid source."""
+    """Compatibility adapter for shared input-state evaluation."""
 
-    if active_braid.source_mode == "catalog":
-        return evaluate_gui_example(active_braid.source_label, branch_ids=branch_ids, q=q)
-    if active_braid.source_mode == "custom":
-        return evaluate_gui_braid_word(active_braid.braid_word, branch_ids=branch_ids, q=q)
-    raise ValueError(f"Unknown GUI braid source mode: {active_braid.source_mode}")
+    return braid_service.evaluate_braid_input(active_braid, branch_ids=branch_ids, q=q)
 
 
 def _braid_word_from_entry(entry: MultiBranchBenchmarkEntry) -> BraidWord:
-    if entry.branch_results:
-        return entry.branch_results[0].braid_word
-
-    braid_word_data = entry.metadata.get("braid_word")
-    if not isinstance(braid_word_data, dict):
-        raise ValueError("GUI entry is missing braid-word metadata for summary/preview rendering.")
-
-    return BraidWord.from_iterable(
-        num_strands=int(braid_word_data["num_strands"]),
-        generators=tuple(int(generator) for generator in braid_word_data.get("generators", [])),
-        label=str(braid_word_data.get("label") or entry.example_label),
-        notes=str(braid_word_data.get("notes") or entry.notes),
-        metadata=dict(braid_word_data.get("metadata") or {}),
-    )
+    return braid_service.braid_word_from_entry(entry)
 
 
 def build_active_braid_state_from_entry(entry: MultiBranchBenchmarkEntry) -> GuiActiveBraidState:
-    """Recover the active braid state from one evaluated GUI entry."""
+    """Recover the shared input state from one evaluated entry for rendering."""
 
-    return GuiActiveBraidState(
-        source_mode=str(entry.metadata.get("input_mode", "catalog")),
-        source_label=entry.example_label,
-        braid_word=_braid_word_from_entry(entry),
-        notes=entry.notes,
-        expected_components=entry.metadata.get("expected_components"),
-        expected_crossing_count=entry.metadata.get("expected_crossing_count"),
-        metadata={
-            "example_metadata": dict(entry.metadata.get("example_metadata") or {}),
-            "selected_branch_ids": entry.metadata.get("selected_branch_ids"),
-        },
-    )
+    return braid_service.braid_input_from_entry(entry)
 
 
 def build_active_braid_preview_metadata(active_braid: GuiActiveBraidState) -> dict[str, Any]:

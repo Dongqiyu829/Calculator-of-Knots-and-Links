@@ -12,9 +12,9 @@ from typing import Any
 
 import sympy as sp
 
-from src.gui import demo_launcher as current_gui
 from src.invariants.branch_results import InvariantBranchResult
 from src.invariants.multibranch_benchmark import MultiBranchBenchmarkEntry
+from src.services.braid_evaluation import evaluate_braid_word
 from src.workbench.comparison import WORKBENCH_CLASSIFICATION_DESCRIPTIONS, classify_workbench_pair
 from src.workbench.specs import ComparisonRunSpec, WORKBENCH_DEFAULT_MODELS, WORKBENCH_MODEL_SPECS
 
@@ -215,7 +215,7 @@ def evaluate_workbench_run(run_spec: ComparisonRunSpec) -> WorkbenchBatchRunResu
     single_rows: list[SingleBraidResultRow] = []
 
     for braid_spec in run_spec.batch.braids:
-        entry = current_gui.evaluate_gui_braid_word(
+        entry = evaluate_braid_word(
             braid_spec.to_braid_word(),
             branch_ids=run_spec.branch_ids,
             q=run_spec.q_parameter_expr,

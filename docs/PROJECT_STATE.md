@@ -32,10 +32,12 @@ The archived P01 and P03 symbolic audit JSON outputs also reproduce exactly.
 ## Immediate objective
 
 Maintain the installable Python baseline and practical test tiers while retaining
-the recovered `src` package and its mathematical behavior. M1 now includes a
-fixture-backed representative-output contract derived only from that recovered
-implementation. Core/service/UI separation and any PySide6 work remain later
-milestones.
+the recovered `src` package and its mathematical behavior. The first M2 step
+now provides `src.services.braid_evaluation`: a UI-independent application
+boundary for parsing braid input and evaluating catalog or custom braids through
+the existing branches. Both workbench computation and Tkinter compatibility
+adapters call that shared path. Core refactoring beyond this focused boundary
+and any PySide6 work remain later milestones.
 
 ## Architecture direction
 
@@ -59,8 +61,10 @@ Future direction (not implemented by the recovery pass):
 
 ## Current risks
 
-- The recovered GUI is Tkinter and mixes evaluator helpers with UI code; the
-  workbench service layer imports the GUI launcher.
+- The recovered GUI is Tkinter and retains its presentation-oriented rendering
+  and workbench UI code. Input parsing/evaluation is now in `src.services`, and
+  architecture tests prevent `src.workbench` or `src.services` from importing
+  `src.gui`.
 - The recovered import package is named `src`; it is retained for compatibility
   and will not be moved merely to satisfy packaging conventions.
 - The source establishes that positive integers mean positive Artin generators;
@@ -103,3 +107,12 @@ the established symbolic sl2 cases are centralized in
 `tests/fixtures/representative_invariant_regressions.json`; see
 `docs/REPRESENTATIVE_REGRESSIONS.md` for scope and provenance. M2 refactoring
 and PySide6 migration are not part of this milestone.
+
+### M2 — Core refactor
+
+The initial dependency-direction repair is complete: `src.services` owns the
+small provisional API for generator parsing, validated custom braid creation,
+catalog/custom evaluation, selected branch execution, and reusable input-source
+metadata. `src.workbench.runner` and the Tkinter GUI use this service without
+altering recovered branch behavior or mathematical conventions. Further core
+refactoring remains deliberately out of scope until separately planned.
