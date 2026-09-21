@@ -44,3 +44,20 @@ def test_maintained_frontends_do_not_import_invariant_result_implementation() ->
             if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith("src.invariants"):
                 violations.append(path.relative_to(PROJECT_ROOT).as_posix())
     assert violations == []
+
+
+def test_workbench_modules_do_not_import_branch_evaluators() -> None:
+    evaluator_names = {
+        "evaluate_sl2_fundamental_branch",
+        "evaluate_sl2_spin1_branch",
+        "evaluate_sl3_fundamental_branch",
+    }
+    violations = []
+    for path in sorted((PROJECT_ROOT / "src" / "workbench").glob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom) and node.module == "src.invariants.branch_registry":
+                imported_evaluators = evaluator_names.intersection(alias.name for alias in node.names)
+                if imported_evaluators:
+                    violations.append(f"{path.relative_to(PROJECT_ROOT).as_posix()}: {sorted(imported_evaluators)}")
+    assert violations == []
