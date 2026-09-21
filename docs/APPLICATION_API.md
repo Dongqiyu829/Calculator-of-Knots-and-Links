@@ -10,6 +10,8 @@ The supported surface covers:
   `get_evaluation_branch` for the current model catalog;
 - parsing generator text and building validated catalog or custom braid input;
 - evaluating a catalog example, arbitrary `BraidWord`, or `BraidInputState`;
+- immutable application result DTOs, deterministic JSON serialization, and
+  frontend-neutral text reports;
 - structured `ApplicationServiceError` subclasses for input, unknown catalog,
   unknown branch, and unknown model failures.
 
@@ -24,3 +26,9 @@ Tkinter-specific colors, controls, and layouts remain in `src.gui`. Existing
 GUI helper functions remain compatibility adapters over this API. Mathematical
 builders, R-matrix construction, and normalization details are intentionally
 not part of the application API.
+
+The maintained `demo_launcher`, `braid_workbench_app`, and workbench runner use
+the DTO/reporting surface rather than importing invariant result or formatter
+implementations. The recovered `demo_launcher_legacy` remains a historical
+compatibility entrypoint and intentionally retains its original internal
+formatter dependencies; it is not the maintained frontend path.

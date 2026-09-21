@@ -29,3 +29,18 @@ def test_workbench_and_services_do_not_depend_on_gui() -> None:
     assert checked_paths
     violations = [path.relative_to(PROJECT_ROOT).as_posix() for path in checked_paths if _imports_gui_module(path)]
     assert violations == []
+
+
+def test_maintained_frontends_do_not_import_invariant_result_implementation() -> None:
+    frontend_paths = (
+        PROJECT_ROOT / "src" / "gui" / "demo_launcher.py",
+        PROJECT_ROOT / "src" / "gui" / "braid_workbench_app.py",
+        PROJECT_ROOT / "src" / "workbench" / "runner.py",
+    )
+    violations = []
+    for path in frontend_paths:
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith("src.invariants"):
+                violations.append(path.relative_to(PROJECT_ROOT).as_posix())
+    assert violations == []

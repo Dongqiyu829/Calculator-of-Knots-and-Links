@@ -35,12 +35,12 @@ tier. See `docs/REPRESENTATIVE_REGRESSIONS.md`; these are recovered-program
 compatibility values, not new external mathematical reference claims.
 
 On the recovered Windows development environment, the tier runs originally
-measured about 2:42 for fast core (now 60 tests after the q=2 manifest,
-service-boundary checks, and application-API checks), 4:49
+measured about 2:42 for fast core (now 63 tests after the q=2 manifest,
+service-boundary checks, application-API checks, and result-DTO checks), 4:49
 for GUI smoke (53 passed and one environment-specific Tk skip), and 17:29 for
 extended mathematics (now 52 tests after the symbolic manifest). The GUI and
 slow sets intentionally overlap, so their union with fast core is the complete
-151-test suite.
+154-test suite.
 
 ## Historical recovery note
 

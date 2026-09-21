@@ -19,8 +19,7 @@ from src.gui.braid_preview_renderer import (
     render_braid_preview,
     save_braid_preview_svg,
 )
-from src.invariants.multibranch_benchmark import MultiBranchBenchmarkEntry
-from src.services.braid_evaluation import evaluate_braid_word, parse_generator_text
+from src.services import ApplicationBraidResult, evaluate_braid_result, parse_generator_text
 from src.workbench.comparison import WORKBENCH_CLASSIFICATION_LABELS, evaluate_workbench_pair
 from src.workbench.experiment_log import ExperimentLog, ExperimentLogRecord
 from src.workbench.runner import (
@@ -120,8 +119,8 @@ def evaluate_single_workbench_braid(
     braid_word: current_gui.BraidWord,
     *,
     q: sp.Expr | None = None,
-) -> MultiBranchBenchmarkEntry:
-    return evaluate_braid_word(
+) -> ApplicationBraidResult:
+    return evaluate_braid_result(
         braid_word,
         branch_ids=tuple(spec.branch_id for spec in WORKBENCH_MODEL_SPECS.values()),
         q=q,

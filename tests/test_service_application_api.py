@@ -25,6 +25,8 @@ from src.workbench.specs import WORKBENCH_DEFAULT_MODELS, WORKBENCH_MODEL_SPECS
 def test_supported_service_api_is_explicit_and_narrow() -> None:
     assert set(services.__all__) == {
         "ApplicationServiceError",
+        "ApplicationBraidResult",
+        "ApplicationBranchResult",
         "BraidInputError",
         "BraidInputState",
         "BraidInputValidationError",
@@ -35,17 +37,27 @@ def test_supported_service_api_is_explicit_and_narrow() -> None:
         "UnknownEvaluationBranchError",
         "UnknownEvaluationModelError",
         "branch_ids_for_models",
+        "application_braid_result_from_internal",
+        "application_branch_result_from_internal",
         "build_catalog_braid_input",
         "build_custom_braid_input",
         "build_custom_braid_word",
         "evaluate_braid_input",
+        "evaluate_braid_input_result",
         "evaluate_braid_word",
+        "evaluate_braid_result",
         "evaluate_catalog_example",
+        "evaluate_catalog_result",
         "evaluate_custom_braid",
+        "evaluate_custom_result",
+        "filter_application_braid_result",
+        "format_application_braid_result",
+        "format_application_branch_result",
         "get_evaluation_branch",
         "get_evaluation_model",
         "list_evaluation_branches",
         "parse_generator_text",
+        "serialize_application_braid_result",
     }
 
 

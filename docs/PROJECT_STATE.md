@@ -122,3 +122,9 @@ frontend-neutral branch catalog. It records the formal sl2/sl3 branches and the
 workbench `sl2_3d_9x9` to internal `sl2_spin1` candidate mapping. See
 `docs/APPLICATION_API.md`. GUI styling remains local to `src.gui`; no
 mathematical claims or conventions changed.
+
+Application result DTOs now isolate maintained frontend rendering from internal
+invariant result/formatter classes. The service facade provides deterministic
+JSON serialization and text reports; the legacy launcher remains an explicitly
+documented historical compatibility path. No mathematical objects or values are
+changed by this reporting boundary.
