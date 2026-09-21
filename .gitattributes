@@ -1,5 +1,7 @@
-# Preserve recovered snapshot files byte-for-byte across platforms.
-/src/benchmark_lab/** -text whitespace=cr-at-eol
-/examples/benchmark_lab/** -text whitespace=cr-at-eol
-/data/benchmark_lab/** -text whitespace=cr-at-eol
+# Preserve recovered snapshot line endings byte-for-byte across platforms.
+# The archived historical snapshot uses CRLF for these text files.
+# Force CRLF in the worktree so archive-integrity tests are platform-independent.
+/src/benchmark_lab/** text eol=crlf
+/examples/benchmark_lab/** text eol=crlf
+/data/benchmark_lab/** text eol=crlf
 /archive/report_bundle.zip binary
