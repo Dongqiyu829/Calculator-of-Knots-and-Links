@@ -19,6 +19,7 @@ from src.invariants.multibranch_benchmark import MultiBranchBenchmarkEntry
 
 from .branch_catalog import validate_branch_ids
 from .errors import BraidInputValidationError, GeneratorParseError, UnknownCatalogExampleError
+from .results import ApplicationBraidResult, application_braid_result_from_internal
 
 
 @dataclass(frozen=True, slots=True)
@@ -100,6 +101,14 @@ def evaluate_catalog_example(
     )
 
 
+def evaluate_catalog_result(
+    example_label: str, *, branch_ids: tuple[str, ...] | list[str] | None = None, q: sp.Expr | None = None
+) -> ApplicationBraidResult:
+    """Evaluate a catalog example and expose only the application DTO."""
+
+    return application_braid_result_from_internal(evaluate_catalog_example(example_label, branch_ids=branch_ids, q=q))
+
+
 def evaluate_braid_word(
     braid_word: BraidWord,
     *,
@@ -121,6 +130,14 @@ def evaluate_braid_word(
     )
 
 
+def evaluate_braid_result(
+    braid_word: BraidWord, *, branch_ids: tuple[str, ...] | list[str] | None = None, q: sp.Expr | None = None
+) -> ApplicationBraidResult:
+    """Evaluate an arbitrary braid word and expose only the application DTO."""
+
+    return application_braid_result_from_internal(evaluate_braid_word(braid_word, branch_ids=branch_ids, q=q))
+
+
 def evaluate_custom_braid(
     num_strands: int,
     generator_text: str,
@@ -131,6 +148,14 @@ def evaluate_custom_braid(
     """Build then evaluate a custom braid using the recovered input semantics."""
 
     return evaluate_braid_word(build_custom_braid_word(num_strands, generator_text), branch_ids=branch_ids, q=q)
+
+
+def evaluate_custom_result(
+    num_strands: int, generator_text: str, *, branch_ids: tuple[str, ...] | list[str] | None = None, q: sp.Expr | None = None
+) -> ApplicationBraidResult:
+    """Build/evaluate custom input and expose only the application DTO."""
+
+    return application_braid_result_from_internal(evaluate_custom_braid(num_strands, generator_text, branch_ids=branch_ids, q=q))
 
 
 def build_catalog_braid_input(example_label: str) -> BraidInputState:
@@ -179,6 +204,14 @@ def evaluate_braid_input(
     raise BraidInputValidationError(f"Unknown braid input source mode: {braid_input.source_mode}")
 
 
+def evaluate_braid_input_result(
+    braid_input: BraidInputState, *, branch_ids: tuple[str, ...] | list[str] | None = None, q: sp.Expr | None = None
+) -> ApplicationBraidResult:
+    """Evaluate an input state and expose only the application DTO."""
+
+    return application_braid_result_from_internal(evaluate_braid_input(braid_input, branch_ids=branch_ids, q=q))
+
+
 def braid_word_from_entry(entry: MultiBranchBenchmarkEntry) -> BraidWord:
     """Recover the evaluated braid word, including empty branch-selection cases."""
 
@@ -210,4 +243,18 @@ def braid_input_from_entry(entry: MultiBranchBenchmarkEntry) -> BraidInputState:
             "example_metadata": dict(entry.metadata.get("example_metadata") or {}),
             "selected_branch_ids": entry.metadata.get("selected_branch_ids"),
         },
+    )
+
+
+def filter_legacy_entry_by_branch_ids(
+    entry: MultiBranchBenchmarkEntry, branch_ids: tuple[str, ...] | list[str]
+) -> MultiBranchBenchmarkEntry:
+    """Compatibility adapter for legacy GUI callers that still hold internal entries."""
+
+    selected = set(branch_ids)
+    return MultiBranchBenchmarkEntry(
+        example_label=entry.example_label,
+        branch_results=tuple(result for result in entry.branch_results if result.branch_id in selected),
+        notes=entry.notes,
+        metadata=dict(entry.metadata),
     )

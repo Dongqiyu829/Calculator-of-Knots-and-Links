@@ -12,9 +12,7 @@ from typing import Any
 
 import sympy as sp
 
-from src.invariants.branch_results import InvariantBranchResult
-from src.invariants.multibranch_benchmark import MultiBranchBenchmarkEntry
-from src.services.braid_evaluation import evaluate_braid_word
+from src.services import ApplicationBraidResult, ApplicationBranchResult, evaluate_braid_result
 from src.workbench.comparison import WORKBENCH_CLASSIFICATION_DESCRIPTIONS, classify_workbench_pair
 from src.workbench.specs import ComparisonRunSpec, WORKBENCH_DEFAULT_MODELS, WORKBENCH_MODEL_SPECS
 
@@ -95,7 +93,7 @@ class WorkbenchBatchRunResult:
     single_rows: tuple[SingleBraidResultRow, ...]
     pairwise_rows: tuple[PairwiseComparisonRow, ...]
     summary_rows: tuple[SummaryCountRow, ...]
-    single_entries: tuple[MultiBranchBenchmarkEntry, ...] = ()
+    single_entries: tuple[ApplicationBraidResult, ...] = ()
     pair_metadata: tuple[dict[str, Any], ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
@@ -169,7 +167,7 @@ def _simplified_equal(left: sp.Expr, right: sp.Expr) -> bool:
     return sp.simplify(left - right) == 0
 
 
-def _branch_outputs_by_model(entry: MultiBranchBenchmarkEntry) -> dict[str, str]:
+def _branch_outputs_by_model(entry: ApplicationBraidResult) -> dict[str, str]:
     outputs = {
         "sl2_fundamental": "not_selected",
         "sl2_3d_9x9": "not_selected",
@@ -178,11 +176,11 @@ def _branch_outputs_by_model(entry: MultiBranchBenchmarkEntry) -> dict[str, str]
     branch_to_model = {spec.branch_id: model_id for model_id, spec in WORKBENCH_MODEL_SPECS.items()}
     for branch_result in entry.branch_results:
         model_id = branch_to_model[branch_result.branch_id]
-        outputs[model_id] = str(sp.simplify(branch_result.primary_output))
+        outputs[model_id] = branch_result.primary_output or "not available"
     return outputs
 
 
-def _entry_branch_results_by_model(entry: MultiBranchBenchmarkEntry) -> dict[str, InvariantBranchResult]:
+def _entry_branch_results_by_model(entry: ApplicationBraidResult) -> dict[str, ApplicationBranchResult]:
     branch_to_model = {spec.branch_id: model_id for model_id, spec in WORKBENCH_MODEL_SPECS.items()}
     return {
         branch_to_model[result.branch_id]: result
@@ -211,11 +209,11 @@ def get_classification_description(classification: str) -> str:
 
 
 def evaluate_workbench_run(run_spec: ComparisonRunSpec) -> WorkbenchBatchRunResult:
-    single_entries: list[MultiBranchBenchmarkEntry] = []
+    single_entries: list[ApplicationBraidResult] = []
     single_rows: list[SingleBraidResultRow] = []
 
     for braid_spec in run_spec.batch.braids:
-        entry = evaluate_braid_word(
+        entry = evaluate_braid_result(
             braid_spec.to_braid_word(),
             branch_ids=run_spec.branch_ids,
             q=run_spec.q_parameter_expr,

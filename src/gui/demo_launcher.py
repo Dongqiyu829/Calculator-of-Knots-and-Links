@@ -14,21 +14,17 @@ import sympy as sp
 from src.braid.braid_word import BraidWord
 from src.catalog.braid_examples import get_braid_example
 from src.gui.braid_preview_renderer import render_braid_preview
-from src.invariants.branch_formatter import (
-    format_branch_result,
-    format_catalog_benchmark,
-    format_multibranch_entry,
+from src.services import (
+    ApplicationBraidResult,
+    ApplicationBranchResult,
+    application_braid_result_from_internal,
+    evaluate_braid_input_result,
+    filter_application_braid_result,
+    format_application_braid_result,
+    format_application_branch_result,
+    get_evaluation_branch,
+    serialize_application_braid_result,
 )
-from src.invariants.branch_results import InvariantBranchResult
-from src.invariants.multibranch_benchmark import MultiBranchBenchmarkEntry
-from src.invariants.sl2_3d_colored_jones_candidate import (
-    SL2_3D_KNOT_ATLAS_COMPARISON_RULE,
-    SL2_3D_KNOT_ATLAS_FIVE_ONE_RELATION,
-    SL2_3D_KNOT_ATLAS_SCOPE_NOTE,
-    SL2_3D_KNOT_ATLAS_TREFOIL_RELATION,
-    SL2_3D_KNOT_ATLAS_VERIFICATION_NOTE,
-)
-from src.services import get_evaluation_branch
 from src.services import braid_evaluation as braid_service
 
 
@@ -97,12 +93,8 @@ PROGRAM_STATUS_TEXT = (
     "- Jones / sl2 fundamental: current Jones-compatible branch.\n"
     "- sl3 fundamental: current formal sl3 comparison branch.\n"
     "- sl2 的3维表示下的9x9矩阵: colored Jones candidate branch with RT / quantum-trace candidate normalization.\n\n"
-    "Current Knot Atlas comparison wording:\n"
-    f"- {SL2_3D_KNOT_ATLAS_COMPARISON_RULE}\n"
-    f"- {SL2_3D_KNOT_ATLAS_TREFOIL_RELATION}\n"
-    f"- {SL2_3D_KNOT_ATLAS_FIVE_ONE_RELATION}\n"
-    f"- {SL2_3D_KNOT_ATLAS_SCOPE_NOTE}\n"
-    f"- {SL2_3D_KNOT_ATLAS_VERIFICATION_NOTE}\n\n"
+    "Current candidate-branch guidance:\n"
+    f"- {get_evaluation_branch('sl2_spin1').user_note}\n\n"
     "The GUI is only a frontend over the existing evaluator. It does not add new normalization rules by itself."
 )
 
@@ -160,7 +152,7 @@ def evaluate_gui_example(
     *,
     branch_ids: tuple[str, ...] | list[str] | None = None,
     q: sp.Expr | None = None,
-) -> MultiBranchBenchmarkEntry:
+) -> Any:
     """Compatibility adapter for shared catalog evaluation."""
 
     return braid_service.evaluate_catalog_example(example_label, branch_ids=branch_ids, q=q)
@@ -171,7 +163,7 @@ def evaluate_gui_braid_word(
     *,
     branch_ids: tuple[str, ...] | list[str] | None = None,
     q: sp.Expr | None = None,
-) -> MultiBranchBenchmarkEntry:
+) -> Any:
     """Compatibility adapter for shared arbitrary-braid evaluation."""
 
     return braid_service.evaluate_braid_word(braid_word, branch_ids=branch_ids, q=q)
@@ -183,7 +175,7 @@ def evaluate_gui_custom_braid(
     *,
     branch_ids: tuple[str, ...] | list[str] | None = None,
     q: sp.Expr | None = None,
-) -> MultiBranchBenchmarkEntry:
+) -> Any:
     """Compatibility adapter for shared custom-braid evaluation."""
 
     return braid_service.evaluate_custom_braid(num_strands, generator_text, branch_ids=branch_ids, q=q)
@@ -206,17 +198,17 @@ def evaluate_gui_active_braid(
     *,
     branch_ids: tuple[str, ...] | list[str] | None = None,
     q: sp.Expr | None = None,
-) -> MultiBranchBenchmarkEntry:
+) -> Any:
     """Compatibility adapter for shared input-state evaluation."""
 
     return braid_service.evaluate_braid_input(active_braid, branch_ids=branch_ids, q=q)
 
 
-def _braid_word_from_entry(entry: MultiBranchBenchmarkEntry) -> BraidWord:
+def _braid_word_from_entry(entry: Any) -> BraidWord:
     return braid_service.braid_word_from_entry(entry)
 
 
-def build_active_braid_state_from_entry(entry: MultiBranchBenchmarkEntry) -> GuiActiveBraidState:
+def build_active_braid_state_from_entry(entry: Any) -> GuiActiveBraidState:
     """Recover the shared input state from one evaluated entry for rendering."""
 
     return braid_service.braid_input_from_entry(entry)
@@ -269,31 +261,27 @@ def build_active_braid_summary(
 
 
 def filter_entry_by_branch_ids(
-    entry: MultiBranchBenchmarkEntry,
+    entry: Any,
     branch_ids: tuple[str, ...] | list[str],
-) -> MultiBranchBenchmarkEntry:
+) -> Any:
     """Filter one multi-branch entry down to the branch ids currently visible in the GUI."""
 
     selected = set(branch_ids)
-    return MultiBranchBenchmarkEntry(
-        example_label=entry.example_label,
-        branch_results=tuple(result for result in entry.branch_results if result.branch_id in selected),
-        notes=entry.notes,
-        metadata=dict(entry.metadata),
-    )
+    return braid_service.filter_legacy_entry_by_branch_ids(entry, selected)
 
 
-def render_entry_report(entry: MultiBranchBenchmarkEntry, *, view_mode: str = "formatter") -> str:
+def render_entry_report(entry: Any, *, view_mode: str = "formatter") -> str:
     """Render one entry either as formatter text or raw structured data."""
 
+    result = application_braid_result_from_internal(entry)
     if view_mode == "formatter":
-        return format_catalog_benchmark((entry,))
+        return format_application_braid_result(result)
     if view_mode == "raw":
-        return json.dumps(entry.to_dict(), indent=2, ensure_ascii=False)
+        return serialize_application_braid_result(result)
     raise ValueError(f"Unknown GUI view mode: {view_mode}")
 
 
-def build_entry_summary(entry: MultiBranchBenchmarkEntry) -> str:
+def build_entry_summary(entry: Any) -> str:
     """Build a short summary block for the current GUI selection."""
 
     active_braid = build_active_braid_state_from_entry(entry)
@@ -304,10 +292,7 @@ def build_entry_summary(entry: MultiBranchBenchmarkEntry) -> str:
             "- Jones-compatible polynomial: read the primary output in Jones / sl2 fundamental.",
             "- sl3 comparison output: read the primary output in sl3 fundamental.",
             "- sl2 3D candidate output: read the primary output in sl2 的3维表示下的9x9矩阵.",
-            f"- {SL2_3D_KNOT_ATLAS_COMPARISON_RULE}",
-            f"- {SL2_3D_KNOT_ATLAS_TREFOIL_RELATION}",
-            f"- {SL2_3D_KNOT_ATLAS_FIVE_ONE_RELATION}",
-            f"- {SL2_3D_KNOT_ATLAS_VERIFICATION_NOTE}",
+            f"- {get_evaluation_branch('sl2_spin1').user_note}",
         ),
     )
 
@@ -324,7 +309,7 @@ class DemoLauncherApp:
         self.custom_generators_var = tk.StringVar(value="")
         self.view_mode_var = tk.StringVar(value="formatter")
         self.status_var = tk.StringVar(value="Ready.")
-        self.entry_cache: dict[str, MultiBranchBenchmarkEntry] = {}
+        self.entry_cache: dict[str, ApplicationBraidResult] = {}
         self.branch_vars = {
             spec.branch_id: tk.BooleanVar(value=True)
             for spec in get_gui_branch_specs()
@@ -338,8 +323,8 @@ class DemoLauncherApp:
         self.overview_container: ttk.Frame
         self.main_canvas: tk.Canvas
         self._main_window_item: int
-        self.current_full_entry: MultiBranchBenchmarkEntry | None = None
-        self.current_visible_entry: MultiBranchBenchmarkEntry | None = None
+        self.current_full_entry: ApplicationBraidResult | None = None
+        self.current_visible_entry: ApplicationBraidResult | None = None
         self.current_active_braid: GuiActiveBraidState | None = None
         self._configure_styles()
         self._build_ui()
@@ -757,13 +742,13 @@ class DemoLauncherApp:
             return f"catalog:{self.example_var.get()}:{enabled_branch_ids}"
         return f"custom:{self.custom_num_strands_var.get()}:{parse_generator_text(self.custom_generators_var.get())}:{enabled_branch_ids}"
 
-    def _get_current_entry(self) -> MultiBranchBenchmarkEntry:
+    def _get_current_entry(self) -> ApplicationBraidResult:
         enabled_branch_ids = self._enabled_branch_ids()
         if self.input_mode_var.get() == "catalog":
             active_braid = build_catalog_active_braid_state(self.example_var.get())
             cache_key = f"catalog:{active_braid.source_label}:{enabled_branch_ids}"
             if cache_key not in self.entry_cache:
-                self.entry_cache[cache_key] = evaluate_gui_active_braid(active_braid, branch_ids=enabled_branch_ids, q=self.q)
+                self.entry_cache[cache_key] = evaluate_braid_input_result(active_braid, branch_ids=enabled_branch_ids, q=self.q)
             return self.entry_cache[cache_key]
 
         active_braid = build_custom_active_braid_state(
@@ -776,10 +761,10 @@ class DemoLauncherApp:
             # GUI data flow:
             # 1. user chooses catalog mode or custom mode
             # 2. GUI converts the active input into a BraidWord or built-in example
-            # 3. GUI asks the multibranch evaluator for one MultiBranchBenchmarkEntry
-            # 4. GUI filters branch_results by the current toggle state
+            # 3. GUI asks the application service for one frontend-neutral result DTO
+            # 4. GUI filters DTO branch results by the current toggle state
             # 5. GUI renders cards plus formatter/raw report text
-            self.entry_cache[cache_key] = evaluate_gui_active_braid(active_braid, branch_ids=enabled_branch_ids, q=self.q)
+            self.entry_cache[cache_key] = evaluate_braid_input_result(active_braid, branch_ids=enabled_branch_ids, q=self.q)
         return self.entry_cache[cache_key]
 
     def _refresh_view(self, *, show_errors: bool) -> None:
@@ -798,12 +783,25 @@ class DemoLauncherApp:
             return
         self.status_var.set("No evaluated result is available yet. Click Evaluate to compute invariants.")
 
-    def _render_entry(self, entry: MultiBranchBenchmarkEntry) -> None:
+    def _render_entry(self, entry: ApplicationBraidResult) -> None:
         visible_branch_ids = self._enabled_branch_ids()
-        filtered_entry = filter_entry_by_branch_ids(entry, visible_branch_ids)
+        filtered_entry = filter_application_braid_result(entry, visible_branch_ids)
         self.current_full_entry = entry
         self.current_visible_entry = filtered_entry
-        self.current_active_braid = build_active_braid_state_from_entry(entry)
+        self.current_active_braid = GuiActiveBraidState(
+            source_mode=entry.source_mode,
+            source_label=entry.example_label,
+            braid_word=BraidWord.from_iterable(
+                num_strands=entry.num_strands,
+                generators=entry.generators,
+                label=entry.example_label,
+                notes=entry.notes,
+            ),
+            notes=entry.notes,
+            expected_components=entry.metadata.get("expected_components"),
+            expected_crossing_count=entry.metadata.get("expected_crossing_count"),
+            metadata=dict(entry.metadata),
+        )
         self._render_polynomial_overview(filtered_entry.branch_results)
         self._render_active_braid_preview(self.current_active_braid)
         self._update_summary_area(entry)
@@ -815,13 +813,13 @@ class DemoLauncherApp:
         else:
             self.status_var.set(f"Loaded {entry.example_label}. No branches selected for display.")
 
-    def _update_summary_area(self, entry: MultiBranchBenchmarkEntry) -> None:
-        summary = build_entry_summary(entry)
+    def _update_summary_area(self, entry: ApplicationBraidResult) -> None:
+        summary = build_active_braid_summary(self.current_active_braid, footer_lines=(get_evaluation_branch("sl2_spin1").user_note,))
         self.summary_text.delete("1.0", tk.END)
         self.summary_text.insert(tk.END, summary)
         self.summary_text.see("1.0")
 
-    def _render_result_cards(self, branch_results: tuple[InvariantBranchResult, ...]) -> None:
+    def _render_result_cards(self, branch_results: tuple[ApplicationBranchResult, ...]) -> None:
         for child in self.cards_container.winfo_children():
             child.destroy()
 
@@ -845,7 +843,7 @@ class DemoLauncherApp:
             card.pack(fill=tk.X, expand=True, pady=(0, 10))
             self._populate_branch_card(card, branch_result)
 
-    def _populate_branch_card(self, card: ttk.LabelFrame, branch_result: InvariantBranchResult) -> None:
+    def _populate_branch_card(self, card: ttk.LabelFrame, branch_result: ApplicationBranchResult) -> None:
         branch_spec = self._get_branch_spec(branch_result.branch_id)
         description_panel = tk.Frame(card, bg=SURFACE_SUBTLE, highlightbackground=BORDER_COLOR, highlightthickness=1)
         description_panel.pack(fill=tk.X, pady=(0, 10))
@@ -958,7 +956,7 @@ class DemoLauncherApp:
         ttk.Button(
             toolbar,
             text="Copy branch report",
-            command=lambda current=branch_result: self._copy_to_clipboard(format_branch_result(current), "Branch report copied."),
+            command=lambda current=branch_result: self._copy_to_clipboard(format_application_branch_result(current), "Branch report copied."),
             style="Secondary.TButton",
         ).pack(side=tk.LEFT)
 
@@ -982,8 +980,8 @@ class DemoLauncherApp:
         if self.current_visible_entry is not None:
             self._update_report_area(self.current_visible_entry)
 
-    def _update_report_area(self, entry: MultiBranchBenchmarkEntry) -> None:
-        report = render_entry_report(entry, view_mode=self.view_mode_var.get())
+    def _update_report_area(self, entry: ApplicationBraidResult) -> None:
+        report = format_application_braid_result(entry) if self.view_mode_var.get() == "formatter" else serialize_application_braid_result(entry)
         self.report_text.delete("1.0", tk.END)
         self.report_text.insert(tk.END, report)
         self.report_text.see("1.0")
@@ -992,7 +990,7 @@ class DemoLauncherApp:
         if self.current_visible_entry is None:
             return
         self._copy_to_clipboard(
-            render_entry_report(self.current_visible_entry, view_mode=self.view_mode_var.get()),
+            format_application_braid_result(self.current_visible_entry) if self.view_mode_var.get() == "formatter" else serialize_application_braid_result(self.current_visible_entry),
             "Current report copied.",
         )
 
@@ -1045,7 +1043,7 @@ class DemoLauncherApp:
         ).pack(anchor=tk.W, fill=tk.X, pady=8)
         self.status_var.set(message)
 
-    def _render_polynomial_overview(self, branch_results: tuple[InvariantBranchResult, ...]) -> None:
+    def _render_polynomial_overview(self, branch_results: tuple[ApplicationBranchResult, ...]) -> None:
         for child in self.overview_container.winfo_children():
             child.destroy()
 
