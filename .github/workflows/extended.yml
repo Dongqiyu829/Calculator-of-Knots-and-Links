@@ -1,16 +1,15 @@
-name: CI
+name: Extended tests
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1"
 
 permissions:
   contents: read
 
 jobs:
-  fast-core:
+  recovered-suite:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -24,8 +23,5 @@ jobs:
       - name: Install project and test dependencies
         run: python -m pip install --upgrade pip -e ".[test]"
 
-      - name: Run fast core regression tests
-        run: python -m pytest -q -m "not slow and not gui"
-
-      - name: Compile recovered Python source
-        run: python -m compileall -q src examples
+      - name: Run complete recovered suite
+        run: xvfb-run -a python -m pytest -q

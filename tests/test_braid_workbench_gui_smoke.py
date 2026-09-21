@@ -18,6 +18,12 @@ from src.gui.braid_workbench import (
 
 
 class TestBraidWorkbenchGuiSmoke(unittest.TestCase):
+    def _create_tk_root(self) -> tk.Tk:
+        try:
+            return tk.Tk()
+        except tk.TclError as exc:
+            self.skipTest(f"Tk is unavailable in this test environment: {exc}")
+
     def test_workbench_example_labels_include_standard_examples(self) -> None:
         labels = get_workbench_example_labels()
         self.assertIn("trefoil", labels)
@@ -39,7 +45,7 @@ class TestBraidWorkbenchGuiSmoke(unittest.TestCase):
         self.assertTrue(hasattr(BraidWorkbenchApp, "_append_current_results_to_log"))
 
     def test_loading_builtin_example_updates_manual_card(self) -> None:
-        root = tk.Tk()
+        root = self._create_tk_root()
         root.withdraw()
         try:
             app = BraidWorkbenchApp(root)
@@ -53,7 +59,7 @@ class TestBraidWorkbenchGuiSmoke(unittest.TestCase):
             root.destroy()
 
     def test_manual_batch_run_populates_unified_results_tables(self) -> None:
-        root = tk.Tk()
+        root = self._create_tk_root()
         root.withdraw()
         try:
             app = BraidWorkbenchApp(root)
@@ -68,7 +74,7 @@ class TestBraidWorkbenchGuiSmoke(unittest.TestCase):
             root.destroy()
 
     def test_json_batch_run_uses_same_results_pipeline(self) -> None:
-        root = tk.Tk()
+        root = self._create_tk_root()
         root.withdraw()
         try:
             app = BraidWorkbenchApp(root)
@@ -93,7 +99,7 @@ class TestBraidWorkbenchGuiSmoke(unittest.TestCase):
             root.destroy()
 
     def test_current_results_can_be_added_to_log_with_manual_source(self) -> None:
-        root = tk.Tk()
+        root = self._create_tk_root()
         root.withdraw()
         try:
             app = BraidWorkbenchApp(root)
@@ -106,7 +112,7 @@ class TestBraidWorkbenchGuiSmoke(unittest.TestCase):
             root.destroy()
 
     def test_display_mode_switch_keeps_manual_preview_renderable(self) -> None:
-        root = tk.Tk()
+        root = self._create_tk_root()
         root.withdraw()
         try:
             app = BraidWorkbenchApp(root)

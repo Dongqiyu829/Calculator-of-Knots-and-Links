@@ -27,18 +27,19 @@ See:
 - `src/` — recovered mathematical engine, benchmark layers, and Tkinter workbench
 - `examples/` — historical CLI/demo/GUI entry scripts
 - `data/` — historical benchmark registries
-- `tests/` — historical tests plus archive-integrity regression tests
+- `tests/` — historical tests, archive-integrity regression tests, and non-interactive entrypoint smoke tests
 - `archive/report_bundle.zip` — original snapshot retained as recovery evidence
 - `CITATION.cff` — citation metadata
 
-Run the currently available recovery tests with:
+Install the recovered package and its test dependencies with:
 
 ```bash
-python -m pytest
+python -m pip install -e ".[test]"
 ```
 
-Historical entry points and benchmark reproduction commands are documented in
-`docs/AUTHORITATIVE_RECOVERY.md`.
+Test tiers, CI behavior, and headless GUI instructions are documented in
+`docs/TESTING.md`. Historical entry points and benchmark reproduction commands
+are documented in `docs/AUTHORITATIVE_RECOVERY.md`.
 
 ## Development principle
 

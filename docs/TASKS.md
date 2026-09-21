@@ -19,12 +19,13 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 
 ## M1 — Baseline and tests
 
-- [ ] Create a minimal `pyproject.toml`.
-- [ ] Introduce a `src/` layout only after existing imports and entry points are understood.
-- [ ] Add pytest.
+- [x] Create a minimal `pyproject.toml` with runtime and test dependencies.
+- [x] Confirm the recovered `src` import package and retain it without a style-only move.
+- [x] Add explicit pytest configuration and test tiers.
 - [ ] Convert additional known-good calculations into executable regression tests. Stored q=2/3/5 and symbolic outputs remain frozen as archive-backed fixtures.
 - [ ] Record expected outputs for representative knots/links and braid words.
-- [ ] Add smoke tests for all current entry points.
+- [x] Add non-interactive smoke tests for the principal current executable entry points.
+- [x] Keep fast/core, GUI smoke, and slow/extended mathematical test coverage separately runnable and documented.
 
 ## M2 — Core refactor
 
