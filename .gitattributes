@@ -1,6 +1,6 @@
-# Keep source and documentation reproducible across checkout platforms.  The
-# archived Windows snapshot retains its original CRLF bytes; comparisons with
-# the live tree normalize line endings and still verify the archive hash.
+# Keep source and documentation reproducible across checkout platforms. The
+# archived Windows snapshot retains its original CRLF bytes; source comparisons
+# normalize CRLF/LF while the archive itself is verified by exact SHA-256.
 *.py text eol=lf
 *.md text eol=lf
 *.json text eol=lf

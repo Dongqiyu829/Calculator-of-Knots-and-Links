@@ -98,3 +98,12 @@ A task is complete only when:
 - documentation matches reality
 - application entry points still launch
 - no mathematical convention changed silently
+
+
+## Autopilot mode
+
+This repository may be operated in autonomous agent mode.
+
+When instructed to run autonomously, follow `docs/AUTOPILOT.md`. Continue through the highest-priority unblocked tasks without repeatedly asking the owner for routine implementation decisions.
+
+Never use autonomy as permission to guess unresolved mathematical conventions. The stop/escalation rules in `docs/AUTOPILOT.md` are mandatory.
