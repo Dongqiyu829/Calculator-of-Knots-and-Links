@@ -12,7 +12,6 @@ from typing import Any
 import sympy as sp
 
 from src.braid.braid_word import BraidWord
-from src.catalog.braid_examples import get_braid_example
 from src.gui.braid_preview_renderer import render_braid_preview
 from src.services import (
     ApplicationBraidResult,
@@ -23,6 +22,7 @@ from src.services import (
     format_application_braid_result,
     format_application_branch_result,
     get_evaluation_branch,
+    get_catalog_example,
     serialize_application_braid_result,
 )
 from src.services import braid_evaluation as braid_service
@@ -720,7 +720,7 @@ class DemoLauncherApp:
         )
 
     def _load_example_into_custom(self) -> None:
-        example = get_braid_example(self.example_var.get())
+        example = get_catalog_example(self.example_var.get())
         self.custom_num_strands_var.set(example.num_strands)
         self.custom_generators_var.set(" ".join(str(item) for item in example.generators))
         self.input_mode_var.set("custom")

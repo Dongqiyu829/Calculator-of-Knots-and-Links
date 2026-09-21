@@ -61,3 +61,18 @@ def test_workbench_modules_do_not_import_branch_evaluators() -> None:
                 if imported_evaluators:
                     violations.append(f"{path.relative_to(PROJECT_ROOT).as_posix()}: {sorted(imported_evaluators)}")
     assert violations == []
+
+
+def test_maintained_frontends_use_the_service_for_catalog_access() -> None:
+    frontend_paths = (
+        PROJECT_ROOT / "src" / "gui" / "demo_launcher.py",
+        PROJECT_ROOT / "src" / "gui" / "braid_workbench_app.py",
+        PROJECT_ROOT / "src" / "gui" / "braid_workbench.py",
+    )
+    violations = []
+    for path in frontend_paths:
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith("src.catalog"):
+                violations.append(path.relative_to(PROJECT_ROOT).as_posix())
+    assert violations == []

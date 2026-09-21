@@ -8,6 +8,7 @@ from .branch_catalog import (
     get_evaluation_model,
     list_evaluation_branches,
 )
+from .catalog_examples import ApplicationCatalogExample, get_catalog_example, list_catalog_examples
 
 from .braid_evaluation import (
     BraidInputState,
@@ -48,6 +49,7 @@ __all__ = [
     "ApplicationServiceError",
     "ApplicationBraidResult",
     "ApplicationBranchResult",
+    "ApplicationCatalogExample",
     "BraidInputError",
     "BraidInputState",
     "BraidInputValidationError",
@@ -76,6 +78,8 @@ __all__ = [
     "format_application_branch_result",
     "get_evaluation_branch",
     "get_evaluation_model",
+    "get_catalog_example",
+    "list_catalog_examples",
     "list_evaluation_branches",
     "parse_generator_text",
     "serialize_application_braid_result",

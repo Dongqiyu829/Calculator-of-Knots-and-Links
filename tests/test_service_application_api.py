@@ -8,15 +8,18 @@ import src.services as services
 from src.gui.demo_launcher import get_gui_branch_specs
 from src.services import (
     BraidInputValidationError,
+    build_catalog_braid_input,
     GeneratorParseError,
     UnknownCatalogExampleError,
     UnknownEvaluationBranchError,
     UnknownEvaluationModelError,
     build_custom_braid_word,
     evaluate_catalog_example,
+    get_catalog_example,
     get_evaluation_branch,
     get_evaluation_model,
     list_evaluation_branches,
+    list_catalog_examples,
     parse_generator_text,
 )
 from src.workbench.specs import WORKBENCH_DEFAULT_MODELS, WORKBENCH_MODEL_SPECS
@@ -27,6 +30,7 @@ def test_supported_service_api_is_explicit_and_narrow() -> None:
         "ApplicationServiceError",
         "ApplicationBraidResult",
         "ApplicationBranchResult",
+        "ApplicationCatalogExample",
         "BraidInputError",
         "BraidInputState",
         "BraidInputValidationError",
@@ -55,6 +59,8 @@ def test_supported_service_api_is_explicit_and_narrow() -> None:
         "format_application_branch_result",
         "get_evaluation_branch",
         "get_evaluation_model",
+        "get_catalog_example",
+        "list_catalog_examples",
         "list_evaluation_branches",
         "parse_generator_text",
         "serialize_application_braid_result",
@@ -75,6 +81,28 @@ def test_branch_catalog_is_the_shared_source_for_workbench_and_gui() -> None:
         gui_spec = gui_specs[descriptor.branch_id]
         assert gui_spec.title == descriptor.display_name
         assert gui_spec.subtitle == descriptor.user_note
+
+
+def test_catalog_examples_are_available_through_the_application_facade() -> None:
+    examples = list_catalog_examples()
+    trefoil = get_catalog_example("trefoil")
+
+    assert [example.label for example in examples] == [
+        "unknot_1", "unlink_2", "unknot_2", "hopf_link", "trefoil", "figure_eight", "unlink_3", "three_strand_trefoil"
+    ]
+    assert trefoil in examples
+    assert trefoil.to_dict() == {
+        "label": "trefoil",
+        "num_strands": 2,
+        "generators": [1, 1, 1],
+        "word_string": "sigma_1 sigma_1 sigma_1",
+        "notes": "Closure of sigma_1 cubed on two strands, i.e. the standard positive trefoil T(2, 3).",
+        "expected_components": 1,
+        "expected_crossing_count": 3,
+        "metadata": {},
+    }
+    selected_input = build_catalog_braid_input(trefoil.label)
+    assert (selected_input.source_label, selected_input.braid_word.generators) == (trefoil.label, trefoil.generators)
 
 
 def test_service_translates_frontend_input_errors() -> None:
