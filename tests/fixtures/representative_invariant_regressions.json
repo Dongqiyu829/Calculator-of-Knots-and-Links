@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "provenance": "authoritative recovered implementation regression",
+  "purpose": "Compatibility baseline for the recovered program, not an external mathematical reference.",
+  "cases": [
+    {"example_label": "unknot_1", "num_strands": 1, "generators": [], "branch": "sl2_fundamental", "q_mode": "2", "expected_expression": "1", "branch_status": "formal", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "unknot_1", "num_strands": 1, "generators": [], "branch": "sl2_spin1", "q_mode": "2", "expected_expression": "1", "branch_status": "candidate", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "unknot_1", "num_strands": 1, "generators": [], "branch": "sl3_fundamental", "q_mode": "2", "expected_expression": "21/4", "branch_status": "formal", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "unlink_2", "num_strands": 2, "generators": [], "branch": "sl2_fundamental", "q_mode": "2", "expected_expression": "5/2", "branch_status": "formal", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "unlink_2", "num_strands": 2, "generators": [], "branch": "sl2_spin1", "q_mode": "2", "expected_expression": "21/4", "branch_status": "candidate", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "unlink_2", "num_strands": 2, "generators": [], "branch": "sl3_fundamental", "q_mode": "2", "expected_expression": "441/16", "branch_status": "formal", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "unknot_2", "num_strands": 2, "generators": [1], "branch": "sl2_fundamental", "q_mode": "2", "expected_expression": "1", "branch_status": "formal", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "unknot_2", "num_strands": 2, "generators": [1], "branch": "sl2_spin1", "q_mode": "2", "expected_expression": "4", "branch_status": "candidate", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "unknot_2", "num_strands": 2, "generators": [1], "branch": "sl3_fundamental", "q_mode": "2", "expected_expression": "21/4", "branch_status": "formal", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "hopf_link", "num_strands": 2, "generators": [1, 1], "branch": "sl2_fundamental", "q_mode": "2", "expected_expression": "17/32", "branch_status": "formal", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "hopf_link", "num_strands": 2, "generators": [1, 1], "branch": "sl2_spin1", "q_mode": "2", "expected_expression": "4161/1024", "branch_status": "candidate", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "hopf_link", "num_strands": 2, "generators": [1, 1], "branch": "sl3_fundamental", "q_mode": "2", "expected_expression": "1449/1024", "branch_status": "formal", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "trefoil", "num_strands": 2, "generators": [1, 1, 1], "branch": "sl2_fundamental", "q_mode": "2", "expected_expression": "67/256", "branch_status": "formal", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "trefoil", "num_strands": 2, "generators": [1, 1, 1], "branch": "sl2_spin1", "q_mode": "2", "expected_expression": "266029/65536", "branch_status": "candidate", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "trefoil", "num_strands": 2, "generators": [1, 1, 1], "branch": "sl3_fundamental", "q_mode": "2", "expected_expression": "5691/16384", "branch_status": "formal", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "figure_eight", "num_strands": 3, "generators": [1, -2, 1, -2], "branch": "sl2_fundamental", "q_mode": "2", "expected_expression": "205/16", "branch_status": "formal", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "figure_eight", "num_strands": 3, "generators": [1, -2, 1, -2], "branch": "sl2_spin1", "q_mode": "2", "expected_expression": "11987821/4096", "branch_status": "candidate", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "figure_eight", "num_strands": 3, "generators": [1, -2, 1, -2], "branch": "sl3_fundamental", "q_mode": "2", "expected_expression": "81669/256", "branch_status": "formal", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "three_strand_trefoil", "num_strands": 3, "generators": [1, 2, 1, 2], "branch": "sl2_fundamental", "q_mode": "2", "expected_expression": "67/256", "branch_status": "formal", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "three_strand_trefoil", "num_strands": 3, "generators": [1, 2, 1, 2], "branch": "sl2_spin1", "q_mode": "2", "expected_expression": "266029/16384", "branch_status": "candidate", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "three_strand_trefoil", "num_strands": 3, "generators": [1, 2, 1, 2], "branch": "sl3_fundamental", "q_mode": "2", "expected_expression": "5691/16384", "branch_status": "formal", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "unknot_1", "num_strands": 1, "generators": [], "branch": "sl2_fundamental", "q_mode": "symbolic_q", "expected_expression": "1", "branch_status": "formal", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "trefoil", "num_strands": 2, "generators": [1, 1, 1], "branch": "sl2_fundamental", "q_mode": "symbolic_q", "expected_expression": "(q**6 + q**2 - 1)/q**8", "branch_status": "formal", "provenance": "authoritative recovered implementation regression"},
+    {"example_label": "figure_eight", "num_strands": 3, "generators": [1, -2, 1, -2], "branch": "sl2_fundamental", "q_mode": "symbolic_q", "expected_expression": "(q**10 + 1)/(q**4*(q**2 + 1))", "branch_status": "formal", "provenance": "authoritative recovered implementation regression"}
+  ],
+  "equivalence_cases": [
+    {"left_example_label": "trefoil", "right_example_label": "three_strand_trefoil", "branch": "sl2_fundamental", "q_mode": "2", "branch_status": "formal", "provenance": "authoritative recovered implementation regression"},
+    {"left_example_label": "trefoil", "right_example_label": "three_strand_trefoil", "branch": "sl3_fundamental", "q_mode": "2", "branch_status": "formal", "provenance": "authoritative recovered implementation regression"}
+  ]
+}

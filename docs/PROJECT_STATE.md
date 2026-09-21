@@ -13,7 +13,7 @@ The repository should eventually support both:
 
 ## Current stage
 
-**Stage 1 — package and test baseline (established)**
+**Stage 1 — package and test baseline (complete)**
 
 The original ZIP remains at `archive/report_bundle.zip`. Issue #5 recovered the
 authoritative historical tree from `C:\cpp\comp2012\Quantum Group Knot` without
@@ -32,9 +32,10 @@ The archived P01 and P03 symbolic audit JSON outputs also reproduce exactly.
 ## Immediate objective
 
 Maintain the installable Python baseline and practical test tiers while retaining
-the recovered `src` package and its mathematical behavior. The remaining M1
-work is to broaden explicit regression cases and recorded reference outputs.
-Core/service/UI separation and any PySide6 work remain later milestones.
+the recovered `src` package and its mathematical behavior. M1 now includes a
+fixture-backed representative-output contract derived only from that recovered
+implementation. Core/service/UI separation and any PySide6 work remain later
+milestones.
 
 ## Architecture direction
 
@@ -97,5 +98,8 @@ Recovery status:
 
 The project now has explicit package metadata, runtime/test dependency groups,
 pytest configuration, and separate fast versus extended test workflows. The
-historical `src` package remains in place. M2 refactoring and PySide6 migration
-are not part of this milestone.
+historical `src` package remains in place. The representative q=2 outputs and
+the established symbolic sl2 cases are centralized in
+`tests/fixtures/representative_invariant_regressions.json`; see
+`docs/REPRESENTATIVE_REGRESSIONS.md` for scope and provenance. M2 refactoring
+and PySide6 migration are not part of this milestone.

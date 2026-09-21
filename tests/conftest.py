@@ -39,6 +39,7 @@ SLOW_TEST_FILES = frozenset(
         "test_sl2_3d_candidate_smoke.py",
         "test_sl2_3d_knot_atlas_correspondence.py",
         "test_sl2_jones_compatible_regression.py",
+        "test_representative_invariant_symbolic_regressions.py",
     }
 )
 
