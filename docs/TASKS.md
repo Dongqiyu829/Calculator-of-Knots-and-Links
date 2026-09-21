@@ -30,6 +30,7 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 ## M2 — Core refactor
 
 - [x] Extract a UI-independent application/service boundary for braid parsing and evaluation; workbench and Tkinter compatibility adapters now share it.
+- [x] Define the provisional application API, frontend-neutral branch catalog, and structured service errors for current frontends.
 - [ ] Separate remaining mathematical logic from scripts, notebooks, and GUI code.
 - [ ] Define a small stable public API.
 - [ ] Remove demo-specific hard-coding where safe.

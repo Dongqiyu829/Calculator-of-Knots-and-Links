@@ -9,17 +9,20 @@ from typing import Any
 import sympy as sp
 
 from src.braid.braid_word import BraidWord
-from src.invariants.sl2_3d_colored_jones_candidate import (
-    SL2_3D_KNOT_ATLAS_COMPARISON_RULE,
-    SL2_3D_KNOT_ATLAS_SCOPE_NOTE,
-    SL2_3D_KNOT_ATLAS_TREFOIL_RELATION,
-    SL2_3D_KNOT_ATLAS_VERIFICATION_NOTE,
+from src.services import (
+    BraidInputValidationError,
+    DEFAULT_EVALUATION_MODEL_IDS,
+    EvaluationBranchDescriptor,
+    UnknownEvaluationModelError,
+    branch_ids_for_models,
+    get_evaluation_model,
+    list_evaluation_branches,
 )
 
 
 WORKBENCH_COMPARISON_MODES = ("single", "pairwise", "all")
 WORKBENCH_ALLOWED_INPUT_SOURCES = ("manual", "json")
-WORKBENCH_DEFAULT_MODELS = ("sl2_fundamental", "sl2_3d_9x9", "sl3_fundamental")
+WORKBENCH_DEFAULT_MODELS = DEFAULT_EVALUATION_MODEL_IDS
 AI_JSON_TEMPLATE = json.dumps(
     {
         "q_parameter": "q",
@@ -49,37 +52,8 @@ AI_JSON_TEMPLATE = json.dumps(
 )
 
 
-@dataclass(frozen=True, slots=True)
-class WorkbenchModelSpec:
-    model_id: str
-    branch_id: str
-    display_name: str
-    branch_note: str
-
-
-WORKBENCH_MODEL_SPECS = {
-    "sl2_fundamental": WorkbenchModelSpec(
-        model_id="sl2_fundamental",
-        branch_id="sl2_fundamental",
-        display_name="Jones / sl2 fundamental",
-        branch_note="formal Jones-compatible branch",
-    ),
-    "sl2_3d_9x9": WorkbenchModelSpec(
-        model_id="sl2_3d_9x9",
-        branch_id="sl2_spin1",
-        display_name="sl2 的3维表示下的9x9矩阵",
-        branch_note=(
-            "colored Jones candidate branch; currently compared against Knot Atlas n=2 data, with trefoil calibrated by "
-            "q^6 J_2(3_1; q^2); 5_2 remains under verification; not theorem-level final conclusion"
-        ),
-    ),
-    "sl3_fundamental": WorkbenchModelSpec(
-        model_id="sl3_fundamental",
-        branch_id="sl3_fundamental",
-        display_name="sl3 fundamental",
-        branch_note="formal sl3 branch",
-    ),
-}
+WorkbenchModelSpec = EvaluationBranchDescriptor
+WORKBENCH_MODEL_SPECS = {descriptor.model_id: descriptor for descriptor in list_evaluation_branches()}
 
 
 @dataclass(frozen=True, slots=True)
@@ -127,10 +101,10 @@ class ComparisonRunSpec:
 
     @property
     def branch_ids(self) -> tuple[str, ...]:
-        return tuple(WORKBENCH_MODEL_SPECS[model_id].branch_id for model_id in self.models)
+        return branch_ids_for_models(self.models)
 
 
-class WorkbenchInputValidationError(ValueError):
+class WorkbenchInputValidationError(BraidInputValidationError):
     """Raised when manual or JSON workbench input fails validation."""
 
 
@@ -162,11 +136,13 @@ def parse_workbench_q_parameter_value(parameter_value: Any) -> tuple[sp.Expr, st
 def _validate_models(models: tuple[str, ...]) -> tuple[str, ...]:
     if not models:
         raise WorkbenchInputValidationError("models must contain at least one allowed model id.")
-    invalid = [model_id for model_id in models if model_id not in WORKBENCH_MODEL_SPECS]
-    if invalid:
+    try:
+        for model_id in models:
+            get_evaluation_model(model_id)
+    except UnknownEvaluationModelError as exc:
         raise WorkbenchInputValidationError(
-            "Invalid model id(s): " + ", ".join(invalid) + ". Allowed values: " + ", ".join(WORKBENCH_MODEL_SPECS)
-        )
+            "Invalid model id(s): " + str(exc)
+        ) from exc
     ordered_unique: list[str] = []
     for model_id in models:
         if model_id not in ordered_unique:

@@ -17,6 +17,9 @@ from src.catalog.braid_examples import get_braid_example
 from src.invariants.branch_registry import evaluate_current_branches
 from src.invariants.multibranch_benchmark import MultiBranchBenchmarkEntry
 
+from .branch_catalog import validate_branch_ids
+from .errors import BraidInputValidationError, GeneratorParseError, UnknownCatalogExampleError
+
 
 @dataclass(frozen=True, slots=True)
 class BraidInputState:
@@ -34,6 +37,8 @@ class BraidInputState:
 def parse_generator_text(generator_text: str) -> tuple[int, ...]:
     """Parse a space- or comma-separated sequence of signed Artin generators."""
 
+    if not isinstance(generator_text, str):
+        raise GeneratorParseError("Generators must be supplied as text containing integers such as 1 1 -2.")
     cleaned = generator_text.replace(",", " ").strip()
     if not cleaned:
         return ()
@@ -41,7 +46,7 @@ def parse_generator_text(generator_text: str) -> tuple[int, ...]:
     try:
         return tuple(int(token) for token in tokens)
     except ValueError as exc:
-        raise ValueError("Generators must be integers such as 1 1 -2.") from exc
+        raise GeneratorParseError("Generators must be integers such as 1 1 -2.") from exc
 
 
 def build_custom_braid_word(
@@ -53,13 +58,18 @@ def build_custom_braid_word(
 ) -> BraidWord:
     """Build the recovered validated custom-braid input without evaluating it."""
 
-    return BraidWord.from_iterable(
-        num_strands=num_strands,
-        generators=parse_generator_text(generator_text),
-        label=label,
-        notes=notes,
-        metadata={"input_mode": "custom_gui"},
-    )
+    try:
+        return BraidWord.from_iterable(
+            num_strands=num_strands,
+            generators=parse_generator_text(generator_text),
+            label=label,
+            notes=notes,
+            metadata={"input_mode": "custom_gui"},
+        )
+    except GeneratorParseError:
+        raise
+    except ValueError as exc:
+        raise BraidInputValidationError(str(exc)) from exc
 
 
 def evaluate_catalog_example(
@@ -70,10 +80,14 @@ def evaluate_catalog_example(
 ) -> MultiBranchBenchmarkEntry:
     """Evaluate one catalog example through the selected existing branches."""
 
-    example = get_braid_example(example_label)
+    try:
+        example = get_braid_example(example_label)
+    except KeyError as exc:
+        raise UnknownCatalogExampleError(f"Unknown catalog example '{example_label}'.") from exc
+    selected_branch_ids = validate_branch_ids(branch_ids)
     return MultiBranchBenchmarkEntry(
         example_label=example.label,
-        branch_results=tuple(evaluate_current_branches(example, branch_ids=branch_ids, q=q)),
+        branch_results=tuple(evaluate_current_branches(example, branch_ids=selected_branch_ids, q=q)),
         notes=example.notes,
         metadata={
             "input_mode": "catalog",
@@ -81,7 +95,7 @@ def evaluate_catalog_example(
             "expected_components": example.expected_components,
             "expected_crossing_count": example.expected_crossing_count,
             "example_metadata": dict(example.metadata),
-            "selected_branch_ids": list(branch_ids) if branch_ids is not None else None,
+            "selected_branch_ids": list(selected_branch_ids) if selected_branch_ids is not None else None,
         },
     )
 
@@ -94,14 +108,15 @@ def evaluate_braid_word(
 ) -> MultiBranchBenchmarkEntry:
     """Evaluate one arbitrary validated braid word through selected branches."""
 
+    selected_branch_ids = validate_branch_ids(branch_ids)
     return MultiBranchBenchmarkEntry(
         example_label=braid_word.label or "custom_braid",
-        branch_results=tuple(evaluate_current_branches(braid_word, branch_ids=branch_ids, q=q)),
+        branch_results=tuple(evaluate_current_branches(braid_word, branch_ids=selected_branch_ids, q=q)),
         notes=braid_word.notes,
         metadata={
             "input_mode": "custom",
             "braid_word": braid_word.to_dict(),
-            "selected_branch_ids": list(branch_ids) if branch_ids is not None else None,
+            "selected_branch_ids": list(selected_branch_ids) if selected_branch_ids is not None else None,
         },
     )
 
@@ -121,7 +136,10 @@ def evaluate_custom_braid(
 def build_catalog_braid_input(example_label: str) -> BraidInputState:
     """Return reusable source metadata for one catalog braid input."""
 
-    example = get_braid_example(example_label)
+    try:
+        example = get_braid_example(example_label)
+    except KeyError as exc:
+        raise UnknownCatalogExampleError(f"Unknown catalog example '{example_label}'.") from exc
     return BraidInputState(
         source_mode="catalog",
         source_label=example.label,
@@ -158,7 +176,7 @@ def evaluate_braid_input(
         return evaluate_catalog_example(braid_input.source_label, branch_ids=branch_ids, q=q)
     if braid_input.source_mode == "custom":
         return evaluate_braid_word(braid_input.braid_word, branch_ids=branch_ids, q=q)
-    raise ValueError(f"Unknown braid input source mode: {braid_input.source_mode}")
+    raise BraidInputValidationError(f"Unknown braid input source mode: {braid_input.source_mode}")
 
 
 def braid_word_from_entry(entry: MultiBranchBenchmarkEntry) -> BraidWord:
@@ -168,7 +186,7 @@ def braid_word_from_entry(entry: MultiBranchBenchmarkEntry) -> BraidWord:
         return entry.branch_results[0].braid_word
     braid_word_data = entry.metadata.get("braid_word")
     if not isinstance(braid_word_data, dict):
-        raise ValueError("Evaluation entry is missing braid-word metadata.")
+        raise BraidInputValidationError("Evaluation entry is missing braid-word metadata.")
     return BraidWord.from_iterable(
         num_strands=int(braid_word_data["num_strands"]),
         generators=tuple(int(generator) for generator in braid_word_data.get("generators", [])),
