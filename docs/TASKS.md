@@ -29,7 +29,8 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 
 ## M2 — Core refactor
 
-- [ ] Separate mathematical logic from scripts, notebooks, and GUI code.
+- [x] Extract a UI-independent application/service boundary for braid parsing and evaluation; workbench and Tkinter compatibility adapters now share it.
+- [ ] Separate remaining mathematical logic from scripts, notebooks, and GUI code.
 - [ ] Define a small stable public API.
 - [ ] Remove demo-specific hard-coding where safe.
 - [ ] Centralize configuration and mathematical conventions.
