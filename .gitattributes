@@ -1,0 +1,5 @@
+# Preserve recovered snapshot files byte-for-byte across platforms.
+/src/benchmark_lab/** -text whitespace=cr-at-eol
+/examples/benchmark_lab/** -text whitespace=cr-at-eol
+/data/benchmark_lab/** -text whitespace=cr-at-eol
+/archive/report_bundle.zip binary

@@ -4,22 +4,34 @@ Calculator of Knots and Links is a project for computing knot and link invariant
 
 ## Project status
 
-The repository is currently being restructured from a bundled research/code archive into a maintainable software project.
+The first recovery pass over the bundled research snapshot is complete. The recoverable benchmark source, scripts, and data now live in normal repository paths.
 
-Current milestone: **recover the existing implementation, preserve mathematical behaviour, add regression tests, and normalize the repository before GUI work begins.**
+The snapshot was incomplete: it references braid and invariant evaluators, a GUI, and a workbench that were not included in the ZIP or repository history. The restored benchmark CLIs therefore cannot run until those internal modules are recovered. No mathematical implementation has been guessed or replaced.
 
 See:
 
 - `AGENTS.md` — development and agent rules
 - `docs/PROJECT_STATE.md` — current project state
 - `docs/TASKS.md` — prioritized task queue
+- `docs/SOURCE_INVENTORY.md` — complete snapshot inventory, entry points, dependencies, and recovery gaps
+- `docs/MATH_CONVENTIONS.md` — conventions evidenced by the recovered files and unresolved normalization questions
 
 ## Repository contents
 
-- `report_bundle.zip` — original bundled project/report materials
+- `src/benchmark_lab/` — byte-for-byte recovered benchmark/profile/audit layer
+- `examples/benchmark_lab/` — recovered command-line entry scripts
+- `data/benchmark_lab/` — recovered benchmark registries
+- `tests/` — archive-integrity and stored-output regression tests
+- `archive/report_bundle.zip` — original snapshot retained as recovery evidence
 - `CITATION.cff` — citation metadata
 
-The source tree will be expanded as the recovery milestone progresses.
+Run the currently available recovery tests with:
+
+```bash
+python -m pytest
+```
+
+The intended benchmark commands and their current blocker are documented in `docs/SOURCE_INVENTORY.md`.
 
 ## Development principle
 
