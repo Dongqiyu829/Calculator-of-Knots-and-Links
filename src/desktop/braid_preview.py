@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from src.services.braid_preview import BraidPreviewGeometry, build_braid_preview_geometry, render_braid_preview_svg
+from src.services import BraidPreviewGeometry, build_braid_preview_geometry, render_braid_preview_svg
 
 class BraidPreviewGraphicsView(QGraphicsView):
     """Vector scene view with wheel zoom and hand-drag panning."""
