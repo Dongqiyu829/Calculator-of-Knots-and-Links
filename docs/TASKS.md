@@ -62,6 +62,7 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 
 ## M5 — Productization
 
+- [x] Add a maintained Qt-native braid visualization with project-native crossing semantics, zoom/pan/fit, and SVG/PNG export.
 - [ ] Curated example library.
 - [ ] Save/load calculations.
 - [ ] Export results.

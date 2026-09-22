@@ -29,6 +29,8 @@ keeps integer and rational input exact, accepts the active symbolic `q`
 convention and other SymPy expressions, and reports invalid text as a typed
 service error rather than coercing it to floating point.
 
+The stable contract also includes a renderer-neutral braid-preview surface: `BraidPreviewGeometry`, `build_braid_preview_geometry`, and `render_braid_preview_svg`. Maintained desktop code consumes these through the `src.services` facade; the geometry preserves project-native Artin signs, generator order, writhe, strand identities, final permutation, and explicit over/under crossing semantics without changing evaluation behavior.
+
 The stable contract also includes the custom braid-operator surface:
 `parse_custom_matrix`, `validate_custom_matrix`,
 `build_custom_rmatrix_model`, `evaluate_custom_braid_operator`, and

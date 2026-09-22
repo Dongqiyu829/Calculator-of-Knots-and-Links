@@ -31,6 +31,8 @@ from src.services import (
     ApplicationBranchResult,
     ApplicationCatalogExample,
     ApplicationServiceError,
+    build_catalog_braid_input,
+    build_custom_braid_input,
     build_custom_braid_word,
     evaluate_braid_result,
     evaluate_catalog_result,
@@ -41,6 +43,8 @@ from src.services import (
     parse_q_text,
     serialize_application_braid_result,
 )
+
+from .braid_preview import BraidPreviewWidget
 
 
 @dataclass(frozen=True, slots=True)
@@ -151,6 +155,13 @@ class InvariantCalculationWorkflow(QWidget):
         input_layout.addRow(self.source_stack)
         layout.addWidget(input_group)
 
+        preview_group = QGroupBox("Braid diagram", self)
+        preview_layout = QVBoxLayout(preview_group)
+        self.braid_preview = BraidPreviewWidget(preview_group)
+        self.braid_preview.setMinimumHeight(285)
+        preview_layout.addWidget(self.braid_preview)
+        layout.addWidget(preview_group)
+
         branch_group = QGroupBox("Invariant branches", self)
         branch_layout = QVBoxLayout(branch_group)
         self._branch_checks: list[tuple[QCheckBox, Any]] = []
@@ -251,6 +262,8 @@ class InvariantCalculationWorkflow(QWidget):
         self.custom_notes_input = QLineEdit(source)
         self.custom_notes_input.setObjectName("invariantCustomNotes")
         self.custom_notes_input.setPlaceholderText("Optional note")
+        self.custom_strands_spin.valueChanged.connect(self._update_braid_preview)
+        self.custom_generators_input.textChanged.connect(self._update_braid_preview)
         convention = QLabel(
             "Positive i means project sigma_i; negative -i means its inverse. No external braid-sign conversion is applied.",
             source,
@@ -266,6 +279,7 @@ class InvariantCalculationWorkflow(QWidget):
 
     def _source_changed(self) -> None:
         self.source_stack.setCurrentIndex(self.source_combo.currentIndex())
+        self._update_braid_preview()
 
     def _update_catalog_preview(self) -> None:
         index = self.example_combo.currentIndex()
@@ -283,6 +297,20 @@ class InvariantCalculationWorkflow(QWidget):
             f"{example.word_string}\n{example.num_strands} strands; generators {list(example.generators)}\n"
             f"{metadata_text}\n{example.notes}"
         )
+        self._update_braid_preview()
+
+    def _update_braid_preview(self) -> None:
+        """Refresh the vector preview from the service-owned input model."""
+
+        try:
+            if str(self.source_combo.currentData()) == "catalog":
+                braid_input = build_catalog_braid_input(self.example_combo.currentText())
+            else:
+                braid_input = build_custom_braid_input(self.custom_strands_spin.value(), self.custom_generators_input.text())
+        except ApplicationServiceError as exc:
+            self.braid_preview.set_message(f"Preview unavailable: {exc}")
+            return
+        self.braid_preview.set_braid_word(braid_input.braid_word)
 
     def _selected_branch_ids(self) -> tuple[str, ...]:
         return tuple(descriptor.branch_id for check, descriptor in self._branch_checks if check.isChecked())
