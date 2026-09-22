@@ -1,75 +1,85 @@
 # Windows distribution
 
-Issue #34 establishes the first standalone distribution path for the maintained
-PySide6 application. It deliberately targets a PyInstaller `onedir` build:
-PySide6 and SymPy have a large runtime footprint, and a folder-style bundle is
-easier to inspect and more reliable than forcing a fragile `onefile` archive at
-this stage.
+Issue #38 extends the verified PyInstaller `onedir` path with a per-user Inno
+Setup 6 installer. PySide6 and SymPy have a large runtime footprint, so the
+folder-style bundle remains the packaged source for both the installer and the
+portable ZIP; no fragile `onefile` build is introduced.
 
 The maintained application version is `0.1.0`. This PR adds and validates the
-release machinery but intentionally does not create the `v0.1.0` tag or publish
-the first public release.
+installer/release machinery but intentionally does not create the `v0.1.0` tag
+or publish the first public release.
 
 ## Local build
 
-Use Python 3.12 or newer on Windows:
+Use Python 3.12 or newer on Windows. Install Inno Setup 6 (the standard
+per-user compiler) and run the maintained orchestration script:
 
 ```powershell
-python -m pip install -e ".[desktop,build]"
-python -m PyInstaller --clean --noconfirm packaging/Calculator-of-Knots-and-Links.spec
+python -m pip install -e ".[test,desktop,build]"
+choco install innosetup --no-progress -y
+.\packaging\windows\build.ps1 -Python python
 ```
 
-The output directory is `dist\Calculator-of-Knots-and-Links\` and the
-executable is `dist\Calculator-of-Knots-and-Links\Calculator-of-Knots-and-Links.exe`.
-Run the packaging-only smoke check from that directory:
+The script runs the fast regression selection, builds
+`packaging/Calculator-of-Knots-and-Links.spec`, smoke-tests the packaged and
+extracted portable executables with `--smoke-test` and `--version`, compiles
+`packaging/windows/installer.iss`, verifies all expected candidate files, and
+writes these assets under
+`artifacts\`:
 
-```powershell
-dist\Calculator-of-Knots-and-Links\Calculator-of-Knots-and-Links.exe --smoke-test
-```
+- `Calculator-of-Knots-and-Links-Windows-x64-Setup.exe`
+- `Calculator-of-Knots-and-Links-Windows-x64-Portable.zip`
+- `SHA256SUMS.txt`
 
-The check constructs the maintained desktop window, exercises Qt resource and
-runtime imports, and exits without entering an event loop or evaluating an
-invariant. It is intentionally not a replacement for the application itself.
+Use `-SkipInstaller` when only the PyInstaller/portable path is available
+locally. CI runs the complete build and compile path; interactive install and
+uninstall acceptance remains a clean-machine checklist because silent Inno
+Setup UI automation is runner-sensitive.
 
 ## GitHub Actions artifact
 
-`.github/workflows/windows-build.yml` runs on `windows-latest` with Python 3.12.
-It runs the fast regression selection before packaging, builds the checked-in
-specification, creates the deterministic
-`Calculator-of-Knots-and-Links-windows-x64.zip`, extracts the ZIP, and runs the
-extracted executable with `--smoke-test`. Only after that verification does it
-upload the ZIP as the workflow artifact. The workflow can be started manually
-with `workflow_dispatch`, and also runs for pull requests and pushes to `main`.
-
-Download the artifact from the completed workflow's **Summary → Artifacts**
-section. Extract the ZIP as a folder and run the executable in place; do not
-move only the `.exe` out of its bundled directory.
+`.github/workflows/windows-build.yml` runs on `windows-latest` with Python 3.12
+and Inno Setup 6. It invokes the same checked-in build script, verifies all
+three stable assets, and uploads them from the completed workflow's
+**Summary → Artifacts** section. The portable archive should be extracted as a
+folder; do not move only the `.exe` out of its bundled directory.
 
 ## Release workflow
 
 `.github/workflows/release.yml` is tag-driven. A future `vX.Y.Z` push validates
-that the tag exactly matches `src.version.__version__`, runs the fast tests and
-both packaged smoke checks, creates the versioned ZIP and a companion
-`Calculator-of-Knots-and-Links-X.Y.Z-windows-x64.zip.sha256`, and publishes both
-files with the normal GitHub-provided token. Any mismatch fails before release
-publication. A manual `workflow_dispatch` requires a tag input and performs the
-same build/checksum/smoke path as a non-publishing dry run, uploading temporary
-workflow artifacts instead.
+that the tag exactly matches `src.version.__version__`, runs the shared build
+and installer checks, and publishes these exact stable assets:
 
-The first supported release format is therefore a portable `onedir` ZIP. There
-is no MSI/NSIS/Inno Setup installer or code signing yet. A future installer
-should preserve the same extracted-folder behavior and be justified by a
-reliability/user-installation need; Windows SmartScreen may warn for the
-unsigned preview binary.
+- `Calculator-of-Knots-and-Links-Windows-x64-Setup.exe`
+- `Calculator-of-Knots-and-Links-Windows-x64-Portable.zip`
+- `SHA256SUMS.txt`
+
+The manual `workflow_dispatch` path requires a tag input, performs the same
+non-publishing build/checksum/smoke path, and uploads the same three files as
+temporary Actions artifacts. No private secrets are needed; a real tag push
+uses GitHub's provided token. Stable names intentionally match the README's
+`releases/latest/download/...` links.
+
+## Clean-machine acceptance checklist
+
+- [ ] Download the installer and `SHA256SUMS.txt`; verify the installer hash.
+- [ ] Install without administrator elevation into the default `%LOCALAPPDATA%\Programs` location.
+- [ ] Launch from the Start Menu; optionally verify the desktop shortcut.
+- [ ] Open both the built-in invariant and Custom R/check-R application tabs.
+- [ ] Run a cheap built-in invariant example.
+- [ ] Close and relaunch the application.
+- [ ] Uninstall from Windows Settings and verify the per-user application directory is removed.
+- [ ] Extract the portable ZIP, run `--version`, and run the packaged smoke check.
+
+The unsigned preview binary may receive the normal Windows SmartScreen warning.
+Code signing and a published `v0.1.0` release remain outside this PR.
 
 ## Scope and caveats
 
-- This is a standalone folder bundle, not an installer, MSI, NSIS package, or
-  GitHub Release.
-- The bundle contains the maintained PySide6 application and its runtime
+- The installer is Inno Setup 6, per-user (`PrivilegesRequired=lowest`), with
+  no PATH modification or administrator elevation.
+- The bundle contains the maintained PySide6 application and runtime
   dependencies; it does not intentionally package development/test files or
   the historical Tkinter frontends.
-- Windows Defender or corporate policy may inspect an unsigned local executable
-  more slowly. Code signing is outside this issue.
 - The build does not alter braid, R-matrix, q, trace, framing, normalization,
   branch-status, regression-fixture, or Knot Atlas behavior.

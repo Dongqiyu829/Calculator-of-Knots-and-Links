@@ -4,6 +4,30 @@ Calculator of Knots and Links is a research-oriented knot/link invariant calcula
 
 The project prioritizes mathematical correctness, reproducibility, and explicit convention handling over UI polish.
 
+## Download Windows App / 下载 Windows 应用
+
+### 🌟 Download Windows Installer / 下载 Windows 安装版
+
+[![Download Windows Installer](https://img.shields.io/badge/Download%20Windows%20Installer-Calculator%20of%20Knots%20and%20Links-2563eb?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Dongqiyu829/Calculator-of-Knots-and-Links/releases/latest/download/Calculator-of-Knots-and-Links-Windows-x64-Setup.exe)
+
+[Download Windows Installer / 下载 Windows 安装版](https://github.com/Dongqiyu829/Calculator-of-Knots-and-Links/releases/latest/download/Calculator-of-Knots-and-Links-Windows-x64-Setup.exe)
+
+**Windows 10/11 x64.** No Python, Conda, Git, or compiler is required. Ordinary users should use the installer.
+
+**Windows 10/11 x64。** 无需 Python、Conda、Git 或编译器。普通用户请优先使用安装版。
+
+- Portable ZIP / 便携版 ZIP: [Download Portable ZIP / 下载便携版 ZIP](https://github.com/Dongqiyu829/Calculator-of-Knots-and-Links/releases/latest/download/Calculator-of-Knots-and-Links-Windows-x64-Portable.zip)
+- SHA-256 checksum / SHA-256 校验和: [SHA256SUMS.txt](https://github.com/Dongqiyu829/Calculator-of-Knots-and-Links/releases/latest/download/SHA256SUMS.txt)
+- Latest Release / 最新发布: [View Latest Release / 查看最新发布](https://github.com/Dongqiyu829/Calculator-of-Knots-and-Links/releases/latest)
+
+The installer is unsigned, so Windows SmartScreen may show its usual warning for a new download. Verify the checksum when required.
+
+安装程序未进行代码签名，因此 Windows SmartScreen 可能对新下载显示常规提示；需要时请核对校验和。
+
+**Install / 安装:** run the installer, keep the per-user default location, and launch from the Start Menu (an optional desktop shortcut is available). No administrator elevation or PATH change is needed.
+
+**安装说明：** 运行安装程序，保留默认的当前用户安装位置，然后从开始菜单启动（可选创建桌面快捷方式）。无需管理员权限，也不会修改 PATH。
+
 ## Current status
 
 The historical source recovery, package/test baseline, service-layer refactor, and the core M3 desktop workflow are complete.
@@ -169,8 +193,8 @@ The executable is produced under `dist\\Calculator-of-Knots-and-Links\\`. A pack
 The Windows GitHub Actions workflow builds the bundle, smoke-tests the packaged executable, creates `Calculator-of-Knots-and-Links-windows-x64.zip`, extracts that ZIP, smoke-tests the extracted executable again, and only then uploads it as an Actions artifact.
 
 See `docs/DISTRIBUTION.md` for exact local-build, release, and artifact-download
-instructions. This change prepares the release workflow but does not create a
-tagged GitHub Release or installer.
+instructions. CI now builds both the portable ZIP and the Inno Setup installer;
+the real `v0.1.0` GitHub Release has not yet been published.
 
 ## Development principle
 
