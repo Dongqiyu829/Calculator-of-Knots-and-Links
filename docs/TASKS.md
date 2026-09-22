@@ -45,9 +45,9 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 - [x] Add a convention-explicit custom R/check-R braid-operator engine through the application service boundary.
 - [x] Add an offline independent Knot Atlas oracle suite with multi-knot braid-sign calibration, exact Jones/A2 checks, custom check-R parity, and negative controls.
 - [x] Add knot/link or braid input workflow (custom signed braid input is available through the Custom R/check-R operator workflow).
-- [ ] Add invariant/calculation selection.
-- [x] Add result display and copy/export support for custom braid-operator results.
-- [x] Run expensive symbolic custom-matrix validation and operator work outside the UI thread.
+- [x] Add invariant/calculation selection, including catalog examples and project-native custom braids.
+- [x] Add result display and copy/export support for invariant calculations and custom braid-operator results.
+- [x] Run expensive symbolic invariant evaluation and custom-matrix validation/operator work outside the UI thread.
 - [x] Add clear validation and error messages for the custom R/check-R workflow, including structural validity versus relation-verification status.
 
 ## M4 — Distribution

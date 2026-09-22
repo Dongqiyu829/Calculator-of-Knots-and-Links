@@ -178,3 +178,12 @@ valid matrix is never presented as a braid representation solely because it
 has no input errors. The known `diag(1,2,3,4)` negative control remains
 constructible by the intentionally permissive operator engine but is visibly
 reported as relation failure.
+
+The primary PySide6 tab now supports the maintained built-in invariant
+workflow. Users can select a service-catalog example or enter a project-native
+signed Artin braid, select one or more service-owned branches, and provide an
+exact or symbolic `q` value. Evaluation runs in a Qt worker thread and returns
+service DTO reports with their formal/candidate status, normalization, variable
+convention, representation, metadata, and warnings intact. Copy, JSON, and
+file export use service report/serialization helpers; no live Atlas lookup or
+mathematical convention change is introduced.
