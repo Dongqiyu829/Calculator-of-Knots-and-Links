@@ -9,6 +9,14 @@ from .branch_catalog import (
     list_evaluation_branches,
 )
 from .catalog_examples import ApplicationCatalogExample, get_catalog_example, list_catalog_examples
+from .example_library import (
+    CURATED_CATEGORIES,
+    CURATED_EXAMPLES,
+    CURATED_STATUSES,
+    CuratedExample,
+    get_curated_example,
+    list_curated_examples,
+)
 from .braid_preview import BraidPreviewGeometry, build_braid_preview_geometry, render_braid_preview_svg
 from .custom_rmatrix import (
     ApplicationCustomBraidOperatorResult,
@@ -47,6 +55,22 @@ from .results import (
     format_application_branch_result,
     serialize_application_braid_result,
 )
+from .projects import (
+    ApplicationProjectDocument,
+    CUSTOM_RMATRIX_WORKFLOW,
+    INVARIANT_WORKFLOW,
+    PROJECT_APPLICATION,
+    PROJECT_SCHEMA_VERSION,
+    SUPPORTED_PROJECT_WORKFLOWS,
+    build_custom_rmatrix_project,
+    build_invariant_project,
+    load_project_file,
+    parse_project,
+    project_from_dict,
+    save_project_file,
+    serialize_project,
+    validate_project_document,
+)
 from .errors import (
     ApplicationServiceError,
     BraidInputError,
@@ -58,6 +82,10 @@ from .errors import (
     UnknownEvaluationModelError,
     CustomBraidOperatorError,
     CustomMatrixInputError,
+    ProjectFileError,
+    ProjectSchemaError,
+    ProjectValidationError,
+    ProjectWorkflowError,
 )
 
 __all__ = [

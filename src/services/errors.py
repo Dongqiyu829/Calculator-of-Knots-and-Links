@@ -41,3 +41,19 @@ class CustomMatrixInputError(ApplicationServiceError):
 
 class CustomBraidOperatorError(ApplicationServiceError):
     """Raised when a custom local model cannot evaluate the requested braid word."""
+
+
+class ProjectFileError(ApplicationServiceError):
+    """Base class for malformed or unsupported ``.knotcalc.json`` documents."""
+
+
+class ProjectSchemaError(ProjectFileError):
+    """Raised when a project schema version or required field is unsupported."""
+
+
+class ProjectValidationError(ProjectFileError):
+    """Raised when a project field cannot be validated through services."""
+
+
+class ProjectWorkflowError(ProjectFileError):
+    """Raised when a document names an unsupported maintained workflow."""

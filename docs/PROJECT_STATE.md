@@ -194,3 +194,12 @@ The `v0.1.0` tag is now published. The installer remains unsigned and installs p
 ### M5 — Productization (in progress)
 
 The maintained PySide6 frontend now includes a deterministic Qt-native braid preview for both built-in/custom-braid invariant input and the custom R/check-R workflow. It consumes validated service-layer braid words, preserves project-native Artin signs and generator order, renders explicit over/under crossing semantics, reports writhe/final permutation metadata, and supports fit, zoom/pan, SVG export, and PNG export. Renderer-independent geometry tests cover positive/negative crossings, mixed-sign words, identity braids, long words, permutation, and deterministic SVG output.
+
+Issue #43 adds a curated, provenance-labelled example browser and deterministic
+versioned `.knotcalc.json` project documents. The public service facade validates
+invariant/custom-R setup state, preserves symbolic q and matrix text, and routes
+loads into the appropriate maintained workflow without evaluating anything.
+The browser includes the recovered catalog, calibrated 5_1/5_2 evidence, braid
+convention demonstrations, and custom check-R diagnostics including the
+relation-failure negative control. No branch status or mathematical behavior is
+changed.

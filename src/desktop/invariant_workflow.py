@@ -30,10 +30,12 @@ from src.services import (
     ApplicationBraidResult,
     ApplicationBranchResult,
     ApplicationCatalogExample,
+    ApplicationProjectDocument,
     ApplicationServiceError,
     build_catalog_braid_input,
     build_custom_braid_input,
     build_custom_braid_word,
+    build_invariant_project,
     evaluate_braid_result,
     evaluate_catalog_result,
     format_application_braid_result,
@@ -42,6 +44,7 @@ from src.services import (
     list_evaluation_branches,
     parse_q_text,
     serialize_application_braid_result,
+    validate_project_document,
 )
 
 from .braid_preview import BraidPreviewWidget
@@ -314,6 +317,49 @@ class InvariantCalculationWorkflow(QWidget):
 
     def _selected_branch_ids(self) -> tuple[str, ...]:
         return tuple(descriptor.branch_id for check, descriptor in self._branch_checks if check.isChecked())
+
+    def current_project_document(self) -> ApplicationProjectDocument:
+        """Capture setup only; no invariant evaluation is performed."""
+
+        return build_invariant_project(
+            source_mode=str(self.source_combo.currentData()),
+            example_label=self.example_combo.currentText(),
+            num_strands=self.custom_strands_spin.value(),
+            generator_text=self.custom_generators_input.text(),
+            custom_label=self.custom_label_input.text(),
+            custom_notes=self.custom_notes_input.text(),
+            q_text=self.q_input.text(),
+            branch_ids=self._selected_branch_ids(),
+            ui_state={"source_index": self.source_combo.currentIndex()},
+        )
+
+    def apply_project_document(self, document: ApplicationProjectDocument) -> None:
+        """Populate controls from a validated project without starting a worker."""
+
+        document = validate_project_document(document)
+        if document.workflow != "invariant":
+            raise ApplicationServiceError("This project belongs to the custom R/check-R workflow.")
+        data = document.input_data
+        source_mode = str(data["source_mode"])
+        self.source_combo.setCurrentIndex(0 if source_mode == "catalog" else 1)
+        if source_mode == "catalog":
+            index = self.example_combo.findText(str(data["example_label"]))
+            if index < 0:
+                raise ApplicationServiceError(f"Catalog example '{data['example_label']}' is not available in this application.")
+            self.example_combo.setCurrentIndex(index)
+        self.custom_strands_spin.setValue(int(data["num_strands"]))
+        self.custom_generators_input.setText(str(data["generator_text"]))
+        self.custom_label_input.setText(str(data["custom_label"]))
+        self.custom_notes_input.setText(str(data["custom_notes"]))
+        self.q_input.setText(str(data["q_text"]))
+        selected = set(data["branch_ids"])
+        for check, descriptor in self._branch_checks:
+            check.setChecked(descriptor.branch_id in selected)
+        self._update_braid_preview()
+
+    def load_curated_example(self, example: Any) -> None:
+        document = example.build_project()
+        self.apply_project_document(document)
 
     def _request_calculation(self) -> None:
         branch_ids = self._selected_branch_ids()

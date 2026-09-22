@@ -30,14 +30,17 @@ from PySide6.QtWidgets import (
 from src.services import (
     ApplicationCustomBraidOperatorResult,
     ApplicationCustomMatrixValidation,
+    ApplicationProjectDocument,
     ApplicationServiceError,
     build_custom_braid_input,
     build_custom_braid_word,
     build_custom_rmatrix_model,
+    build_custom_rmatrix_project,
     evaluate_custom_braid_operator,
     parse_generator_text,
     serialize_custom_braid_operator_result,
     validate_custom_matrix,
+    validate_project_document,
 )
 
 from .braid_preview import BraidPreviewWidget
@@ -362,6 +365,45 @@ class CustomMatrixWorkflow(QWidget):
         if total_dimension > 1024:
             text += " Warning: the service flags operators above dimension 1024 as potentially expensive."
         self.growth_warning.setText(text)
+
+    def current_project_document(self) -> ApplicationProjectDocument:
+        """Capture custom-R setup only; matrix operators are not evaluated."""
+
+        request = self._request_snapshot()
+        if request is None:
+            raise ApplicationServiceError("Choose R or check-R explicitly before saving the project.")
+        return build_custom_rmatrix_project(
+            matrix_text=request.matrix_text,
+            input_kind=request.input_kind,
+            local_dimension=request.local_dimension,
+            check_braid_relation=request.check_braid_relation,
+            check_standard_r_ybe=request.check_standard_r_ybe,
+            num_strands=request.num_strands,
+            generator_text=request.generator_text,
+            ui_state={"input_kind_index": self.input_kind_combo.currentIndex()},
+        )
+
+    def apply_project_document(self, document: ApplicationProjectDocument) -> None:
+        """Populate controls from a validated project without starting a worker."""
+
+        document = validate_project_document(document)
+        if document.workflow != "custom_rmatrix":
+            raise ApplicationServiceError("This project belongs to the invariant workflow.")
+        data = document.input_data
+        self.matrix_input.setPlainText(str(data["matrix_text"]))
+        index = self.input_kind_combo.findData(data["input_kind"])
+        if index < 0:
+            raise ApplicationServiceError(f"Unsupported custom matrix input kind '{data['input_kind']}'.")
+        self.input_kind_combo.setCurrentIndex(index)
+        self.local_dimension_spin.setValue(int(data["local_dimension"] or 0))
+        self.braid_relation_check.setChecked(bool(data["check_braid_relation"]))
+        self.ybe_check.setChecked(bool(data["check_standard_r_ybe"]))
+        self.strand_count_spin.setValue(int(data["num_strands"]))
+        self.generator_input.setText(str(data["generator_text"]))
+        self._update_braid_preview()
+
+    def load_curated_example(self, example: object) -> None:
+        self.apply_project_document(example.build_project())
 
     def _update_braid_preview(self) -> None:
         """Render only the validated service braid input, independently of matrix work."""

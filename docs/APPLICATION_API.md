@@ -60,3 +60,21 @@ exported only for recovered Tkinter/test compatibility; new M3 code uses the
 stable result-returning surface. Service submodules, catalog storage, invariant
 evaluators, mathematical builders, R-matrices, normalization, and legacy
 helpers such as `braid_word_from_entry` are implementation details.
+
+## M5 curated examples and project files
+
+The maintained desktop application also uses the frontend-neutral curated
+example/project surface from `src.services`: `CuratedExample`,
+`list_curated_examples`, `get_curated_example`, `ApplicationProjectDocument`,
+`build_invariant_project`, `build_custom_rmatrix_project`, `serialize_project`,
+`parse_project`, `save_project_file`, and `load_project_file`. These helpers
+validate input through the existing braid, branch, q, and custom-matrix
+parsers, preserve symbolic text and provenance/status metadata, and never run
+an invariant or custom operator as a side effect of loading.
+
+Project documents use `schema_version: 1`, identify either the `invariant` or
+`custom_rmatrix` workflow, and contain setup state only. Application-version
+mismatches are informational; unsupported schemas, workflows, malformed JSON,
+invalid branch ids, braid generators, or matrix inputs raise typed `Project*Error`
+subclasses. JSON serialization is UTF-8 and deterministic, with no pickle,
+eval, or executable payloads.
