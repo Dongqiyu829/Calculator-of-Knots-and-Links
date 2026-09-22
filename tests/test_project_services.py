@@ -87,3 +87,11 @@ def test_formal_curated_examples_do_not_recommend_candidate_branches() -> None:
     for example in formal_examples:
         assert "sl2_spin1" not in example.recommended_branches
         assert set(example.recommended_branches) <= {"sl2_fundamental", "sl3_fundamental"}
+
+
+def test_project_write_failure_is_typed(tmp_path) -> None:
+    from src.services import save_project_file
+
+    document = build_invariant_project(source_mode="catalog", example_label="unknot_1", branch_ids=["sl2_fundamental"])
+    with pytest.raises(ProjectFileError):
+        save_project_file(tmp_path / "missing" / "project.knotcalc.json", document)
