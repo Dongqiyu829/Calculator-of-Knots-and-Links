@@ -25,7 +25,13 @@ def _matrix_grid(matrix: sp.Matrix) -> tuple[tuple[str, ...], ...]:
 
 @dataclass(frozen=True, slots=True)
 class ApplicationCustomMatrixValidation:
-    """Frontend-facing custom matrix validation with distinct relation statuses."""
+    """Frontend-facing custom input validation and optional relation evidence.
+
+    ``is_valid`` remains the backward-compatible structural/application-input
+    status. It must not be read as proof that the matrix supplies a braid-group
+    representation: that claim requires an explicitly requested and verified
+    check-R braid relation.
+    """
 
     input_kind: str
     matrix_shape: tuple[int, int]
@@ -36,12 +42,60 @@ class ApplicationCustomMatrixValidation:
     invertible: bool | None
     check_r_braid_relation_satisfied: bool | None
     standard_r_ybe_satisfied: bool | None
+    check_r_braid_relation_requested: bool
+    standard_r_ybe_requested: bool
     errors: tuple[str, ...]
     warnings: tuple[str, ...]
 
     @property
     def is_valid(self) -> bool:
+        """Return structural/application-input validity, not relation verification."""
+
         return not self.errors
+
+    @property
+    def is_structurally_valid(self) -> bool:
+        """Explicit alias for the backward-compatible ``is_valid`` meaning."""
+
+        return self.is_valid
+
+    @staticmethod
+    def _requested_relation_status(*, requested: bool, satisfied: bool | None) -> str:
+        if not requested:
+            return "not_checked"
+        if satisfied is True:
+            return "verified"
+        if satisfied is False:
+            return "failed"
+        return "undecidable"
+
+    @property
+    def check_r_braid_relation_status(self) -> str:
+        """Return ``not_checked``, ``verified``, ``failed``, or ``undecidable``."""
+
+        return self._requested_relation_status(
+            requested=self.check_r_braid_relation_requested,
+            satisfied=self.check_r_braid_relation_satisfied,
+        )
+
+    @property
+    def standard_r_ybe_status(self) -> str:
+        """Return the raw-R YBE status while preserving check-R non-applicability."""
+
+        if self.input_kind != "R" and self.standard_r_ybe_requested:
+            return "not_applicable"
+        return self._requested_relation_status(
+            requested=self.standard_r_ybe_requested,
+            satisfied=self.standard_r_ybe_satisfied,
+        )
+
+    @property
+    def braid_representation_status(self) -> str:
+        """Describe whether available evidence supports a braid-representation claim."""
+
+        if not self.is_structurally_valid:
+            return "invalid_input"
+        return self.check_r_braid_relation_status
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -54,13 +108,24 @@ class ApplicationCustomMatrixValidation:
             "invertible": self.invertible,
             "check_r_braid_relation_satisfied": self.check_r_braid_relation_satisfied,
             "standard_r_ybe_satisfied": self.standard_r_ybe_satisfied,
+            "check_r_braid_relation_requested": self.check_r_braid_relation_requested,
+            "standard_r_ybe_requested": self.standard_r_ybe_requested,
+            "check_r_braid_relation_status": self.check_r_braid_relation_status,
+            "standard_r_ybe_status": self.standard_r_ybe_status,
+            "braid_representation_status": self.braid_representation_status,
             "errors": list(self.errors),
             "warnings": list(self.warnings),
             "is_valid": self.is_valid,
+            "is_structurally_valid": self.is_structurally_valid,
         }
 
 
-def _application_validation(result: CustomMatrixValidation) -> ApplicationCustomMatrixValidation:
+def _application_validation(
+    result: CustomMatrixValidation,
+    *,
+    check_braid_relation_requested: bool,
+    check_standard_r_ybe_requested: bool,
+) -> ApplicationCustomMatrixValidation:
     return ApplicationCustomMatrixValidation(
         input_kind=result.input_kind,
         matrix_shape=result.matrix_shape,
@@ -71,6 +136,8 @@ def _application_validation(result: CustomMatrixValidation) -> ApplicationCustom
         invertible=result.invertible,
         check_r_braid_relation_satisfied=result.braid_relation_satisfied,
         standard_r_ybe_satisfied=result.standard_r_ybe_satisfied,
+        check_r_braid_relation_requested=check_braid_relation_requested,
+        standard_r_ybe_requested=check_standard_r_ybe_requested,
         errors=result.errors,
         warnings=result.warnings,
     )
@@ -157,7 +224,9 @@ def validate_custom_matrix(
             check_braid_relation=check_braid_relation,
             check_standard_r_ybe=check_standard_r_ybe,
             simplify=simplify,
-        )
+        ),
+        check_braid_relation_requested=check_braid_relation,
+        check_standard_r_ybe_requested=check_standard_r_ybe,
     )
 
 

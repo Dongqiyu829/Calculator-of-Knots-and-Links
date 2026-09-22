@@ -8,6 +8,7 @@ import sys
 from unittest.mock import patch
 
 import pytest
+import sympy as sp
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
@@ -31,6 +32,7 @@ from src.services import (
     evaluate_custom_braid_operator,
     validate_custom_matrix,
 )
+from src.rmatrix.sl2_rmatrix import build_sl2_fundamental_rmatrix
 
 
 IDENTITY_4 = "[[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]"
@@ -83,7 +85,9 @@ def test_valid_4x4_validation_and_result_rendering() -> None:
     validation = validate_custom_matrix(IDENTITY_4, input_kind="check-R", check_braid_relation=True)
     widget._service_succeeded("validate", validation)
 
-    assert "Valid braid representation input: True" in widget.validation_output.toPlainText()
+    assert "Matrix input is structurally valid: True" in widget.validation_output.toPlainText()
+    assert "check-R braid relation: verified" in widget.validation_output.toPlainText()
+    assert "Braid-representation status: verified" in widget.validation_output.toPlainText()
     assert "Projected operator dimension: 2^2 = 4." in widget.growth_warning.text()
 
     model = build_custom_rmatrix_model(IDENTITY_4, input_kind="check-R")
@@ -105,7 +109,7 @@ def test_invalid_dimension_is_rendered_as_structured_validation() -> None:
     widget._service_succeeded("validate", validation)
 
     rendered = widget.validation_output.toPlainText()
-    assert "Valid braid representation input: False" in rendered
+    assert "Matrix input is structurally valid: False" in rendered
     assert "Local dimension consistent: False" in rendered
     widget.close()
 
@@ -165,3 +169,39 @@ def test_background_worker_reports_a_singular_negative_generator_cleanly() -> No
     assert received
     assert received[0][0] == "evaluate"
     assert "invertible" in received[0][1]
+
+
+def test_relation_failure_is_not_presented_as_valid_braid_representation() -> None:
+    widget = _configured_widget()
+    validation = validate_custom_matrix(
+        "[[1,0,0,0],[0,2,0,0],[0,0,3,0],[0,0,0,4]]",
+        input_kind="check-R",
+        check_braid_relation=True,
+    )
+    widget._service_succeeded("validate", validation)
+
+    rendered = widget.validation_output.toPlainText()
+    assert validation.is_structurally_valid is True
+    assert validation.invertible is True
+    assert validation.braid_representation_status == "failed"
+    assert "valid braid representation" not in rendered.lower()
+    assert "check-R braid relation: failed" in rendered
+    assert "not a validated braid-group representation" in rendered
+    assert "braid relation failed" in widget.status_label.text().lower()
+    widget.close()
+
+
+def test_good_and_unchecked_relation_statuses_are_rendered_explicitly() -> None:
+    widget = _configured_widget()
+    recovered = build_sl2_fundamental_rmatrix(sp.Integer(2))
+    verified = validate_custom_matrix(recovered.braid_matrix, input_kind="check-R", check_braid_relation=True)
+    widget._service_succeeded("validate", verified)
+    assert "check-R braid relation: verified" in widget.validation_output.toPlainText()
+
+    unchecked = validate_custom_matrix(IDENTITY_4, input_kind="check-R")
+    widget._service_succeeded("validate", unchecked)
+    rendered = widget.validation_output.toPlainText()
+    assert "check-R braid relation: not_checked" in rendered
+    assert "has not been verified" in rendered
+    assert "not checked" in widget.status_label.text().lower()
+    widget.close()

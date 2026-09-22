@@ -48,7 +48,7 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 - [ ] Add invariant/calculation selection.
 - [x] Add result display and copy/export support for custom braid-operator results.
 - [x] Run expensive symbolic custom-matrix validation and operator work outside the UI thread.
-- [x] Add clear validation and error messages for the custom R/check-R workflow.
+- [x] Add clear validation and error messages for the custom R/check-R workflow, including structural validity versus relation-verification status.
 
 ## M4 — Distribution
 
