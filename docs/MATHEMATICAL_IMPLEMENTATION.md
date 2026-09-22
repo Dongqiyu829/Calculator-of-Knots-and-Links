@@ -838,7 +838,7 @@ stored as
 
 ```text
 [1, -2, 1, -2]
-```.
+```
 
 For a local $d$-dimensional representation, the two embedded positive generators are
 
