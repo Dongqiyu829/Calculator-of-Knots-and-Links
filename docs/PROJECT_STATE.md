@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-09-21
+Last updated: 2026-09-22
 
 ## Product
 
@@ -148,3 +148,9 @@ after installing the `desktop` dependency group. It provides a service-driven
 example source panel, visible formal/candidate branch status, workspace/status
 areas, and standard Exit/About routes. It deliberately does not yet edit braids,
 evaluate invariants, create workers, export files, or replace Tkinter.
+
+A frontend-neutral custom R/check-R braid-operator engine is now available
+through `src.services`. It accepts explicit raw `R` or direct `check-R` input,
+validates tensor-square dimension/invertibility and optional relation checks,
+and returns deterministic operator DTOs. It intentionally provides no enhanced
+trace or link-invariant recipe and does not alter any built-in branch.

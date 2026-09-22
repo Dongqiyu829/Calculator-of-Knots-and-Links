@@ -1,6 +1,6 @@
 # Observed Mathematical Conventions
 
-Last updated: 2026-09-21
+Last updated: 2026-09-22
 
 This document records conventions evidenced by the recovered authoritative
 source. The incomplete `archive/report_bundle.zip` supplied output evidence;
@@ -36,6 +36,18 @@ actual program convention. The historical data and label remain unchanged.
   by `BraidWord.generators`.
 - Representation bases are ordered from highest to lowest weight. Tensor-product
   bases use the induced lexicographic order.
+
+### Custom R/check-R inputs
+
+The custom operator engine preserves these conventions without modifying the
+built-in matrices. A caller must explicitly label input as raw `R` or braid
+operator `check-R`; values are never inspected to guess the kind. Raw `R` is
+converted by `check-R = P R`, where `P(v_i tensor v_j) = v_j tensor v_i` in the
+lexicographic tensor basis. Custom braid generators use only `check-R`, negative
+generators use its inverse, and word factors multiply left-to-right in listed
+order. The check-R braid relation and standard raw-R YBE are separate optional
+validation statuses. No custom matrix receives trace, Markov, framing, or
+invariant normalization in this layer.
 
 ## R-matrix eigenvalue conventions
 

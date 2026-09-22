@@ -9,6 +9,16 @@ from .branch_catalog import (
     list_evaluation_branches,
 )
 from .catalog_examples import ApplicationCatalogExample, get_catalog_example, list_catalog_examples
+from .custom_rmatrix import (
+    ApplicationCustomBraidOperatorResult,
+    ApplicationCustomMatrixValidation,
+    ApplicationCustomRMatrixModel,
+    build_custom_rmatrix_model,
+    evaluate_custom_braid_operator,
+    parse_custom_matrix,
+    serialize_custom_braid_operator_result,
+    validate_custom_matrix,
+)
 
 from .braid_evaluation import (
     BraidInputState,
@@ -43,6 +53,8 @@ from .errors import (
     UnknownCatalogExampleError,
     UnknownEvaluationBranchError,
     UnknownEvaluationModelError,
+    CustomBraidOperatorError,
+    CustomMatrixInputError,
 )
 
 __all__ = [
@@ -50,12 +62,17 @@ __all__ = [
     "ApplicationBraidResult",
     "ApplicationBranchResult",
     "ApplicationCatalogExample",
+    "ApplicationCustomBraidOperatorResult",
+    "ApplicationCustomMatrixValidation",
+    "ApplicationCustomRMatrixModel",
     "BraidInputError",
     "BraidInputState",
     "BraidInputValidationError",
     "DEFAULT_EVALUATION_MODEL_IDS",
     "EvaluationBranchDescriptor",
     "GeneratorParseError",
+    "CustomBraidOperatorError",
+    "CustomMatrixInputError",
     "UnknownCatalogExampleError",
     "UnknownEvaluationBranchError",
     "UnknownEvaluationModelError",
@@ -65,6 +82,7 @@ __all__ = [
     "build_catalog_braid_input",
     "build_custom_braid_input",
     "build_custom_braid_word",
+    "build_custom_rmatrix_model",
     "evaluate_braid_input",
     "evaluate_braid_input_result",
     "evaluate_braid_word",
@@ -73,6 +91,7 @@ __all__ = [
     "evaluate_catalog_result",
     "evaluate_custom_braid",
     "evaluate_custom_result",
+    "evaluate_custom_braid_operator",
     "filter_application_braid_result",
     "format_application_braid_result",
     "format_application_branch_result",
@@ -82,5 +101,8 @@ __all__ = [
     "list_catalog_examples",
     "list_evaluation_branches",
     "parse_generator_text",
+    "parse_custom_matrix",
+    "serialize_custom_braid_operator_result",
     "serialize_application_braid_result",
+    "validate_custom_matrix",
 ]

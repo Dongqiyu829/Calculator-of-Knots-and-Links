@@ -29,3 +29,11 @@ class UnknownEvaluationBranchError(ApplicationServiceError):
 
 class UnknownEvaluationModelError(ApplicationServiceError):
     """Raised when a caller requests an unsupported frontend-facing model id."""
+
+
+class CustomMatrixInputError(ApplicationServiceError):
+    """Raised when custom R/check-R input cannot form a validated local model."""
+
+
+class CustomBraidOperatorError(ApplicationServiceError):
+    """Raised when a custom local model cannot evaluate the requested braid word."""
