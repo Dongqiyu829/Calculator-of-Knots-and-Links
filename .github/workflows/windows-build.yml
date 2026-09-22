@@ -46,6 +46,12 @@ jobs:
           if (-not (Test-Path $exe)) { throw "Packaged executable was not produced: $exe" }
           & $exe --smoke-test
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $expectedVersion = python -c "from src.version import __version__; print(__version__)"
+          $packagedVersion = (& $exe --version | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if ($packagedVersion -ne $expectedVersion.Trim()) {
+            throw "Packaged version '$packagedVersion' does not match source version '$($expectedVersion.Trim())'."
+          }
 
       - name: Create deterministic Windows artifact ZIP
         shell: pwsh
@@ -63,6 +69,12 @@ jobs:
           if (-not (Test-Path $exe)) { throw "Extracted artifact executable was not found: $exe" }
           & $exe --smoke-test
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $expectedVersion = python -c "from src.version import __version__; print(__version__)"
+          $packagedVersion = (& $exe --version | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if ($packagedVersion -ne $expectedVersion.Trim()) {
+            throw "Extracted packaged version '$packagedVersion' does not match source version '$($expectedVersion.Trim())'."
+          }
 
       - name: Upload Windows standalone artifact
         uses: actions/upload-artifact@v4
