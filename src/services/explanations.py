@@ -133,7 +133,7 @@ def _branch_explanation(branch_id: str) -> MathematicalExplanation:
             output_name="Colored Jones candidate output",
             representation_dimension=3,
             warnings=(
-                "Candidate normalization: this branch is not promoted to a final literature identification or theorem-level claim.",
+                "Candidate normalization: not presented as theorem-level formal normalization; this branch is not promoted to a final literature identification or theorem-level claim.",
             ),
             documentation_refs=("docs/MATHEMATICAL_IMPLEMENTATION.md §17", "docs/EXTERNAL_VALIDATION.md §4"),
             branch_statuses=((descriptor.branch_id, descriptor.status),),
