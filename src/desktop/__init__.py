@@ -5,10 +5,14 @@ from __future__ import annotations
 from typing import Any
 
 
-__all__ = ["CustomMatrixWorkflow", "DesktopMainWindow", "InvariantCalculationWorkflow", "launch_desktop_application"]
+__all__ = ["BraidPreviewWidget", "CustomMatrixWorkflow", "DesktopMainWindow", "InvariantCalculationWorkflow", "launch_desktop_application"]
 
 
 def __getattr__(name: str) -> Any:
+    if name == "BraidPreviewWidget":
+        from .braid_preview import BraidPreviewWidget
+
+        return BraidPreviewWidget
     if name == "DesktopMainWindow" or name == "launch_desktop_application":
         from .main_window import DesktopMainWindow, launch_desktop_application
 
