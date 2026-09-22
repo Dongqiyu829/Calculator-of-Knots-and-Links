@@ -78,3 +78,12 @@ def test_project_errors_are_typed_and_version_mismatch_is_informational() -> Non
     payload["application_version"] = "9.9.9"
     restored = parse_project(json.dumps(payload))
     assert restored.application_version_mismatch is True
+
+
+def test_formal_curated_examples_do_not_recommend_candidate_branches() -> None:
+    examples = list_curated_examples()
+    formal_examples = [example for example in examples if example.workflow == "invariant" and example.mathematical_status == "formal"]
+    assert formal_examples
+    for example in formal_examples:
+        assert "sl2_spin1" not in example.recommended_branches
+        assert set(example.recommended_branches) <= {"sl2_fundamental", "sl3_fundamental"}
