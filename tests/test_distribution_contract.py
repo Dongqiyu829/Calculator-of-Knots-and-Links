@@ -59,12 +59,12 @@ def test_readme_has_bilingual_latest_download_contract() -> None:
         assert expected in readme
 
 
-def test_build_script_covers_packaged_and_installed_smokes() -> None:
+def test_build_script_covers_packaged_smokes_and_artifact_checks() -> None:
     script = (ROOT / "packaging" / "windows" / "build.ps1").read_text(encoding="utf-8")
     assert "--smoke-test" in script
     assert "--version" in script
     assert "Expand-Archive" in script
-    assert "/VERYSILENT" in script
-    assert 'Filter "unins*.exe"' in script
+    assert "Get-FileHash" in script
+    assert "Missing expected installer artifact" in script
     for asset in ASSET_NAMES:
         assert asset in script

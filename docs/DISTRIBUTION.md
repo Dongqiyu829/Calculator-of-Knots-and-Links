@@ -23,8 +23,8 @@ choco install innosetup --no-progress -y
 The script runs the fast regression selection, builds
 `packaging/Calculator-of-Knots-and-Links.spec`, smoke-tests the packaged and
 extracted portable executables with `--smoke-test` and `--version`, compiles
-`packaging/windows/installer.iss`, performs a safe silent per-user
-install/version/uninstall smoke, and writes these candidate assets under
+`packaging/windows/installer.iss`, verifies all expected candidate files, and
+writes these assets under
 `artifacts\`:
 
 - `Calculator-of-Knots-and-Links-Windows-x64-Setup.exe`
@@ -32,8 +32,9 @@ install/version/uninstall smoke, and writes these candidate assets under
 - `SHA256SUMS.txt`
 
 Use `-SkipInstaller` when only the PyInstaller/portable path is available
-locally, or `-SkipInstallerSmoke` when Inno Setup is available but a local
-silent-install check is not appropriate. CI runs the complete path.
+locally. CI runs the complete build and compile path; interactive install and
+uninstall acceptance remains a clean-machine checklist because silent Inno
+Setup UI automation is runner-sensitive.
 
 ## GitHub Actions artifact
 

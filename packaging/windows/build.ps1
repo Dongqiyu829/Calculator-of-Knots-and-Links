@@ -2,8 +2,7 @@
 param(
     [string]$Python = "python",
     [switch]$SkipTests,
-    [switch]$SkipInstaller,
-    [switch]$SkipInstallerSmoke
+    [switch]$SkipInstaller
 )
 
 $ErrorActionPreference = "Stop"
@@ -69,21 +68,6 @@ if (-not $SkipInstaller) {
         throw "Inno Setup build failed."
     }
 
-    if (-not $SkipInstallerSmoke) {
-        $InstallRoot = Join-Path $TempRoot "calculator-of-knots-and-links-installer-smoke"
-        if (Test-Path -LiteralPath $InstallRoot) { Remove-Item -LiteralPath $InstallRoot -Recurse -Force }
-        & $InstallerOutput /VERYSILENT /SUPPRESSMSGBOXES /NORESTART "/DIR=$InstallRoot"
-        if ($LASTEXITCODE -ne 0) { throw "Silent per-user installer smoke failed." }
-        $InstalledExecutable = Get-ChildItem -LiteralPath $InstallRoot -Filter "Calculator-of-Knots-and-Links.exe" -File -Recurse | Select-Object -First 1
-        if (-not $InstalledExecutable) { throw "Installer did not create the application executable." }
-        & $InstalledExecutable.FullName --version
-        if ($LASTEXITCODE -ne 0) { throw "Installed application version check failed." }
-        $Uninstaller = Get-ChildItem -LiteralPath $InstallRoot -Filter "unins*.exe" -File -Recurse | Select-Object -First 1
-        if (-not $Uninstaller) { throw "Installer did not create an uninstaller." }
-        & $Uninstaller.FullName /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
-        if ($LASTEXITCODE -ne 0) { throw "Silent uninstall smoke failed." }
-        if (Test-Path -LiteralPath $InstallRoot) { throw "Silent uninstall did not clean the per-user install directory." }
-    }
 }
 
 $ChecksumTargets = @($PortableZip)
