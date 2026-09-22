@@ -42,6 +42,7 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 ## M3 — Desktop application
 
 - [x] Create a PySide6 application shell.
+- [x] Add a convention-explicit custom R/check-R braid-operator engine through the application service boundary.
 - [ ] Add knot/link or braid input workflow.
 - [ ] Add invariant/calculation selection.
 - [ ] Add result display and copy/export support.

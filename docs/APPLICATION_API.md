@@ -23,6 +23,14 @@ and `evaluate_braid_input_result`); result reporting
 (`ApplicationBranchResult`, `ApplicationBraidResult`, filtering, formatting,
 and serialization helpers); and all `ApplicationServiceError` subclasses.
 
+The stable contract also includes the custom braid-operator surface:
+`parse_custom_matrix`, `validate_custom_matrix`,
+`build_custom_rmatrix_model`, `evaluate_custom_braid_operator`, and
+`serialize_custom_braid_operator_result`, together with their
+`ApplicationCustom*` DTOs and specific errors. This API requires an explicit
+`R` or `check-R` input kind and constructs operators only; it is not an
+invariant recipe. See `docs/CUSTOM_RMATRIX_ENGINE.md`.
+
 Catalog snapshots expose labels, braid data, display word, notes, expected
 components/crossing count, and recovered display metadata without exposing
 catalog objects. Result and catalog DTOs are frozen/read-only at the dataclass
