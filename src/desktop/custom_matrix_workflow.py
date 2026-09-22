@@ -294,8 +294,7 @@ class CustomMatrixWorkflow(QWidget):
             self._last_validation = result
             self.validation_output.setPlainText(self._format_validation(result))
             self._update_growth_warning()
-            state = "valid braid representation input" if result.is_valid else "validation found input errors"
-            self.status_label.setText(f"Validation complete: {state}.")
+            self.status_label.setText(self._validation_completion_message(result))
         else:
             assert isinstance(result, ApplicationCustomBraidOperatorResult)
             self._last_result = result
@@ -353,8 +352,6 @@ class CustomMatrixWorkflow(QWidget):
 
     @staticmethod
     def _format_validation(validation: ApplicationCustomMatrixValidation) -> str:
-        relation = "not requested" if validation.check_r_braid_relation_satisfied is None else str(validation.check_r_braid_relation_satisfied)
-        ybe = "not requested/applicable" if validation.standard_r_ybe_satisfied is None else str(validation.standard_r_ybe_satisfied)
         lines = [
             f"Input kind: {validation.input_kind}",
             f"Matrix shape: {validation.matrix_shape}",
@@ -362,16 +359,35 @@ class CustomMatrixWorkflow(QWidget):
             f"Inferred local dimension: {validation.inferred_local_dimension}",
             f"Requested local dimension: {validation.requested_local_dimension}",
             f"Local dimension consistent: {validation.local_dimension_consistent}",
-            f"Invertible: {validation.invertible}",
-            f"check-R braid relation: {relation}",
-            f"Standard raw-R YBE: {ybe}",
-            f"Valid braid representation input: {validation.is_valid}",
+            f"Matrix input is structurally valid: {validation.is_structurally_valid}",
+            f"Invertibility: {validation.invertible}",
+            f"check-R braid relation: {validation.check_r_braid_relation_status}",
+            f"Standard raw-R YBE: {validation.standard_r_ybe_status}",
+            f"Braid-representation status: {validation.braid_representation_status}",
         ]
+        if validation.braid_representation_status == "not_checked":
+            lines.append("Braid-representation relation has not been verified.")
+        elif validation.braid_representation_status == "failed":
+            lines.append("Braid relation failed; this matrix is not a validated braid-group representation.")
+        elif validation.braid_representation_status == "undecidable":
+            lines.append("Braid-representation relation could not be decided from the requested symbolic check.")
         if validation.errors:
             lines.extend(["Errors:", *[f"- {error}" for error in validation.errors]])
         if validation.warnings:
             lines.extend(["Warnings:", *[f"- {warning}" for warning in validation.warnings]])
         return "\n".join(lines)
+
+    @staticmethod
+    def _validation_completion_message(validation: ApplicationCustomMatrixValidation) -> str:
+        if not validation.is_structurally_valid:
+            return "Validation complete: matrix input has structural errors."
+        if validation.braid_representation_status == "verified":
+            return "Validation complete: matrix input is structurally valid and the check-R braid relation is verified."
+        if validation.braid_representation_status == "failed":
+            return "Validation complete: matrix input is structurally valid, but the check-R braid relation failed."
+        if validation.braid_representation_status == "undecidable":
+            return "Validation complete: matrix input is structurally valid, but the requested braid relation is undecidable."
+        return "Validation complete: matrix input is structurally valid; the check-R braid relation was not checked."
 
     @staticmethod
     def _format_operator_result(result: ApplicationCustomBraidOperatorResult) -> str:
@@ -380,12 +396,17 @@ class CustomMatrixWorkflow(QWidget):
             f"Local dimension: {result.local_dimension}",
             f"Braid: {result.braid_label}; {result.braid_strand_count} strands; generators {list(result.braid_generators)}",
             f"Operator dimensions: {result.operator_dimensions}",
+            f"Braid-representation status: {result.validation.braid_representation_status}",
             "Operator matrix:",
             result.operator_text,
             "Generator diagnostics:",
             *[str(diagnostic) for diagnostic in result.ordered_generator_diagnostics],
             "Boundary: no trace, Markov normalization, framing correction, or invariant claim.",
         ]
+        if result.validation.braid_representation_status == "not_checked":
+            lines.append("This is a constructed local operator; its braid-representation relation has not been verified.")
+        elif result.validation.braid_representation_status == "failed":
+            lines.append("This operator was constructed, but its requested braid relation failed validation.")
         if result.warnings:
             lines.extend(["Warnings:", *[f"- {warning}" for warning in result.warnings]])
         return "\n".join(lines)

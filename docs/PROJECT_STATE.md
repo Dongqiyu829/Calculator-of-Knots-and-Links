@@ -170,3 +170,11 @@ the resulting matrix, diagnostics, warnings, and copy/export JSON. Expensive
 service operations run in a Qt worker thread. This UI adds no invariant
 normalization and states that boundary prominently; built-in invariant
 evaluation remains a separate M3 task.
+
+Custom-matrix validation now distinguishes structural input validity from
+verified braid-representation evidence. The optional check-R relation is shown
+as verified, failed, not checked, or symbolically undecidable; a structurally
+valid matrix is never presented as a braid representation solely because it
+has no input errors. The known `diag(1,2,3,4)` negative control remains
+constructible by the intentionally permissive operator engine but is visibly
+reported as relation failure.

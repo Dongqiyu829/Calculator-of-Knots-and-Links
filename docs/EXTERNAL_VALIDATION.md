@@ -86,7 +86,8 @@ Negative controls ensure that the suite can fail for the intended reasons:
   custom-service contract tests; and
 - the square, tensor-dimension-valid, invertible matrix
   `diag(1,2,3,4)` explicitly reports
-  `check_r_braid_relation_satisfied == false`.
+  `check_r_braid_relation_satisfied == false`. Its structural validity does
+  not make it a verified braid-group representation.
 
 ## Running the suite
 

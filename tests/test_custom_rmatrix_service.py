@@ -123,3 +123,39 @@ def test_relation_names_remain_mathematically_distinct() -> None:
     assert validation.check_r_braid_relation_satisfied is True
     assert validation.standard_r_ybe_satisfied is None
     assert any("input kind is check-R" in warning for warning in validation.warnings)
+
+
+def test_structural_validity_and_braid_representation_evidence_are_distinct() -> None:
+    unchecked = validate_custom_matrix(sp.eye(4), input_kind="check-R")
+    bad_relation = validate_custom_matrix(
+        sp.diag(1, 2, 3, 4),
+        input_kind="check-R",
+        check_braid_relation=True,
+    )
+    recovered = build_sl2_fundamental_rmatrix(sp.Integer(2))
+    verified = validate_custom_matrix(
+        recovered.braid_matrix,
+        input_kind="check-R",
+        check_braid_relation=True,
+    )
+
+    assert unchecked.is_valid is True
+    assert unchecked.is_structurally_valid is True
+    assert unchecked.check_r_braid_relation_status == "not_checked"
+    assert unchecked.braid_representation_status == "not_checked"
+
+    assert bad_relation.is_valid is True
+    assert bad_relation.is_structurally_valid is True
+    assert bad_relation.invertible is True
+    assert bad_relation.check_r_braid_relation_satisfied is False
+    assert bad_relation.check_r_braid_relation_status == "failed"
+    assert bad_relation.braid_representation_status == "failed"
+
+    assert verified.is_structurally_valid is True
+    assert verified.check_r_braid_relation_satisfied is True
+    assert verified.check_r_braid_relation_status == "verified"
+    assert verified.braid_representation_status == "verified"
+    serialized = verified.to_dict()
+    assert serialized["is_valid"] is True
+    assert serialized["is_structurally_valid"] is True
+    assert serialized["braid_representation_status"] == "verified"

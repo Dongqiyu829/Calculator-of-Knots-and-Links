@@ -47,6 +47,25 @@ The two statuses remain distinct in all application DTOs. Simplification can be
 disabled for validation and operator construction. Operator dimensions above
 1024 produce a warning because tensor growth can be expensive.
 
+`ApplicationCustomMatrixValidation.is_valid` is retained for compatibility and
+means only **structural/application-input validity**: no shape, tensor-square,
+dimension, or input-kind error was found. It does not prove a braid-group
+representation. Frontends should use `is_structurally_valid`,
+`check_r_braid_relation_status`, `standard_r_ybe_status`, and
+`braid_representation_status` to render evidence precisely:
+
+- `not_checked` means no requested relation evidence is available.
+- `verified` means the requested relation test passed.
+- `failed` means the requested relation test failed, even if the input remains
+  structurally valid and invertible.
+- `undecidable` preserves a symbolic check that cannot be resolved.
+
+For a check-R input, `braid_representation_status` is the check-R relation
+status after structural validity is established. Optional checks remain
+optional: an unchecked or failed relation does not silently change the
+operator-construction behavior, but it must not be presented as a validated
+braid representation.
+
 ## Application API
 
 Use the `src.services` facade:
@@ -79,3 +98,9 @@ generators visibly warn that an invertible `check-R` is required; the service
 remains responsible for the definitive failure if an inverse is requested from
 a singular matrix. The UI estimates tensor growth before construction and
 repeats the operator-only / non-invariant boundary in its results.
+
+The desktop validation view says “Matrix input is structurally valid” only for
+the structural status, then reports the check-R relation independently as
+verified, failed, or not checked. A constructed operator whose relation was not
+checked (or failed) remains visibly distinct from a validated braid-group
+representation.
