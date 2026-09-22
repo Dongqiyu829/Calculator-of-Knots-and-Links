@@ -16,12 +16,18 @@ The M3 contract consists of branch discovery (`list_evaluation_branches`,
 `DEFAULT_EVALUATION_MODEL_IDS`, and `branch_ids_for_models`); built-in example
 discovery (`ApplicationCatalogExample`, `list_catalog_examples`, and
 `get_catalog_example`); input construction/parsing (`BraidInputState`,
-`parse_generator_text`, `build_catalog_braid_input`, `build_custom_braid_word`,
-and `build_custom_braid_input`); result-returning evaluation
+`parse_generator_text`, `parse_q_text`, `build_catalog_braid_input`,
+`build_custom_braid_word`, and `build_custom_braid_input`); result-returning
+evaluation
 (`evaluate_catalog_result`, `evaluate_braid_result`, `evaluate_custom_result`,
 and `evaluate_braid_input_result`); result reporting
 (`ApplicationBranchResult`, `ApplicationBraidResult`, filtering, formatting,
 and serialization helpers); and all `ApplicationServiceError` subclasses.
+
+`parse_q_text` is the maintained frontend boundary for invariant parameters. It
+keeps integer and rational input exact, accepts the active symbolic `q`
+convention and other SymPy expressions, and reports invalid text as a typed
+service error rather than coercing it to floating point.
 
 The stable contract also includes the custom braid-operator surface:
 `parse_custom_matrix`, `validate_custom_matrix`,

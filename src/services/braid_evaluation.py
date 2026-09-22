@@ -18,7 +18,7 @@ from src.invariants.branch_registry import evaluate_current_branches
 from src.invariants.multibranch_benchmark import MultiBranchBenchmarkEntry
 
 from .branch_catalog import validate_branch_ids
-from .errors import BraidInputValidationError, GeneratorParseError, UnknownCatalogExampleError
+from .errors import BraidInputValidationError, GeneratorParseError, QParameterParseError, UnknownCatalogExampleError
 from .results import ApplicationBraidResult, application_braid_result_from_internal
 
 
@@ -33,6 +33,28 @@ class BraidInputState:
     expected_components: int | None = None
     expected_crossing_count: int | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
+
+
+_Q_PARAMETER = sp.Symbol("q", nonzero=True)
+
+
+def parse_q_text(q_text: str) -> sp.Expr:
+    """Parse an exact or symbolic q value through the frontend service boundary.
+
+    Integers and rationals retain SymPy exactness. The conventional text ``q``
+    receives the same nonzero symbolic assumptions used by the current branch
+    evaluators; other SymPy-compatible expressions remain available unchanged.
+    """
+
+    if not isinstance(q_text, str) or not q_text.strip():
+        raise QParameterParseError("q must be supplied as a non-empty SymPy-compatible expression such as 2, 3/2, or q.")
+    try:
+        parameter = sp.sympify(q_text.strip(), locals={"q": _Q_PARAMETER})
+    except (sp.SympifyError, TypeError, ValueError) as exc:
+        raise QParameterParseError("q must be a SymPy-compatible expression such as 2, 3/2, or q.") from exc
+    if not isinstance(parameter, sp.Expr):
+        raise QParameterParseError("q must be a scalar SymPy expression such as 2, 3/2, or q.")
+    return parameter
 
 
 def parse_generator_text(generator_text: str) -> tuple[int, ...]:

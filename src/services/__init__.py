@@ -34,6 +34,7 @@ from .braid_evaluation import (
     evaluate_custom_braid,
     evaluate_custom_result,
     parse_generator_text,
+    parse_q_text,
 )
 from .results import (
     ApplicationBraidResult,
@@ -50,6 +51,7 @@ from .errors import (
     BraidInputError,
     BraidInputValidationError,
     GeneratorParseError,
+    QParameterParseError,
     UnknownCatalogExampleError,
     UnknownEvaluationBranchError,
     UnknownEvaluationModelError,
@@ -71,6 +73,7 @@ __all__ = [
     "DEFAULT_EVALUATION_MODEL_IDS",
     "EvaluationBranchDescriptor",
     "GeneratorParseError",
+    "QParameterParseError",
     "CustomBraidOperatorError",
     "CustomMatrixInputError",
     "UnknownCatalogExampleError",
@@ -101,6 +104,7 @@ __all__ = [
     "list_catalog_examples",
     "list_evaluation_branches",
     "parse_generator_text",
+    "parse_q_text",
     "parse_custom_matrix",
     "serialize_custom_braid_operator_result",
     "serialize_application_braid_result",

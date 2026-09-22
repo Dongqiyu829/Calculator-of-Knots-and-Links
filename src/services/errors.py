@@ -15,6 +15,10 @@ class GeneratorParseError(BraidInputError):
     """Raised when generator text cannot be parsed as signed integers."""
 
 
+class QParameterParseError(ApplicationServiceError):
+    """Raised when a frontend q parameter is not SymPy-compatible text."""
+
+
 class BraidInputValidationError(BraidInputError):
     """Raised when parsed input violates the existing BraidWord validation rules."""
 
