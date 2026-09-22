@@ -31,7 +31,7 @@ The archived P01 and P03 symbolic audit JSON outputs also reproduce exactly.
 
 ## Immediate objective
 
-M3 desktop functionality and M4 Windows distribution are complete. The public `v0.1.0` tag has been created, and M5 productization is active. The maintained PySide6 application now adds a Qt-native braid diagram on top of the existing built-in invariant and custom R/check-R workflows, without changing mathematical behavior.
+M3 desktop functionality, M4 Windows distribution, and M5 productization are complete. The public `v0.1.0` release is available, while current main contains the post-v0.1.0 braid visualization, curated examples, project save/load, mathematical explanation UX, unified export routes, and bilingual offline user documentation intended for the next maintenance release.
 
 ## Architecture direction
 
@@ -191,7 +191,7 @@ The first M4 step deliberately favors a reliable folder-style bundle over a frag
 The `v0.1.0` tag is now published. The installer remains unsigned and installs per-user under `%LOCALAPPDATA%\Programs` without PATH changes or elevation. See `docs/DISTRIBUTION.md`.
 
 
-### M5 — Productization (in progress)
+### M5 — Productization (complete)
 
 The maintained PySide6 frontend now includes a deterministic Qt-native braid preview for both built-in/custom-braid invariant input and the custom R/check-R workflow. It consumes validated service-layer braid words, preserves project-native Artin signs and generator order, renders explicit over/under crossing semantics, reports writhe/final permutation metadata, and supports fit, zoom/pan, SVG export, and PNG export. Renderer-independent geometry tests cover positive/negative crossings, mixed-sign words, identity braids, long words, permutation, and deterministic SVG output.
 
