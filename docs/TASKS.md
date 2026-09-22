@@ -41,7 +41,7 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 
 ## M3 — Desktop application
 
-- [ ] Create a PySide6 application shell.
+- [x] Create a PySide6 application shell.
 - [ ] Add knot/link or braid input workflow.
 - [ ] Add invariant/calculation selection.
 - [ ] Add result display and copy/export support.

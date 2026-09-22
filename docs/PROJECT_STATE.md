@@ -35,8 +35,9 @@ Maintain the installable Python baseline and practical test tiers while retainin
 the recovered `src` package and its mathematical behavior. M2 is complete: its
 `src.services` API supplies input parsing/evaluation, branch and built-in-example
 discovery, structured errors, result DTOs, and application reports. Maintained
-workbench and Tkinter compatibility adapters share that path. The immediate next
-milestone is M3 — PySide6 desktop application.
+workbench and Tkinter compatibility adapters share that path. M3 has begun with
+a maintained PySide6 shell that reads lightweight catalog and branch metadata
+only through `src.services`; it performs no invariant evaluation on startup.
 
 ## Architecture direction
 
@@ -139,3 +140,11 @@ eigenvalue, polynomial, formal/candidate, or representative-regression behavior
 changed. The candidate sl2 spin-1 normalization remains deliberately unresolved
 research but does not block an M3 frontend that displays its established status.
 There is no known engineering dependency blocking M3.
+
+### M3 — Desktop application (in progress)
+
+The first PySide6 `QMainWindow` shell is available through `python -m src.desktop`
+after installing the `desktop` dependency group. It provides a service-driven
+example source panel, visible formal/candidate branch status, workspace/status
+areas, and standard Exit/About routes. It deliberately does not yet edit braids,
+evaluate invariants, create workers, export files, or replace Tkinter.

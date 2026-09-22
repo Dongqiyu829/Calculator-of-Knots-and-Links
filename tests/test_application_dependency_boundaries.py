@@ -76,3 +76,15 @@ def test_maintained_frontends_use_the_service_for_catalog_access() -> None:
             if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith("src.catalog"):
                 violations.append(path.relative_to(PROJECT_ROOT).as_posix())
     assert violations == []
+
+
+def test_desktop_shell_does_not_import_deep_mathematical_or_tkinter_modules() -> None:
+    forbidden_prefixes = ("src.invariants", "src.rmatrix", "src.algebra", "src.gui")
+    violations = []
+    for path in sorted((PROJECT_ROOT / "src" / "desktop").glob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in ast.walk(tree):
+            module = node.module if isinstance(node, ast.ImportFrom) else None
+            if module and module.startswith(forbidden_prefixes):
+                violations.append(f"{path.relative_to(PROJECT_ROOT).as_posix()}: {module}")
+    assert violations == []
