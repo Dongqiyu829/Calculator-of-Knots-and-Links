@@ -28,6 +28,24 @@ The installer is unsigned, so Windows SmartScreen may show its usual warning for
 
 **安装说明：** 运行安装程序，保留默认的当前用户安装位置，然后从开始菜单启动（可选创建桌面快捷方式）。无需管理员权限，也不会修改 PATH。
 
+## Screenshots and demo / 截图与演示
+
+Public screenshots are refreshed from the real maintained PySide6 application;
+the repository does not use fabricated mockups. Maintainers can reproduce the
+captures after installing the desktop dependencies with:
+
+```powershell
+python tools/capture_desktop_screenshots.py --output-dir docs/images
+```
+
+On a headless Linux maintainer machine, set `QT_QPA_PLATFORM=offscreen` before
+running the same command. The script loads the maintained trefoil and custom
+sl2 check-R examples, captures the actual workflow and explanation dock, and
+does not evaluate an invariant. Review the resulting `docs/images/*.png` files
+on Windows before publishing them. See [the screenshot refresh notes](docs/images/README.md).
+
+公共截图由真实维护中的 PySide6 应用刷新，不使用虚构的界面模型。安装桌面依赖后，维护者可运行上面的命令生成截图；脚本只加载维护中的示例，不会计算不变量。发布前请在 Windows 上检查生成的 `docs/images/*.png`。
+
 ## Current status
 
 The historical source recovery, package/test baseline, service-layer refactor, and the core M3 desktop workflow are complete.

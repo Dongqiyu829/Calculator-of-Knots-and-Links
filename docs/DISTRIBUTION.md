@@ -81,5 +81,7 @@ Code signing and a published `v0.1.0` release remain outside this PR.
 - The bundle contains the maintained PySide6 application and runtime
   dependencies; it does not intentionally package development/test files or
   the historical Tkinter frontends.
+- The onedir bundle also includes the offline `docs/USER_GUIDE.md` and
+  `docs/MATHEMATICAL_IMPLEMENTATION.md` resources used by the Help menu.
 - The build does not alter braid, R-matrix, q, trace, framing, normalization,
   branch-status, regression-fixture, or Knot Atlas behavior.
