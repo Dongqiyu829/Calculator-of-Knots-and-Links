@@ -4,7 +4,7 @@ This document is the main mathematical guide to **Calculator of Knots and Links*
 
 It explains the path
 
-$$
+```math
 \text{braid word}
 \longrightarrow
 \text{local }R/\check R
@@ -14,7 +14,7 @@ $$
 \text{weighted trace / normalization}
 \longrightarrow
 \text{branch output},
-$$
+```
 
 and it records where each mathematical step is implemented, what convention is used, what has been externally validated, and what remains candidate status.
 
@@ -109,7 +109,7 @@ The important architectural rule is that the desktop frontend does not reproduce
 
 A braid on $n$ strands is represented by an ordered word
 
-$$
+```math
 \beta
 =
 \sigma_{i_1}^{\varepsilon_1}
@@ -118,7 +118,7 @@ $$
 \sigma_{i_m}^{\varepsilon_m},
 \qquad
 \varepsilon_k\in\{+1,-1\}.
-$$
+```
 
 The code stores this as:
 
@@ -135,9 +135,9 @@ For example,
 
 means
 
-$$
+```math
 \sigma_1\sigma_2^{-1}\sigma_1\sigma_2^{-1}.
-$$
+```
 
 This is the project presentation of the figure-eight knot used by the catalog.
 
@@ -149,9 +149,9 @@ The implementation rejects:
 
 The writhe is
 
-$$
+```math
 w(\beta)=\sum_{k=1}^m \varepsilon_k.
-$$
+```
 
 It is used later in the EYB framing/Markov normalization factor.
 
@@ -161,17 +161,17 @@ The order stored in `BraidWord.generators` is the order used by the matrix build
 
 If the word is
 
-$$
+```math
 (g_1,g_2,\ldots,g_m),
-$$
+```
 
 the global operator is built as
 
-$$
+```math
 \rho(\beta)
 =
 \rho(g_1)\rho(g_2)\cdots\rho(g_m).
-$$
+```
 
 In code, `BraidOperatorBuilder` starts with the identity matrix and repeatedly performs
 
@@ -193,68 +193,68 @@ The representation layer is intentionally explicit because a matrix is meaningle
 
 The local representation $V$ has dimension $2$, with basis ordered from highest to lowest weight:
 
-$$
+```math
 (v_1,v_2).
-$$
+```
 
 The tensor-square basis is lexicographic:
 
-$$
+```math
 (v_1\otimes v_1,\,
 v_1\otimes v_2,\,
 v_2\otimes v_1,\,
 v_2\otimes v_2).
-$$
+```
 
 The decomposition is
 
-$$
+```math
 V\otimes V \cong V_{J=1}\oplus V_{J=0},
-$$
+```
 
 with dimensions
 
-$$
+```math
 2\otimes2=3\oplus1.
-$$
+```
 
 The maintained braid eigenvalues are
 
-$$
+```math
 \lambda_{J=1}=q,
 \qquad
 \lambda_{J=0}=-q^{-1}.
-$$
+```
 
 ### 4.2 $U_q(\mathfrak{sl}_2)$ spin-1
 
 The representation has dimension $3$, with weight basis
 
-$$
+```math
 (w_1,w_0,w_{-1}).
-$$
+```
 
 The tensor-square decomposition is
 
-$$
+```math
 3\otimes3=5\oplus3\oplus1,
-$$
+```
 
 corresponding to
 
-$$
+```math
 J=2,\quad J=1,\quad J=0.
-$$
+```
 
 The current local braid eigenvalues are
 
-$$
+```math
 \lambda_{J=2}=q^4,
 \qquad
 \lambda_{J=1}=-1,
 \qquad
 \lambda_{J=0}=q^{-2}.
-$$
+```
 
 This local $9\times9$ structure is internally validated, but the final branch normalization is still candidate status.
 
@@ -262,31 +262,31 @@ This local $9\times9$ structure is internally validated, but the final branch no
 
 The representation has dimension $3$, with basis
 
-$$
+```math
 (e_1,e_2,e_3).
-$$
+```
 
 The tensor square decomposes as
 
-$$
+```math
 3\otimes3=6\oplus\overline 3.
-$$
+```
 
 The maintained braid eigenvalues are
 
-$$
+```math
 \lambda_{\mathrm{sym}}=q,
 \qquad
 \lambda_{\mathrm{antisym}}=-q^{-1}.
-$$
+```
 
 The tensor basis is again lexicographic:
 
-$$
+```math
 e_1\otimes e_1,\,
 e_1\otimes e_2,\ldots,
 e_3\otimes e_3.
-$$
+```
 
 ---
 
@@ -301,15 +301,15 @@ The data object `RMatrixData` stores two different matrices:
 
 They are related by
 
-$$
+```math
 \check R = P R,
-$$
+```
 
 where $P$ is the tensor-factor swap,
 
-$$
+```math
 P(v_i\otimes v_j)=v_j\otimes v_i.
-$$
+```
 
 The implementation of $P$ is `swap_operator(local_dim)`.
 
@@ -323,21 +323,21 @@ This is why the custom-matrix UI never guesses whether the user pasted $R$ or $\
 
 For a direct braid operator $\check R$, the relevant relation is the braid-form Yang-Baxter relation
 
-$$
+```math
 \check R_{12}\check R_{23}\check R_{12}
 =
 \check R_{23}\check R_{12}\check R_{23}.
-$$
+```
 
 This is exactly the Artin braid relation for adjacent generators on three tensor factors.
 
 For a raw $R$, the program can separately check the standard form
 
-$$
+```math
 R_{12}R_{13}R_{23}
 =
 R_{23}R_{13}R_{12}.
-$$
+```
 
 These are intentionally represented as different validation statuses.
 
@@ -352,9 +352,9 @@ For custom matrices, `ApplicationCustomMatrixValidation` distinguishes:
 
 A matrix can be square, dimension-compatible, and invertible while still failing the braid relation. The test suite explicitly uses
 
-$$
+```math
 \operatorname{diag}(1,2,3,4)
-$$
+```
 
 as such a negative control.
 
@@ -366,58 +366,58 @@ The sl2 implementation is not a hard-coded table for each representation. Both t
 
 Let the highest weight be $m$, so $\dim V=m+1$. The ordered weights are
 
-$$
+```math
 m,\;m-2,\;m-4,\ldots,-m.
-$$
+```
 
 The implementation constructs $E$ and $F$ using q-integers
 
-$$
+```math
 [n]_q=\frac{q^n-q^{-n}}{q-q^{-1}},
-$$
+```
 
 and
 
-$$
+```math
 [n]_q! = \prod_{k=1}^{n}[k]_q.
-$$
+```
 
 In the code normalization, define the diagonal factor $D$ on a weight basis vector $v_a\otimes v_b$ by
 
-$$
+```math
 D(v_a\otimes v_b)
 =
 q^{h_a h_b/2}(v_a\otimes v_b),
-$$
+```
 
 where $h_a,h_b$ are the corresponding weights.
 
 The nilpotent part implemented is
 
-$$
+```math
 N
 =
 \sum_{r=0}^{m}
 q^{r(r-1)/2}
 \frac{(q-q^{-1})^r}{[r]_q!}
 E^r\otimes F^r.
-$$
+```
 
 The raw matrix used by this project is
 
-$$
+```math
 R_{\mathrm{raw}}
 =
 q^{m^2/2} D N.
-$$
+```
 
 This scalar normalization is important: it is the one chosen in the recovered code so that $m=1$ reproduces the existing fundamental $4\times4$ matrix exactly.
 
 Then the local braid operator is
 
-$$
+```math
 \check R = P R_{\mathrm{raw}}.
-$$
+```
 
 For:
 
@@ -434,7 +434,7 @@ The sl3 fundamental builder uses the standard Hecke-type matrix formula in terms
 
 The exact raw matrix implemented is
 
-$$
+```math
 R
 =
 q\sum_i E_{ii}\otimes E_{ii}
@@ -442,23 +442,23 @@ q\sum_i E_{ii}\otimes E_{ii}
 \sum_{i\ne j}E_{ii}\otimes E_{jj}
 +
 (q-q^{-1})\sum_{i<j}E_{ij}\otimes E_{ji}.
-$$
+```
 
 Then
 
-$$
+```math
 \check R = PR.
-$$
+```
 
 The resulting $9\times9$ braid operator has the two channel eigenvalues
 
-$$
+```math
 q
 \quad\text{on }6,
 \qquad
 -q^{-1}
 \quad\text{on }\overline3.
-$$
+```
 
 The project also constructs explicit spectral projectors for these channels.
 
@@ -468,12 +468,12 @@ The project also constructs explicit spectral projectors for these channels.
 
 When a braid matrix $B$ has distinct channel eigenvalues, the repository constructs the projector onto the $\lambda$-eigenspace by Lagrange interpolation:
 
-$$
+```math
 P_\lambda
 =
 \prod_{\mu\ne\lambda}
 \frac{B-\mu I}{\lambda-\mu}.
-$$
+```
 
 This is implemented by `spectral_projector` in `src/rmatrix/projectors.py`.
 
@@ -481,28 +481,28 @@ For a family of projectors, the code validates:
 
 ### Idempotency
 
-$$
+```math
 P_\lambda^2=P_\lambda.
-$$
+```
 
 ### Sum to identity
 
-$$
+```math
 \sum_\lambda P_\lambda=I.
-$$
+```
 
 ### Pairwise orthogonality
 
-$$
+```math
 P_\lambda P_\mu=0
 \qquad(\lambda\ne\mu).
-$$
+```
 
 ### Reconstruction
 
-$$
+```math
 B=\sum_\lambda \lambda P_\lambda.
-$$
+```
 
 For sl3, this realizes the $6\oplus\overline3$ channel split.
 
@@ -518,37 +518,37 @@ Suppose $V$ has dimension $d$, and $\check R\in\operatorname{End}(V\otimes V)$.
 
 For an $n$-strand braid, the positive Artin generator is represented by
 
-$$
+```math
 \rho(\sigma_i)
 =
 I^{\otimes(i-1)}
 \otimes \check R
 \otimes
 I^{\otimes(n-i-1)}.
-$$
+```
 
 For a negative generator,
 
-$$
+```math
 \rho(\sigma_i^{-1})
 =
 I^{\otimes(i-1)}
 \otimes \check R^{-1}
 \otimes
 I^{\otimes(n-i-1)}.
-$$
+```
 
 The full space has dimension
 
-$$
+```math
 d^n.
-$$
+```
 
 Therefore $\rho(\beta)$ is a
 
-$$
+```math
 d^n\times d^n
-$$
+```
 
 matrix.
 
@@ -571,9 +571,9 @@ For every generator it stores diagnostics including:
 
 Given a global braid operator $\rho(\beta)$, the most immediate scalar is
 
-$$
+```math
 \operatorname{Tr}(\rho(\beta)).
-$$
+```
 
 The code computes this in `compute_raw_closure_trace`.
 
@@ -585,9 +585,9 @@ An ordinary matrix trace alone does not provide the needed normalization in gene
 
 So the program keeps
 
-$$
+```math
 \text{raw closure trace}
-$$
+```
 
 as a separate output layer.
 
@@ -599,7 +599,7 @@ The maintained formal braid-side normalization is implemented in `src/invariants
 
 For a braid $\beta$ on $n$ strands, with writhe $w(\beta)$, the code computes
 
-$$
+```math
 F(\beta)
 =
 \alpha^{-w(\beta)}
@@ -608,7 +608,7 @@ F(\beta)
 \left(
 \rho(\beta)\mu^{\otimes n}
 \right).
-$$
+```
 
 To avoid confusing the scalar $\beta_0$ with the braid word $\beta$, this guide writes the EYB scalar as $\beta_0$. In the Python API its field name is simply `beta`.
 
@@ -621,18 +621,18 @@ The pieces have distinct roles:
 
 The code separately records
 
-$$
+```math
 \operatorname{Tr}(\rho(\beta))
-$$
+```
 
 and
 
-$$
+```math
 \operatorname{Tr}
 \left(
 \rho(\beta)\mu^{\otimes n}
 \right)
-$$
+```
 
 before normalization.
 
@@ -640,7 +640,7 @@ before normalization.
 
 The current project uses
 
-$$
+```math
 \mu=
 \begin{pmatrix}
 q^{-1}&0\\
@@ -650,33 +650,33 @@ q^{-1}&0\\
 \alpha=q^2,
 \qquad
 \beta_0=1.
-$$
+```
 
 ### sl3 fundamental EYB data
 
 The current project uses
 
-$$
+```math
 \mu=
 \operatorname{diag}(q^{-2},1,q^2),
 \qquad
 \alpha=q^3,
 \qquad
 \beta_0=1.
-$$
+```
 
 ### sl2 spin-1 candidate data
 
 The current candidate layer uses
 
-$$
+```math
 \mu=
 \operatorname{diag}(q^{-2},1,q^2),
 \qquad
 \alpha=q^4,
 \qquad
 \beta_0=1.
-$$
+```
 
 The local spin-1 matrix and projector structure are validated, but this final normalization remains candidate status.
 
@@ -688,7 +688,7 @@ The formal sl2 branch is not defined as â€œwhatever comes out of the raw trace.â
 
 The pipeline is:
 
-$$
+```math
 \text{sl2 fundamental }\check R
 \longrightarrow
 \rho(\beta)
@@ -697,7 +697,7 @@ F_{\mathrm{EYB}}(\beta)
 \longrightarrow
 \frac{F_{\mathrm{EYB}}(\beta)}
 {F_{\mathrm{EYB}}(\text{1-strand unknot})}.
-$$
+```
 
 The code calls:
 
@@ -708,7 +708,7 @@ The code calls:
 
 Thus
 
-$$
+```math
 J_{\mathrm{project}}(\beta;q)
 =
 \frac{
@@ -716,19 +716,19 @@ F_{\mathrm{EYB}}(\beta;q)
 }{
 F_{\mathrm{EYB}}(\bigcirc;q)
 }.
-$$
+```
 
 The maintained project variable statement is
 
-$$
+```math
 t=q^{-2}.
-$$
+```
 
 Independent Knot Atlas calibration is recorded using a different Atlas variable name and gives
 
-$$
+```math
 q_{\mathrm{Atlas}}=q_{\mathrm{project}}^2.
-$$
+```
 
 These are not contradictory: they refer to different naming conventions used by different comparison layers.
 
@@ -740,9 +740,9 @@ The implementation is in `src/invariants/jones_invariant.py`.
 
 The catalog trefoil is represented by
 
-$$
+```math
 \beta=\sigma_1^3
-$$
+```
 
 on two strands, stored as
 
@@ -752,63 +752,63 @@ on two strands, stored as
 
 with writhe
 
-$$
+```math
 w=3.
-$$
+```
 
 For the sl2 fundamental branch,
 
-$$
+```math
 \rho(\beta)=\check R^3.
-$$
+```
 
 The EYB layer computes
 
-$$
+```math
 q^{-6}
 \operatorname{Tr}
 \left(
 \check R^3(\mu\otimes\mu)
 \right),
-$$
+```
 
 because $\alpha=q^2$, $w=3$, and $\beta_0=1$.
 
 After reduction by the one-strand unknot value, the frozen symbolic output is
 
-$$
+```math
 J_{\mathrm{project}}(3_1;q)
 =
 \frac{q^6+q^2-1}{q^8}.
-$$
+```
 
 At $q=2$, the representative regression value is
 
-$$
+```math
 \frac{67}{256}.
-$$
+```
 
 The external Knot Atlas fixture stores
 
-$$
+```math
 J_{\mathrm{Atlas}}(3_1;Q)
 =
 -Q^{-4}+Q^{-3}+Q^{-1}.
-$$
+```
 
 With
 
-$$
+```math
 Q=q^2,
-$$
+```
 
 this becomes exactly
 
-$$
+```math
 -q^{-8}+q^{-6}+q^{-2}
 =
 \frac{q^6+q^2-1}{q^8}.
-$$
+```
 
 This is a useful end-to-end example because it simultaneously checks:
 
@@ -825,14 +825,14 @@ This is a useful end-to-end example because it simultaneously checks:
 
 The project catalog uses the 3-strand braid
 
-$$
+```math
 \beta
 =
 \sigma_1
 \sigma_2^{-1}
 \sigma_1
 \sigma_2^{-1},
-$$
+```
 
 stored as
 
@@ -842,57 +842,57 @@ stored as
 
 For a local $d$-dimensional representation, the two embedded positive generators are
 
-$$
+```math
 \rho(\sigma_1)=\check R\otimes I_d,
-$$
+```
 
 and
 
-$$
+```math
 \rho(\sigma_2)=I_d\otimes\check R.
-$$
+```
 
 Hence the project constructs
 
-$$
+```math
 \rho(\beta)
 =
 (\check R\otimes I)
 (I\otimes\check R^{-1})
 (\check R\otimes I)
 (I\otimes\check R^{-1}).
-$$
+```
 
 For the formal sl2 branch, the frozen symbolic result is
 
-$$
+```math
 J_{\mathrm{project}}(4_1;q)
 =
 \frac{q^{10}+1}
 {q^4(q^2+1)}.
-$$
+```
 
 At $q=2$,
 
-$$
+```math
 J_{\mathrm{project}}(4_1;2)
 =
 \frac{205}{16}.
-$$
+```
 
 The Knot Atlas fixture stores
 
-$$
+```math
 J_{\mathrm{Atlas}}(4_1;Q)
 =
 Q^2+Q^{-2}-Q-Q^{-1}+1,
-$$
+```
 
 and the same global substitution
 
-$$
+```math
 Q=q^2
-$$
+```
 
 matches the project result.
 
@@ -906,13 +906,13 @@ The sl3 branch uses:
 2. $\check R=PR$;
 3. the global braid operator;
 4. the sl3 EYB data
-$$
+```math
    \mu=\operatorname{diag}(q^{-2},1,q^2),
    \quad
    \alpha=q^3,
    \quad
    \beta_0=1.
-$$
+```
 
 Its primary branch output is the resulting **P3-type EYB output**.
 
@@ -920,19 +920,19 @@ Unlike the sl2 Jones-compatible branch, the current sl3 primary output is not di
 
 That is why the one-strand catalog value is not normalized to $1$. For example, at $q=2$, the representative sl3 value for `unknot_1` is
 
-$$
+```math
 \frac{21}{4}.
-$$
+```
 
 This behavior is intentional and part of the frozen branch convention.
 
 Independent Knot Atlas A2 calibration finds a coherent variable correspondence
 
-$$
+```math
 q_{\mathrm{Atlas}}
 =
 q_{\mathrm{project}}^{-1}
-$$
+```
 
 for the tested $3_1,4_1,5_1,5_2$ cases.
 
@@ -944,15 +944,15 @@ The branch is therefore formal and externally checked within this stated normali
 
 The spin-1 branch starts from mathematically coherent local data:
 
-$$
+```math
 3\otimes3=5\oplus3\oplus1
-$$
+```
 
 and braid eigenvalues
 
-$$
+```math
 q^4,\quad -1,\quad q^{-2}.
-$$
+```
 
 Its projectors pass the structural checks described earlier.
 
@@ -960,18 +960,18 @@ The candidate invariant layer then computes:
 
 1. raw closure trace;
 2. weighted trace using
-$$
+```math
    \mu=\operatorname{diag}(q^{-2},1,q^2);
-$$
+```
 3. candidate EYB-style normalization with
-$$
+```math
    \alpha=q^4,\qquad\beta_0=1;
-$$
+```
 4. reduction by the one-strand unknot candidate value.
 
 So the candidate reduced output is
 
-$$
+```math
 C(\beta;q)
 =
 \frac{
@@ -983,7 +983,7 @@ q^{-4w(\beta)}
 }{
 C_{\mathrm{unreduced}}(\bigcirc;q)
 }.
-$$
+```
 
 The repository deliberately labels this output
 
@@ -999,10 +999,10 @@ The independent Knot Atlas suite compares the branch with A1 weight-2 data, whic
 
 The current external validation found no single coherent rule among the tested substitutions
 
-$$
+```math
 Q\in
 \{q,\;q^{-1},\;q^2,\;q^{-2}\}
-$$
+```
 
 plus a pure monomial shift that simultaneously resolves the calibration cases.
 
@@ -1028,15 +1028,15 @@ have a 3-dimensional local representation, so both produce $9\times9$ local brai
 
 But the decomposition data differ:
 
-$$
+```math
 3\otimes3=6\oplus\overline3
-$$
+```
 
 for sl3 fundamental, versus
 
-$$
+```math
 3\otimes3=5\oplus3\oplus1
-$$
+```
 
 for sl2 spin-1.
 
@@ -1056,9 +1056,9 @@ A user can provide either:
 
 The program computes
 
-$$
+```math
 \check R=PR.
-$$
+```
 
 ### Direct $\check R$
 
@@ -1079,10 +1079,10 @@ For a validated matrix, it constructs arbitrary braid words by the same embeddin
 
 If $\check R$ satisfies the braid relation, then the local data support the braid-group representation step:
 
-$$
+```math
 B_n\longrightarrow
 \operatorname{GL}(V^{\otimes n})
-$$
+```
 
 when the required inverses exist.
 
@@ -1090,9 +1090,9 @@ That alone does **not** supply a link invariant.
 
 A link invariant still needs suitable closure data, for example an enhanced Yang-Baxter package
 
-$$
+```math
 (\check R,\mu,\alpha,\beta_0)
-$$
+```
 
 or equivalent ribbon/quantum-trace structure satisfying the needed Markov compatibility.
 
@@ -1128,41 +1128,41 @@ The Knot Atlas calibration currently establishes:
 
 For Atlas `BR` data,
 
-$$
+```math
 g_{\mathrm{project}}=-g_{\mathrm{Atlas}}.
-$$
+```
 
 This was calibrated across $3_1,4_1,5_1,5_2$, not inferred from a single trefoil.
 
 For example, Atlas stores the trefoil braid as
 
-$$
+```math
 (-1,-1,-1),
-$$
+```
 
 while the project uses
 
-$$
+```math
 (1,1,1).
-$$
+```
 
 ### Jones variable map
 
-$$
+```math
 q_{\mathrm{Atlas}}
 =
 q_{\mathrm{project}}^2.
-$$
+```
 
 This is a hard regression across the external fixture set, including $6_1$.
 
 ### A2/sl3 variable map
 
-$$
+```math
 q_{\mathrm{Atlas}}
 =
 q_{\mathrm{project}}^{-1}.
-$$
+```
 
 This is a hard external regression for the calibrated sl3/A2 fundamental cases.
 
@@ -1217,12 +1217,12 @@ The mathematical core itself is not restricted to positive real q or generic q. 
 
 For a local braid matrix $B$, the current helper constructs the polynomial
 
-$$
+```math
 m_{\mathrm{candidate}}(x)
 =
 \prod_{\lambda\in\operatorname{Spec}_{\mathrm{distinct}}(B)}
 (x-\lambda).
-$$
+```
 
 For the semisimple built-in channel models this is the expected spectral minimal-polynomial form.
 
@@ -1442,11 +1442,11 @@ The current architecture leaves a clean extension point.
 
 A future custom invariant layer can require the user to supply, in addition to $R$ or $\check R$,
 
-$$
+```math
 \mu,\qquad
 \alpha,\qquad
 \beta_0,
-$$
+```
 
 together with the exact convention being claimed.
 
@@ -1547,20 +1547,20 @@ A quantum-group representation supplies a local operator on $V\otimes V$. After 
 
 The resulting matrix is not yet automatically a knot invariant. The closure step requires the correct weighted trace and normalization. The maintained fundamental branches use enhanced Yang-Baxter data
 
-$$
+```math
 (\mu,\alpha,\beta_0)
-$$
+```
 
 and compute
 
-$$
+```math
 \alpha^{-w}
 \beta_0^{-n}
 \operatorname{Tr}
 \left(
 \rho(\beta)\mu^{\otimes n}
 \right).
-$$
+```
 
 For sl2 fundamental, the result is additionally divided by the one-strand unknot value and exposed as the formal Jones-compatible output. For sl3 fundamental, the current formal branch exposes the P3-type EYB value in its present normalization. For sl2 spin-1, an analogous reduced output exists, but external comparison has not yet justified promoting that normalization beyond candidate status.
 
