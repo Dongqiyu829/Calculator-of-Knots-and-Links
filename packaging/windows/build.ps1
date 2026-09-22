@@ -74,13 +74,13 @@ if (-not $SkipInstaller) {
         if (Test-Path -LiteralPath $InstallRoot) { Remove-Item -LiteralPath $InstallRoot -Recurse -Force }
         & $InstallerOutput /VERYSILENT /SUPPRESSMSGBOXES /NORESTART "/DIR=$InstallRoot"
         if ($LASTEXITCODE -ne 0) { throw "Silent per-user installer smoke failed." }
-        $InstalledExecutable = Join-Path $InstallRoot "Calculator-of-Knots-and-Links.exe"
-        if (-not (Test-Path -LiteralPath $InstalledExecutable)) { throw "Installer did not create the application executable." }
-        & $InstalledExecutable --version
+        $InstalledExecutable = Get-ChildItem -LiteralPath $InstallRoot -Filter "Calculator-of-Knots-and-Links.exe" -File -Recurse | Select-Object -First 1
+        if (-not $InstalledExecutable) { throw "Installer did not create the application executable." }
+        & $InstalledExecutable.FullName --version
         if ($LASTEXITCODE -ne 0) { throw "Installed application version check failed." }
-        $Uninstaller = Join-Path $InstallRoot "unins000.exe"
-        if (-not (Test-Path -LiteralPath $Uninstaller)) { throw "Installer did not create an uninstaller." }
-        & $Uninstaller /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+        $Uninstaller = Get-ChildItem -LiteralPath $InstallRoot -Filter "unins*.exe" -File -Recurse | Select-Object -First 1
+        if (-not $Uninstaller) { throw "Installer did not create an uninstaller." }
+        & $Uninstaller.FullName /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
         if ($LASTEXITCODE -ne 0) { throw "Silent uninstall smoke failed." }
         if (Test-Path -LiteralPath $InstallRoot) { throw "Silent uninstall did not clean the per-user install directory." }
     }

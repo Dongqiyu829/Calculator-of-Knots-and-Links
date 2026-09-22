@@ -65,6 +65,6 @@ def test_build_script_covers_packaged_and_installed_smokes() -> None:
     assert "--version" in script
     assert "Expand-Archive" in script
     assert "/VERYSILENT" in script
-    assert "unins000.exe" in script
+    assert 'Filter "unins*.exe"' in script
     for asset in ASSET_NAMES:
         assert asset in script
