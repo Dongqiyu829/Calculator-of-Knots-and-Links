@@ -77,6 +77,14 @@ Supported features include:
 
 This workflow constructs braid operators only. An arbitrary R-matrix is **not** automatically treated as a knot/link invariant recipe: quantum trace/enhancement, Markov normalization, framing, and related data are separate mathematical structure.
 
+## Mathematical implementation
+
+For the full mathematical derivation and code map—from braid words and representation bases through raw \(R\), \(\check R = PR\), Yang-Baxter validation, tensor embedding, enhanced traces, branch normalization, worked trefoil/figure-eight examples, and the custom R-matrix extension—see:
+
+- [Mathematical Implementation Guide](docs/MATHEMATICAL_IMPLEMENTATION.md)
+
+The guide is intended for both human readers and AI coding agents. Exact convention records remain in `docs/MATH_CONVENTIONS.md`, while independent external checks remain in `docs/EXTERNAL_VALIDATION.md`.
+
 ## Mathematical validation
 
 The project keeps internal compatibility regression data separate from independent external validation.
@@ -129,6 +137,7 @@ Important project documents:
 - `docs/PROJECT_STATE.md` — current project state
 - `docs/TASKS.md` — prioritized task queue
 - `docs/APPLICATION_API.md` — supported frontend-neutral application API
+- `docs/MATHEMATICAL_IMPLEMENTATION.md` — complete end-to-end mathematical implementation guide
 - `docs/MATH_CONVENTIONS.md` — established braid/R-matrix/q/trace conventions
 - `docs/CUSTOM_RMATRIX_ENGINE.md` — custom R/check-R operator contract
 - `docs/EXTERNAL_VALIDATION.md` — independent Knot Atlas validation
