@@ -31,6 +31,7 @@ from src.services import (
     ApplicationCustomBraidOperatorResult,
     ApplicationCustomMatrixValidation,
     ApplicationServiceError,
+    build_custom_braid_input,
     build_custom_braid_word,
     build_custom_rmatrix_model,
     evaluate_custom_braid_operator,
@@ -38,6 +39,8 @@ from src.services import (
     serialize_custom_braid_operator_result,
     validate_custom_matrix,
 )
+
+from .braid_preview import BraidPreviewWidget
 
 
 @dataclass(frozen=True, slots=True)
@@ -175,12 +178,21 @@ class CustomMatrixWorkflow(QWidget):
         self.generator_input.setObjectName("customBraidGenerators")
         self.generator_input.setPlaceholderText("Signed generators, e.g. 1 -2 1")
         self.generator_input.textChanged.connect(self._update_negative_generator_warning)
+        self.strand_count_spin.valueChanged.connect(self._update_braid_preview)
+        self.generator_input.textChanged.connect(self._update_braid_preview)
         braid_layout.addRow("Generators:", self.generator_input)
         self.growth_warning = QLabel(braid_group)
         self.growth_warning.setObjectName("customDimensionWarning")
         self.growth_warning.setWordWrap(True)
         braid_layout.addRow("Growth:", self.growth_warning)
         layout.addWidget(braid_group)
+
+        preview_group = QGroupBox("Braid diagram", self)
+        preview_layout = QVBoxLayout(preview_group)
+        self.braid_preview = BraidPreviewWidget(preview_group)
+        self.braid_preview.setMinimumHeight(285)
+        preview_layout.addWidget(self.braid_preview)
+        layout.addWidget(preview_group)
 
         buttons = QWidget(self)
         buttons_layout = QHBoxLayout(buttons)
@@ -225,6 +237,7 @@ class CustomMatrixWorkflow(QWidget):
         layout.addWidget(self.result_output, 1)
         self._input_kind_changed()
         self._update_growth_warning()
+        self._update_braid_preview()
 
     def _selected_input_kind(self) -> str | None:
         value = self.input_kind_combo.currentData()
@@ -349,6 +362,16 @@ class CustomMatrixWorkflow(QWidget):
         if total_dimension > 1024:
             text += " Warning: the service flags operators above dimension 1024 as potentially expensive."
         self.growth_warning.setText(text)
+
+    def _update_braid_preview(self) -> None:
+        """Render only the validated service braid input, independently of matrix work."""
+
+        try:
+            braid_input = build_custom_braid_input(self.strand_count_spin.value(), self.generator_input.text())
+        except ApplicationServiceError as exc:
+            self.braid_preview.set_message(f"Preview unavailable: {exc}")
+            return
+        self.braid_preview.set_braid_word(braid_input.braid_word)
 
     @staticmethod
     def _format_validation(validation: ApplicationCustomMatrixValidation) -> str:

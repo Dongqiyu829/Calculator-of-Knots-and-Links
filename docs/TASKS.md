@@ -60,6 +60,7 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 
 ## M5 — Productization
 
+- [x] Add a maintained Qt-native braid visualization with deterministic geometry, semantic crossing tests, service-driven built-in/custom integration, fit/zoom/pan, and SVG/PNG export (issue #40).
 - [ ] Curated example library.
 - [ ] Save/load calculations.
 - [ ] Export results.

@@ -31,7 +31,7 @@ The archived P01 and P03 symbolic audit JSON outputs also reproduce exactly.
 
 ## Immediate objective
 
-M3 desktop functionality is complete: the maintained PySide6 application supports built-in invariant evaluation and the custom R/check-R operator workflow through `src.services`, with expensive work kept off the UI thread. The immediate objective is M4 distribution: produce a reproducible Windows standalone bundle and then add stable versioning, tagged releases, and an installer strategy without changing mathematical behavior.
+M3 desktop functionality is complete: the maintained PySide6 application supports built-in invariant evaluation and the custom R/check-R operator workflow through `src.services`, with expensive work kept off the UI thread. M4 distribution is complete and M5 productization is now active; issue #40 adds a maintained PySide6 braid diagram without changing mathematical behavior or release artifacts.
 
 ## Architecture direction
 
@@ -189,3 +189,12 @@ Issue #34 introduces the first maintained Windows distribution path. A checked-i
 The first M4 step deliberately favors a reliable folder-style bundle over a fragile one-file executable. The maintained application version is now sourced only from `src/version.py` as `0.1.0`; setuptools metadata, desktop `--version`, packaged `--version`, and Help/About use that source. The tag validator accepts only exact `vX.Y.Z` tags and requires equality with the maintained version. The tagged workflow builds the existing onedir application, smoke-tests the executable and extracted ZIP, computes a SHA-256 checksum, and publishes the versioned ZIP/checksum only for a real tag push using `GITHUB_TOKEN`. Manual dispatch is explicitly non-publishing and exists for validation.
 
 No actual `v0.1.0` tag or GitHub Release is created by this PR. The portable ZIP remains the initial supported release format; no installer or code-signing implementation is included. See `docs/DISTRIBUTION.md`.
+
+### M5 — Productization (in progress)
+
+Issue #40 adds a deterministic Qt-native braid preview to both maintained
+built-in and custom workflows. The preview consumes validated service-layer
+`BraidWord` objects, preserves the project Artin sign/order convention, shows
+semantic over/under crossings and permutation metadata, and supports fit,
+zoom/pan, SVG, and PNG export. Geometry tests are renderer-independent; the
+historical Tkinter renderer remains compatibility/reference code.
