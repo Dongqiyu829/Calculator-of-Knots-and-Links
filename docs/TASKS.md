@@ -43,6 +43,7 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 
 - [x] Create a PySide6 application shell.
 - [x] Add a convention-explicit custom R/check-R braid-operator engine through the application service boundary.
+- [x] Add an offline independent Knot Atlas oracle suite with multi-knot braid-sign calibration, exact Jones/A2 checks, custom check-R parity, and negative controls.
 - [ ] Add knot/link or braid input workflow.
 - [ ] Add invariant/calculation selection.
 - [ ] Add result display and copy/export support.

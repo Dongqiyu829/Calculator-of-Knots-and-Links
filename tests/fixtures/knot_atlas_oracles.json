@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "retrieved_on": "2026-09-22",
+  "source": {
+    "name": "Knot Atlas",
+    "manual_url": "https://katlas.org/wiki/Printable_Manual",
+    "convention_note": "Knot Atlas BR positive indices are right-handed crossings and negative indices are left-handed crossings. Calibration against four knots establishes project_generator = -atlas_generator. Invariant variable maps are branch-specific and recorded below."
+  },
+  "calibration": {
+    "braid_sign_map": "project_generator = -atlas_generator",
+    "evidence_knots": ["3_1", "4_1", "5_1", "5_2"],
+    "identity_map_negative_control_fails_for": ["3_1", "5_1", "5_2"],
+    "jones_variable_map": "q_atlas = q_project^2",
+    "a2_variable_map": "q_atlas = q_project^-1",
+    "status": "hard regression for Jones and A2 fundamental; diagnostic only for A1 weight 2"
+  },
+  "cases": [
+    {
+      "knot": "3_1",
+      "source_url": "https://katlas.org/wiki/3_1",
+      "retrieval_date": "2026-09-22",
+      "atlas_braid": {"num_strands": 2, "generators": [-1, -1, -1]},
+      "project_braid": {"num_strands": 2, "generators": [1, 1, 1]},
+      "jones": "-q_atlas**-4 + q_atlas**-3 + q_atlas**-1",
+      "a2_fundamental": "-q_atlas**14 - q_atlas**12 + q_atlas**8 + 2*q_atlas**6 + q_atlas**4 + q_atlas**2",
+      "a1_weight_2": "q_atlas**24 - q_atlas**20 - q_atlas**18 - q_atlas**16 + q_atlas**10 + q_atlas**8 + q_atlas**6 + q_atlas**4 + q_atlas**2",
+      "provenance": "Knot page minimum braid and polynomial tables",
+      "status": {"jones": "authoritative", "a2_fundamental": "authoritative", "a1_weight_2": "diagnostic"}
+    },
+    {
+      "knot": "4_1",
+      "source_url": "https://katlas.org/wiki/4_1",
+      "retrieval_date": "2026-09-22",
+      "atlas_braid": {"num_strands": 3, "generators": [-1, 2, -1, 2]},
+      "project_braid": {"num_strands": 3, "generators": [1, -2, 1, -2]},
+      "jones": "q_atlas**2 + q_atlas**-2 - q_atlas - q_atlas**-1 + 1",
+      "a2_fundamental": "q_atlas**8 + q_atlas**6 - 1 + q_atlas**-6 + q_atlas**-8",
+      "a1_weight_2": "q_atlas**14 - q_atlas**10 + q_atlas**2 + 1 + q_atlas**-2 - q_atlas**-10 + q_atlas**-14",
+      "provenance": "Knot page minimum braid and polynomial tables",
+      "status": {"jones": "authoritative", "a2_fundamental": "authoritative", "a1_weight_2": "reference only"}
+    },
+    {
+      "knot": "5_1",
+      "source_url": "https://katlas.org/wiki/5_1",
+      "retrieval_date": "2026-09-22",
+      "atlas_braid": {"num_strands": 2, "generators": [-1, -1, -1, -1, -1]},
+      "project_braid": {"num_strands": 2, "generators": [1, 1, 1, 1, 1]},
+      "jones": "-q_atlas**-7 + q_atlas**-6 - q_atlas**-5 + q_atlas**-4 + q_atlas**-2",
+      "a2_fundamental": "-q_atlas**22 - q_atlas**20 - q_atlas**18 + q_atlas**14 + q_atlas**12 + 2*q_atlas**10 + q_atlas**8 + q_atlas**6",
+      "a1_weight_2": "q_atlas**40 - q_atlas**32 - q_atlas**30 - q_atlas**28 + q_atlas**14 + q_atlas**12 + q_atlas**10 + q_atlas**8 + q_atlas**6",
+      "provenance": "Knot page minimum braid and polynomial tables",
+      "status": {"jones": "authoritative", "a2_fundamental": "authoritative", "a1_weight_2": "diagnostic"}
+    },
+    {
+      "knot": "5_2",
+      "source_url": "https://katlas.org/wiki/5_2",
+      "retrieval_date": "2026-09-22",
+      "atlas_braid": {"num_strands": 3, "generators": [-1, -1, -1, -2, 1, -2]},
+      "project_braid": {"num_strands": 3, "generators": [1, 1, 1, 2, -1, 2]},
+      "jones": "-q_atlas**-6 + q_atlas**-5 - q_atlas**-4 + 2*q_atlas**-3 - q_atlas**-2 + q_atlas**-1",
+      "a2_fundamental": "-q_atlas**20 - q_atlas**18 + q_atlas**12 + q_atlas**10 + q_atlas**8 + q_atlas**6 + q_atlas**2",
+      "a1_weight_2": "q_atlas**36 - q_atlas**32 - q_atlas**26 - q_atlas**20 + q_atlas**14 + q_atlas**10 + 2*q_atlas**8 + q_atlas**2",
+      "provenance": "Knot page minimum braid and polynomial tables",
+      "status": {"jones": "authoritative", "a2_fundamental": "authoritative", "a1_weight_2": "diagnostic"}
+    },
+    {
+      "knot": "6_1",
+      "source_url": "https://katlas.org/wiki/6_1",
+      "retrieval_date": "2026-09-22",
+      "atlas_braid": {"num_strands": 4, "generators": [-1, -1, -2, 1, 3, -2, 3]},
+      "project_braid": {"num_strands": 4, "generators": [1, 1, 2, -1, -3, 2, -3]},
+      "jones": "q_atlas**2 - q_atlas + 2 - 2*q_atlas**-1 + q_atlas**-2 - q_atlas**-3 + q_atlas**-4",
+      "a2_fundamental": "q_atlas**14 + q_atlas**12 - q_atlas**6 - q_atlas**4 + q_atlas**-2 + q_atlas**-6 + q_atlas**-8",
+      "a1_weight_2": "q_atlas**26 - q_atlas**22 - q_atlas**16 + q_atlas**12 + q_atlas**8 + q_atlas**6 + q_atlas**-2 - q_atlas**-4 - q_atlas**-6 + q_atlas**-8 + q_atlas**-14",
+      "provenance": "Knot page minimum braid and polynomial tables",
+      "status": {"jones": "authoritative", "a2_fundamental": "reference only", "a1_weight_2": "reference only"}
+    }
+  ]
+}
