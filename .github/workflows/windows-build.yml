@@ -21,6 +21,7 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+          architecture: x64
 
       - name: Install project, desktop, test, and build dependencies
         shell: pwsh
@@ -28,58 +29,33 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e ".[test,desktop,build]"
 
-      - name: Run fast regression and source smoke checks
+      - name: Install Inno Setup 6
         shell: pwsh
-        run: |
-          python -m pytest -q -m "not slow and not gui"
-          python -m src.desktop --smoke-test
+        run: choco install innosetup --no-progress -y
 
-      - name: Build PyInstaller onedir application
+      - name: Build and verify Windows release candidates
         shell: pwsh
-        run: |
-          python -m PyInstaller --clean --noconfirm packaging/Calculator-of-Knots-and-Links.spec
+        run: .\packaging\windows\build.ps1 -Python python
 
-      - name: Smoke-test packaged executable
+      - name: Verify stable artifact names
         shell: pwsh
         run: |
-          $exe = "dist\Calculator-of-Knots-and-Links\Calculator-of-Knots-and-Links.exe"
-          if (-not (Test-Path $exe)) { throw "Packaged executable was not produced: $exe" }
-          & $exe --smoke-test
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          $expectedVersion = python -c "from src.version import __version__; print(__version__)"
-          $packagedVersion = (& $exe --version | Out-String).Trim()
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          if ($packagedVersion -ne $expectedVersion.Trim()) {
-            throw "Packaged version '$packagedVersion' does not match source version '$($expectedVersion.Trim())'."
+          $required = @(
+            "artifacts/Calculator-of-Knots-and-Links-Windows-x64-Setup.exe",
+            "artifacts/Calculator-of-Knots-and-Links-Windows-x64-Portable.zip",
+            "artifacts/SHA256SUMS.txt"
+          )
+          foreach ($path in $required) {
+            if (-not (Test-Path -LiteralPath $path)) { throw "Missing artifact: $path" }
           }
 
-      - name: Create deterministic Windows artifact ZIP
-        shell: pwsh
-        run: |
-          $zip = "dist\Calculator-of-Knots-and-Links-windows-x64.zip"
-          Compress-Archive -Path "dist\Calculator-of-Knots-and-Links" -DestinationPath $zip -Force
-
-      - name: Smoke-test extracted artifact
-        shell: pwsh
-        run: |
-          $extractRoot = Join-Path $env:RUNNER_TEMP "calculator-of-knots-and-links-artifact"
-          if (Test-Path $extractRoot) { Remove-Item -Recurse -Force $extractRoot }
-          Expand-Archive -Path "dist\Calculator-of-Knots-and-Links-windows-x64.zip" -DestinationPath $extractRoot
-          $exe = Join-Path $extractRoot "Calculator-of-Knots-and-Links\Calculator-of-Knots-and-Links.exe"
-          if (-not (Test-Path $exe)) { throw "Extracted artifact executable was not found: $exe" }
-          & $exe --smoke-test
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          $expectedVersion = python -c "from src.version import __version__; print(__version__)"
-          $packagedVersion = (& $exe --version | Out-String).Trim()
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          if ($packagedVersion -ne $expectedVersion.Trim()) {
-            throw "Extracted packaged version '$packagedVersion' does not match source version '$($expectedVersion.Trim())'."
-          }
-
-      - name: Upload Windows standalone artifact
+      - name: Upload Windows release candidates
         uses: actions/upload-artifact@v4
         with:
-          name: Calculator-of-Knots-and-Links-windows-x64
-          path: dist/Calculator-of-Knots-and-Links-windows-x64.zip
+          name: Calculator-of-Knots-and-Links-Windows-x64
+          path: |
+            artifacts/Calculator-of-Knots-and-Links-Windows-x64-Setup.exe
+            artifacts/Calculator-of-Knots-and-Links-Windows-x64-Portable.zip
+            artifacts/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 14

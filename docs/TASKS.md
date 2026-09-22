@@ -57,6 +57,8 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 - [x] Produce a standalone downloadable build artifact with packaged executable smoke validation.
 - [x] Add single-source `0.1.0` version metadata and lightweight version checks.
 - [x] Add tag-driven release workflow and document the portable ZIP installer strategy.
+- [x] Add the per-user Inno Setup installer, shared Windows artifact build script, stable release assets, checksum manifest, and installer/portable smoke checks.
+- [x] Add the bilingual README download landing section and clean-machine Windows acceptance checklist.
 
 ## M5 — Productization
 

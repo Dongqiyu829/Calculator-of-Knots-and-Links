@@ -28,7 +28,10 @@ analysis = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=["tkinter", "pytest"],
+    # Only the maintained PySide6 frontend belongs in the frozen bundle. Some
+    # development environments also have PyQt bindings installed, and
+    # PyInstaller rejects collecting multiple Qt bindings in one application.
+    excludes=["tkinter", "pytest", "PyQt5", "PyQt6", "PySide2"],
     noarchive=False,
 )
 
