@@ -10,8 +10,10 @@ repository paths.
 
 The first archived ZIP was incomplete, but issue #5 recovered its missing modules
 from the authoritative local source. No mathematical implementation was guessed,
-refactored, or normalized during that pass. The historical GUI uses Tkinter;
-PySide6 work is intentionally deferred.
+refactored, or normalized during that pass. The historical Tkinter frontends
+remain available as compatibility/reference applications. The maintained desktop
+shell uses PySide6 and is intentionally limited to service-driven startup,
+example/branch discovery, and layout in this first M3 step.
 
 See:
 
@@ -36,6 +38,16 @@ Install the recovered package and its test dependencies with:
 ```bash
 python -m pip install -e ".[test]"
 ```
+
+Install and launch the maintained PySide6 shell with:
+
+```bash
+python -m pip install -e ".[desktop]"
+python -m src.desktop
+```
+
+It performs no invariant evaluation on startup. Full braid editing, evaluation,
+and export are subsequent M3 work; no PyInstaller configuration is included yet.
 
 Test tiers, CI behavior, and headless GUI instructions are documented in
 `docs/TESTING.md`. Historical entry points and benchmark reproduction commands
