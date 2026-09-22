@@ -1,5 +1,7 @@
 # 数学状态说明
 
+> **Historical status snapshot.** This document records an earlier stage of the project and intentionally preserves historical wording. Some statements (especially the older sl2 spin-1 / Knot Atlas verification status) have since been superseded. For the current end-to-end mathematics, conventions, code map, and validation status, read [MATHEMATICAL_IMPLEMENTATION.md](MATHEMATICAL_IMPLEMENTATION.md), [MATH_CONVENTIONS.md](MATH_CONVENTIONS.md), and [EXTERNAL_VALIDATION.md](EXTERNAL_VALIDATION.md).
+
 ## 1. Executive Summary
 
 当前项目已经形成一个多分支的 topology invariant program skeleton。它围绕 braid word、表示上的局部 braiding 数据、全局 braid operator，以及按 branch 区分的输出层来组织，而不是把所有输出混成一个没有层次的“结不变量计算器”。
