@@ -1,0 +1,73 @@
+name: Windows standalone build
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install project, desktop, test, and build dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[test,desktop,build]"
+
+      - name: Run fast regression and source smoke checks
+        shell: pwsh
+        run: |
+          python -m pytest -q -m "not slow and not gui"
+          python -m src.desktop --smoke-test
+
+      - name: Build PyInstaller onedir application
+        shell: pwsh
+        run: |
+          python -m PyInstaller --clean --noconfirm packaging/Calculator-of-Knots-and-Links.spec
+
+      - name: Smoke-test packaged executable
+        shell: pwsh
+        run: |
+          $exe = "dist\Calculator-of-Knots-and-Links\Calculator-of-Knots-and-Links.exe"
+          if (-not (Test-Path $exe)) { throw "Packaged executable was not produced: $exe" }
+          & $exe --smoke-test
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Create deterministic Windows artifact ZIP
+        shell: pwsh
+        run: |
+          $zip = "dist\Calculator-of-Knots-and-Links-windows-x64.zip"
+          Compress-Archive -Path "dist\Calculator-of-Knots-and-Links" -DestinationPath $zip -Force
+
+      - name: Smoke-test extracted artifact
+        shell: pwsh
+        run: |
+          $extractRoot = Join-Path $env:RUNNER_TEMP "calculator-of-knots-and-links-artifact"
+          if (Test-Path $extractRoot) { Remove-Item -Recurse -Force $extractRoot }
+          Expand-Archive -Path "dist\Calculator-of-Knots-and-Links-windows-x64.zip" -DestinationPath $extractRoot
+          $exe = Join-Path $extractRoot "Calculator-of-Knots-and-Links\Calculator-of-Knots-and-Links.exe"
+          if (-not (Test-Path $exe)) { throw "Extracted artifact executable was not found: $exe" }
+          & $exe --smoke-test
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Upload Windows standalone artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Calculator-of-Knots-and-Links-windows-x64
+          path: dist/Calculator-of-Knots-and-Links-windows-x64.zip
+          if-no-files-found: error
+          retention-days: 14

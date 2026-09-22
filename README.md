@@ -46,8 +46,33 @@ python -m pip install -e ".[desktop]"
 python -m src.desktop
 ```
 
-It performs no invariant evaluation on startup. Full braid editing, evaluation,
-and export are subsequent M3 work; no PyInstaller configuration is included yet.
+It performs no invariant evaluation on startup. The maintained shell includes
+the built-in invariant and custom R/check-R workflows through `src.services`.
+
+## Windows standalone build
+
+The supported first distribution target is a PyInstaller `onedir` build. On
+Windows, install the build extras and run the checked-in configuration:
+
+```powershell
+python -m pip install -e ".[desktop,build]"
+python -m PyInstaller --clean --noconfirm packaging/Calculator-of-Knots-and-Links.spec
+```
+
+The executable is produced at
+`dist\Calculator-of-Knots-and-Links\Calculator-of-Knots-and-Links.exe`.
+Before distributing a local build, run its packaging smoke mode:
+
+```powershell
+dist\Calculator-of-Knots-and-Links\Calculator-of-Knots-and-Links.exe --smoke-test
+```
+
+This constructs the maintained window, verifies bundled Qt/Python/SymPy
+runtime loading, and exits without opening an interactive event loop or
+performing an invariant calculation. GitHub Actions publishes the deterministic
+`Calculator-of-Knots-and-Links-windows-x64.zip` artifact after extracting and
+smoke-testing the packaged directory. The artifact is a folder-style build, not
+an installer and not a `onefile` executable.
 
 Test tiers, CI behavior, and headless GUI instructions are documented in
 `docs/TESTING.md`. Historical entry points and benchmark reproduction commands

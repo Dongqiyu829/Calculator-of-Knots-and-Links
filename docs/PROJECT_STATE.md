@@ -143,11 +143,11 @@ There is no known engineering dependency blocking M3.
 
 ### M3 — Desktop application (in progress)
 
-The first PySide6 `QMainWindow` shell is available through `python -m src.desktop`
-after installing the `desktop` dependency group. It provides a service-driven
-example source panel, visible formal/candidate branch status, workspace/status
-areas, and standard Exit/About routes. It deliberately does not yet edit braids,
-evaluate invariants, create workers, export files, or replace Tkinter.
+The maintained PySide6 `QMainWindow` is available through `python -m src.desktop`
+after installing the `desktop` dependency group. It provides service-driven
+catalog/custom-braid inputs, visible formal/candidate branch status, worker-
+thread evaluation, result reporting/export, and standard Exit/About routes. The
+recovered Tkinter code remains available as compatibility/reference code.
 
 A frontend-neutral custom R/check-R braid-operator engine is now available
 through `src.services`. It accepts explicit raw `R` or direct `check-R` input,
@@ -168,8 +168,7 @@ text/JSON file, validates shape/dimension/invertibility and optional relations,
 constructs a signed custom braid operator through `src.services`, and renders
 the resulting matrix, diagnostics, warnings, and copy/export JSON. Expensive
 service operations run in a Qt worker thread. This UI adds no invariant
-normalization and states that boundary prominently; built-in invariant
-evaluation remains a separate M3 task.
+normalization and states that boundary prominently.
 
 Custom-matrix validation now distinguishes structural input validity from
 verified braid-representation evidence. The optional check-R relation is shown
@@ -187,3 +186,17 @@ service DTO reports with their formal/candidate status, normalization, variable
 convention, representation, metadata, and warnings intact. Copy, JSON, and
 file export use service report/serialization helpers; no live Atlas lookup or
 mathematical convention change is introduced.
+
+### M4 — Distribution (in progress)
+
+Issue #34 adds the first reproducible Windows distribution path. The checked-in
+PyInstaller configuration intentionally produces a `onedir` folder because it
+is more reliable for the current PySide6/SymPy application than forcing a
+`onefile` bundle. The Windows workflow installs the project with its dedicated
+build extra, runs the practical fast regression selection, builds the folder,
+archives it as `Calculator-of-Knots-and-Links-windows-x64.zip`, extracts that
+archive, and runs the packaged executable's `--smoke-test` mode. This validates
+the artifact rather than only trusting a successful PyInstaller exit code.
+
+No installer, versioning, release, signing, or mathematical implementation
+changes are part of this milestone.

@@ -52,9 +52,9 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 
 ## M4 — Distribution
 
-- [ ] Add PyInstaller build configuration.
-- [ ] Add Windows build workflow in GitHub Actions.
-- [ ] Produce a standalone downloadable build.
+- [x] Add PyInstaller build configuration.
+- [x] Add Windows build workflow in GitHub Actions.
+- [x] Produce a standalone downloadable build artifact with packaged executable smoke validation.
 - [ ] Add version metadata.
 - [ ] Add release workflow and installer strategy.
 
