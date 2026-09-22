@@ -31,7 +31,7 @@ The archived P01 and P03 symbolic audit JSON outputs also reproduce exactly.
 
 ## Immediate objective
 
-M3 desktop functionality is complete: the maintained PySide6 application supports built-in invariant evaluation and the custom R/check-R operator workflow through `src.services`, with expensive work kept off the UI thread. The immediate objective is M4 distribution: produce a reproducible Windows standalone bundle and then add stable versioning, tagged releases, and an installer strategy without changing mathematical behavior.
+M3 desktop functionality and M4 Windows distribution are complete. The public `v0.1.0` tag has been created, and M5 productization is active. The maintained PySide6 application now adds a Qt-native braid diagram on top of the existing built-in invariant and custom R/check-R workflows, without changing mathematical behavior.
 
 ## Architecture direction
 
@@ -182,10 +182,15 @@ file export use service report/serialization helpers; no live Atlas lookup or
 mathematical convention change is introduced.
 
 
-### M4 — Distribution (complete; installer/release machinery ready, first tag not published)
+### M4 — Distribution (complete; v0.1.0 tagged)
 
 Issue #34 introduces the first maintained Windows distribution path. A checked-in PyInstaller `onedir` specification packages the PySide6 desktop application and SymPy runtime without requiring the user to install Python. A Windows GitHub Actions workflow runs the fast regression suite, builds the executable, smoke-tests the packaged application, creates a deterministic Windows ZIP, extracts it, and smoke-tests the extracted executable before upload.
 
 The first M4 step deliberately favors a reliable folder-style bundle over a fragile one-file executable. The maintained application version is now sourced only from `src/version.py` as `0.1.0`; setuptools metadata, desktop `--version`, packaged `--version`, and Help/About use that source. The tag validator accepts only exact `vX.Y.Z` tags and requires equality with the maintained version. The shared Windows build script now runs fast tests, the existing onedir build, packaged and extracted portable smoke/version checks, Inno Setup 6 compilation, and expected-file/checksum verification. The tagged workflow publishes the stable installer, portable ZIP, and `SHA256SUMS.txt` only for a real tag push using `GITHUB_TOKEN`. Manual dispatch is explicitly non-publishing and uploads the same three candidate assets for validation; clean-machine install/uninstall remains documented rather than forcing fragile silent UI automation.
 
-No actual `v0.1.0` tag or GitHub Release is created by this PR. The installer is unsigned and installs per-user under `%LOCALAPPDATA%\Programs` without PATH changes or elevation. See `docs/DISTRIBUTION.md`.
+The `v0.1.0` tag is now published. The installer remains unsigned and installs per-user under `%LOCALAPPDATA%\Programs` without PATH changes or elevation. See `docs/DISTRIBUTION.md`.
+
+
+### M5 — Productization (in progress)
+
+The maintained PySide6 frontend now includes a deterministic Qt-native braid preview for both built-in/custom-braid invariant input and the custom R/check-R workflow. It consumes validated service-layer braid words, preserves project-native Artin signs and generator order, renders explicit over/under crossing semantics, reports writhe/final permutation metadata, and supports fit, zoom/pan, SVG export, and PNG export. Renderer-independent geometry tests cover positive/negative crossings, mixed-sign words, identity braids, long words, permutation, and deterministic SVG output.
