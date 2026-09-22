@@ -6,6 +6,10 @@ PySide6 and SymPy have a large runtime footprint, and a folder-style bundle is
 easier to inspect and more reliable than forcing a fragile `onefile` archive at
 this stage.
 
+The maintained application version is `0.1.0`. This PR adds and validates the
+release machinery but intentionally does not create the `v0.1.0` tag or publish
+the first public release.
+
 ## Local build
 
 Use Python 3.12 or newer on Windows:
@@ -40,6 +44,23 @@ with `workflow_dispatch`, and also runs for pull requests and pushes to `main`.
 Download the artifact from the completed workflow's **Summary → Artifacts**
 section. Extract the ZIP as a folder and run the executable in place; do not
 move only the `.exe` out of its bundled directory.
+
+## Release workflow
+
+`.github/workflows/release.yml` is tag-driven. A future `vX.Y.Z` push validates
+that the tag exactly matches `src.version.__version__`, runs the fast tests and
+both packaged smoke checks, creates the versioned ZIP and a companion
+`Calculator-of-Knots-and-Links-X.Y.Z-windows-x64.zip.sha256`, and publishes both
+files with the normal GitHub-provided token. Any mismatch fails before release
+publication. A manual `workflow_dispatch` requires a tag input and performs the
+same build/checksum/smoke path as a non-publishing dry run, uploading temporary
+workflow artifacts instead.
+
+The first supported release format is therefore a portable `onedir` ZIP. There
+is no MSI/NSIS/Inno Setup installer or code signing yet. A future installer
+should preserve the same extracted-folder behavior and be justified by a
+reliability/user-installation need; Windows SmartScreen may warn for the
+unsigned preview binary.
 
 ## Scope and caveats
 

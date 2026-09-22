@@ -1,0 +1,102 @@
+name: Tagged Windows release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Version tag to validate for a non-publishing dry run, e.g. v0.1.0"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install project, desktop, test, and build dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[test,desktop,build]"
+
+      - name: Validate release tag against application version
+        shell: pwsh
+        run: |
+          python -m src.version --check-tag "$env:RELEASE_TAG"
+          $version = python -c "from src.version import __version__; print(__version__)"
+          "RELEASE_VERSION=$($version.Trim())" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Run fast regression and source smoke checks
+        shell: pwsh
+        run: |
+          python -m pytest -q -m "not slow and not gui"
+          python -m src.desktop --smoke-test
+
+      - name: Build PyInstaller onedir application
+        shell: pwsh
+        run: |
+          python -m PyInstaller --clean --noconfirm packaging/Calculator-of-Knots-and-Links.spec
+
+      - name: Smoke-test packaged executable
+        shell: pwsh
+        run: |
+          $exe = "dist\Calculator-of-Knots-and-Links\Calculator-of-Knots-and-Links.exe"
+          if (-not (Test-Path $exe)) { throw "Packaged executable was not produced: $exe" }
+          & $exe --smoke-test
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Create versioned ZIP and SHA-256 checksum
+        shell: pwsh
+        run: |
+          $zip = "dist\Calculator-of-Knots-and-Links-$env:RELEASE_VERSION-windows-x64.zip"
+          $checksum = "$zip.sha256"
+          Compress-Archive -Path "dist\Calculator-of-Knots-and-Links" -DestinationPath $zip -Force
+          $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash.ToLowerInvariant()
+          "$hash  $([System.IO.Path]::GetFileName($zip))" | Set-Content -LiteralPath $checksum -Encoding ascii
+          "RELEASE_ZIP=$zip" >> $env:GITHUB_ENV
+          "RELEASE_CHECKSUM=$checksum" >> $env:GITHUB_ENV
+
+      - name: Smoke-test extracted versioned ZIP
+        shell: pwsh
+        run: |
+          $extractRoot = Join-Path $env:RUNNER_TEMP "calculator-of-knots-and-links-release"
+          if (Test-Path $extractRoot) { Remove-Item -Recurse -Force $extractRoot }
+          Expand-Archive -Path $env:RELEASE_ZIP -DestinationPath $extractRoot
+          $exe = Join-Path $extractRoot "Calculator-of-Knots-and-Links\Calculator-of-Knots-and-Links.exe"
+          if (-not (Test-Path $exe)) { throw "Extracted release executable was not found: $exe" }
+          & $exe --smoke-test
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Upload dry-run artifacts
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Calculator-of-Knots-and-Links-${{ env.RELEASE_VERSION }}-dry-run
+          path: |
+            dist/Calculator-of-Knots-and-Links-*-windows-x64.zip
+            dist/Calculator-of-Knots-and-Links-*-windows-x64.zip.sha256
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish GitHub Release assets
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$env:RELEASE_TAG" "$env:RELEASE_ZIP" "$env:RELEASE_CHECKSUM" --title "Calculator of Knots and Links $env:RELEASE_VERSION" --generate-notes

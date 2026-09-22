@@ -1,7 +1,24 @@
-"""Maintained PySide6 desktop shell for Calculator of Knots and Links."""
+"""Maintained desktop package with lazy UI imports for lightweight CLI paths."""
 
-from .main_window import DesktopMainWindow, launch_desktop_application
-from .custom_matrix_workflow import CustomMatrixWorkflow
-from .invariant_workflow import InvariantCalculationWorkflow
+from __future__ import annotations
+
+from typing import Any
+
 
 __all__ = ["CustomMatrixWorkflow", "DesktopMainWindow", "InvariantCalculationWorkflow", "launch_desktop_application"]
+
+
+def __getattr__(name: str) -> Any:
+    if name == "DesktopMainWindow" or name == "launch_desktop_application":
+        from .main_window import DesktopMainWindow, launch_desktop_application
+
+        return {"DesktopMainWindow": DesktopMainWindow, "launch_desktop_application": launch_desktop_application}[name]
+    if name == "CustomMatrixWorkflow":
+        from .custom_matrix_workflow import CustomMatrixWorkflow
+
+        return CustomMatrixWorkflow
+    if name == "InvariantCalculationWorkflow":
+        from .invariant_workflow import InvariantCalculationWorkflow
+
+        return InvariantCalculationWorkflow
+    raise AttributeError(name)

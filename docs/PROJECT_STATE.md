@@ -137,11 +137,11 @@ There is no known engineering dependency blocking M3.
 
 ### M3 — Desktop application (complete)
 
-The first PySide6 `QMainWindow` shell is available through `python -m src.desktop`
-after installing the `desktop` dependency group. It provides a service-driven
-example source panel, visible formal/candidate branch status, workspace/status
-areas, and standard Exit/About routes. It deliberately does not yet edit braids,
-evaluate invariants, create workers, export files, or replace Tkinter.
+The maintained PySide6 `QMainWindow` is available through `python -m src.desktop`
+after installing the `desktop` dependency group. It provides service-driven
+catalog/custom-braid inputs, visible formal/candidate branch status, worker-
+thread evaluation, result reporting/export, and standard Exit/About routes. The
+recovered Tkinter code remains available as compatibility/reference code.
 
 A frontend-neutral custom R/check-R braid-operator engine is now available
 through `src.services`. It accepts explicit raw `R` or direct `check-R` input,
@@ -162,8 +162,7 @@ text/JSON file, validates shape/dimension/invertibility and optional relations,
 constructs a signed custom braid operator through `src.services`, and renders
 the resulting matrix, diagnostics, warnings, and copy/export JSON. Expensive
 service operations run in a Qt worker thread. This UI adds no invariant
-normalization and states that boundary prominently; built-in invariant
-evaluation remains a separate M3 task.
+normalization and states that boundary prominently.
 
 Custom-matrix validation now distinguishes structural input validity from
 verified braid-representation evidence. The optional check-R relation is shown
@@ -183,8 +182,10 @@ file export use service report/serialization helpers; no live Atlas lookup or
 mathematical convention change is introduced.
 
 
-### M4 — Distribution (in progress)
+### M4 — Distribution (complete; release machinery ready, first tag not published)
 
 Issue #34 introduces the first maintained Windows distribution path. A checked-in PyInstaller `onedir` specification packages the PySide6 desktop application and SymPy runtime without requiring the user to install Python. A Windows GitHub Actions workflow runs the fast regression suite, builds the executable, smoke-tests the packaged application, creates a deterministic Windows ZIP, extracts it, and smoke-tests the extracted executable before upload.
 
-The first M4 step deliberately favors a reliable folder-style bundle over a fragile one-file executable. Stable application version metadata, tagged GitHub Releases, and installer strategy remain follow-up work. See `docs/DISTRIBUTION.md`.
+The first M4 step deliberately favors a reliable folder-style bundle over a fragile one-file executable. The maintained application version is now sourced only from `src/version.py` as `0.1.0`; setuptools metadata, desktop `--version`, packaged `--version`, and Help/About use that source. The tag validator accepts only exact `vX.Y.Z` tags and requires equality with the maintained version. The tagged workflow builds the existing onedir application, smoke-tests the executable and extracted ZIP, computes a SHA-256 checksum, and publishes the versioned ZIP/checksum only for a real tag push using `GITHUB_TOKEN`. Manual dispatch is explicitly non-publishing and exists for validation.
+
+No actual `v0.1.0` tag or GitHub Release is created by this PR. The portable ZIP remains the initial supported release format; no installer or code-signing implementation is included. See `docs/DISTRIBUTION.md`.

@@ -17,7 +17,11 @@ The repository now contains:
 - representative regression fixtures from the authoritative recovered implementation;
 - an offline external Knot Atlas oracle suite for independent mathematical validation.
 
-M4 distribution is now in progress. The first supported target is a reproducible PyInstaller `onedir` Windows build produced and smoke-tested by GitHub Actions; stable version metadata, tagged releases, and installer strategy remain follow-up work.
+M4 distribution is now complete through release-machinery preparation. The
+first supported target is a reproducible PyInstaller `onedir` Windows build
+produced and smoke-tested by GitHub Actions. The maintained preview version is
+`0.1.0`; the tagged release workflow is ready, but no `v0.1.0` tag or public
+release has been created by this change.
 
 ## Desktop application
 
@@ -29,6 +33,12 @@ python -m src.desktop
 ```
 
 The desktop application does not evaluate invariants on startup. Expensive invariant and custom-matrix operations run only on request and are dispatched outside the Qt UI thread.
+
+Query the maintained version without starting Qt:
+
+```bash
+python -m src.desktop --version
+```
 
 ### Built-in invariant workflow
 
@@ -158,7 +168,9 @@ The executable is produced under `dist\\Calculator-of-Knots-and-Links\\`. A pack
 
 The Windows GitHub Actions workflow builds the bundle, smoke-tests the packaged executable, creates `Calculator-of-Knots-and-Links-windows-x64.zip`, extracts that ZIP, smoke-tests the extracted executable again, and only then uploads it as an Actions artifact.
 
-See `docs/DISTRIBUTION.md` for exact local-build and artifact-download instructions. This is not yet a tagged GitHub Release or installer.
+See `docs/DISTRIBUTION.md` for exact local-build, release, and artifact-download
+instructions. This change prepares the release workflow but does not create a
+tagged GitHub Release or installer.
 
 ## Development principle
 

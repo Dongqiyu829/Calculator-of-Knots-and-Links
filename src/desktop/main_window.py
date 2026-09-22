@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
 )
 
 from src.services import ApplicationCatalogExample
+from src.version import __version__
 
 from .custom_matrix_workflow import CustomMatrixWorkflow
 from .invariant_workflow import InvariantCalculationWorkflow
@@ -90,7 +91,7 @@ class DesktopMainWindow(QMainWindow):
         QMessageBox.about(
             self,
             f"About {APPLICATION_TITLE}",
-            "PySide6 desktop application. Invariant calculations use the frozen application service contract and run only on request. "
+            f"PySide6 desktop application, version {__version__}. Invariant calculations use the frozen application service contract and run only on request. "
             "The custom R/check-R tab constructs operators only, not knot/link invariants.",
         )
 
