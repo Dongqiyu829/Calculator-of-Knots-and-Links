@@ -11,9 +11,9 @@ repository paths.
 The first archived ZIP was incomplete, but issue #5 recovered its missing modules
 from the authoritative local source. No mathematical implementation was guessed,
 refactored, or normalized during that pass. The historical Tkinter frontends
-remain available as compatibility/reference applications. The maintained desktop
-shell uses PySide6 and is intentionally limited to service-driven startup,
-example/branch discovery, and layout in this first M3 step.
+remain available as compatibility/reference applications. The maintained
+desktop shell uses PySide6 and routes invariant/custom-operator work through
+`src.services`.
 
 See:
 
@@ -48,6 +48,14 @@ python -m src.desktop
 
 It performs no invariant evaluation on startup. The maintained shell includes
 the built-in invariant and custom R/check-R workflows through `src.services`.
+
+The current maintained application version is `0.1.0` (preview machinery only;
+the `v0.1.0` tag and public release are not created by this change). Query it
+without starting Qt with:
+
+```powershell
+python -m src.desktop --version
+```
 
 ## Windows standalone build
 

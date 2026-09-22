@@ -35,9 +35,10 @@ Maintain the installable Python baseline and practical test tiers while retainin
 the recovered `src` package and its mathematical behavior. M2 is complete: its
 `src.services` API supplies input parsing/evaluation, branch and built-in-example
 discovery, structured errors, result DTOs, and application reports. Maintained
-workbench and Tkinter compatibility adapters share that path. M3 has begun with
-a maintained PySide6 shell that reads lightweight catalog and branch metadata
-only through `src.services`; it performs no invariant evaluation on startup.
+workbench and Tkinter compatibility adapters share that path. M3 is complete
+for the maintained PySide6 workflows: catalog/custom input, branch selection,
+background evaluation, result reporting, and custom R/check-R operation all use
+`src.services`; startup still performs no invariant evaluation.
 
 ## Architecture direction
 
@@ -187,7 +188,7 @@ convention, representation, metadata, and warnings intact. Copy, JSON, and
 file export use service report/serialization helpers; no live Atlas lookup or
 mathematical convention change is introduced.
 
-### M4 — Distribution (in progress)
+### M4 — Distribution (complete; release machinery ready, first tag not published)
 
 Issue #34 adds the first reproducible Windows distribution path. The checked-in
 PyInstaller configuration intentionally produces a `onedir` folder because it
@@ -198,5 +199,15 @@ archives it as `Calculator-of-Knots-and-Links-windows-x64.zip`, extracts that
 archive, and runs the packaged executable's `--smoke-test` mode. This validates
 the artifact rather than only trusting a successful PyInstaller exit code.
 
-No installer, versioning, release, signing, or mathematical implementation
-changes are part of this milestone.
+The maintained application version is now sourced only from `src/version.py` as
+`0.1.0`; setuptools metadata, desktop `--version`, packaged `--version`, and
+the Help/About text use that source. The tag validator accepts only exact
+`vX.Y.Z` tags and requires equality with the maintained version. The tagged
+Windows workflow builds the existing onedir application, smoke-tests the
+executable and extracted ZIP, computes a SHA-256 checksum, and publishes the
+versioned ZIP/checksum only for a real tag push using `GITHUB_TOKEN`. Manual
+dispatch is explicitly non-publishing and exists for validation.
+
+No actual `v0.1.0` tag or GitHub Release is created by this PR. No installer,
+code signing, or mathematical implementation changes are part of this
+milestone.
