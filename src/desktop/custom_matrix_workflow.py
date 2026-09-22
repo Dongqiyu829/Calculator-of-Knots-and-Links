@@ -34,6 +34,7 @@ from src.services import (
     ApplicationServiceError,
     build_custom_braid_input,
     build_custom_braid_word,
+    build_custom_rmatrix_explanation,
     build_custom_rmatrix_model,
     build_custom_rmatrix_project,
     evaluate_custom_braid_operator,
@@ -109,6 +110,9 @@ class _ServiceWorker(QObject):
 class CustomMatrixWorkflow(QWidget):
     """Explicit R/check-R input, validation, and braid-operator workflow."""
 
+    explanationChanged = Signal(object)
+    resultChanged = Signal(object)
+
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("customMatrixWorkflow")
@@ -123,12 +127,15 @@ class CustomMatrixWorkflow(QWidget):
         layout.setSpacing(12)
 
         boundary = QLabel(
-            "Custom matrices build a braid-group operator only. They are not a knot/link invariant recipe: "
-            "no quantum trace, Markov normalization, framing correction, or polynomial normalization is added."
+            "",
         )
         boundary.setObjectName("customMatrixBoundaryNotice")
         boundary.setWordWrap(True)
         boundary.setStyleSheet("padding: 8px; background: #fff4d6; color: #5b4300;")
+        boundary.setText(
+            f"{build_custom_rmatrix_explanation(None).summary}\n"
+            f"{build_custom_rmatrix_explanation(None).normalization}"
+        )
         layout.addWidget(boundary)
 
         input_group = QGroupBox("Custom local matrix", self)
@@ -137,6 +144,7 @@ class CustomMatrixWorkflow(QWidget):
         self.matrix_input.setObjectName("customMatrixInput")
         self.matrix_input.setPlaceholderText("Example: [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]")
         self.matrix_input.setMinimumHeight(120)
+        self.matrix_input.textChanged.connect(lambda: self._emit_explanation())
         input_layout.addRow("Matrix text:", self.matrix_input)
 
         matrix_file_row = QWidget(input_group)
@@ -162,11 +170,14 @@ class CustomMatrixWorkflow(QWidget):
         self.local_dimension_spin.setSpecialValueText("Auto infer")
         self.local_dimension_spin.setToolTip("0 asks the service to infer a local dimension from the square matrix size.")
         input_layout.addRow("Local dimension:", self.local_dimension_spin)
+        self.local_dimension_spin.valueChanged.connect(lambda _value: self._emit_explanation())
 
         self.braid_relation_check = QCheckBox("Check check-R braid relation", input_group)
         self.ybe_check = QCheckBox("Check standard raw-R YBE (R input only)", input_group)
         input_layout.addRow("Optional checks:", self.braid_relation_check)
         input_layout.addRow("", self.ybe_check)
+        self.braid_relation_check.stateChanged.connect(lambda _state: self._emit_explanation())
+        self.ybe_check.stateChanged.connect(lambda _state: self._emit_explanation())
         layout.addWidget(input_group)
 
         braid_group = QGroupBox("Braid operator", self)
@@ -183,6 +194,8 @@ class CustomMatrixWorkflow(QWidget):
         self.generator_input.textChanged.connect(self._update_negative_generator_warning)
         self.strand_count_spin.valueChanged.connect(self._update_braid_preview)
         self.generator_input.textChanged.connect(self._update_braid_preview)
+        self.strand_count_spin.valueChanged.connect(lambda _value: self._emit_explanation())
+        self.generator_input.textChanged.connect(lambda _text: self._emit_explanation())
         braid_layout.addRow("Generators:", self.generator_input)
         self.growth_warning = QLabel(braid_group)
         self.growth_warning.setObjectName("customDimensionWarning")
@@ -241,6 +254,7 @@ class CustomMatrixWorkflow(QWidget):
         self._input_kind_changed()
         self._update_growth_warning()
         self._update_braid_preview()
+        self._emit_explanation()
 
     def _selected_input_kind(self) -> str | None:
         value = self.input_kind_combo.currentData()
@@ -266,6 +280,7 @@ class CustomMatrixWorkflow(QWidget):
         self.ybe_check.setEnabled(raw_r_selected)
         if not raw_r_selected:
             self.ybe_check.setChecked(False)
+        self._emit_explanation()
 
     def _request_validation(self) -> None:
         request = self._request_snapshot()
@@ -311,9 +326,11 @@ class CustomMatrixWorkflow(QWidget):
             self.validation_output.setPlainText(self._format_validation(result))
             self._update_growth_warning()
             self.status_label.setText(self._validation_completion_message(result))
+            self._emit_explanation()
         else:
             assert isinstance(result, ApplicationCustomBraidOperatorResult)
             self._last_result = result
+            self.resultChanged.emit(result)
             self.result_output.setPlainText(self._format_operator_result(result))
             self.validation_output.setPlainText(self._format_validation(result.validation))
             self.copy_button.setEnabled(True)
@@ -412,8 +429,22 @@ class CustomMatrixWorkflow(QWidget):
             braid_input = build_custom_braid_input(self.strand_count_spin.value(), self.generator_input.text())
         except ApplicationServiceError as exc:
             self.braid_preview.set_message(f"Preview unavailable: {exc}")
+            self.explanationChanged.emit(build_custom_rmatrix_explanation(self._selected_input_kind()))
             return
         self.braid_preview.set_braid_word(braid_input.braid_word)
+        self._emit_explanation()
+
+    def current_explanation(self):
+        """Return operator-only service-owned guidance without running a worker."""
+
+        relation_status = self._last_validation.braid_representation_status if self._last_validation else "not_checked"
+        return build_custom_rmatrix_explanation(self._selected_input_kind(), relation_status=relation_status)
+
+    def _emit_explanation(self) -> None:
+        relation_status = self._last_validation.braid_representation_status if self._last_validation else "not_checked"
+        self.explanationChanged.emit(
+            build_custom_rmatrix_explanation(self._selected_input_kind(), relation_status=relation_status)
+        )
 
     @staticmethod
     def _format_validation(validation: ApplicationCustomMatrixValidation) -> str:
@@ -468,10 +499,12 @@ class CustomMatrixWorkflow(QWidget):
             *[str(diagnostic) for diagnostic in result.ordered_generator_diagnostics],
             "Boundary: no trace, Markov normalization, framing correction, or invariant claim.",
         ]
-        if result.validation.braid_representation_status == "not_checked":
-            lines.append("This is a constructed local operator; its braid-representation relation has not been verified.")
-        elif result.validation.braid_representation_status == "failed":
-            lines.append("This operator was constructed, but its requested braid relation failed validation.")
+        lines.extend(
+            build_custom_rmatrix_explanation(
+                result.input_kind,
+                relation_status=result.validation.braid_representation_status,
+            ).warnings
+        )
         if result.warnings:
             lines.extend(["Warnings:", *[f"- {warning}" for warning in result.warnings]])
         return "\n".join(lines)
@@ -494,11 +527,22 @@ class CustomMatrixWorkflow(QWidget):
         if not file_name:
             return
         try:
-            Path(file_name).write_text(serialized, encoding="utf-8")
-        except OSError as exc:
+            self.export_result_to_path(file_name)
+        except (ApplicationServiceError, OSError) as exc:
             self._set_error(f"Could not export result: {exc}")
             return
         self.status_label.setText(f"Exported custom operator JSON to {file_name}.")
+
+    def export_result_to_path(self, path: str | Path, file_format: str = "json") -> Path:
+        """Write the custom operator JSON through the maintained serializer."""
+
+        if self._last_result is None:
+            raise ApplicationServiceError("No custom operator result is available to export.")
+        if file_format != "json":
+            raise ApplicationServiceError("Custom operator results are available only as JSON.")
+        target = Path(path)
+        target.write_text(serialize_custom_braid_operator_result(self._last_result), encoding="utf-8", newline="\n")
+        return target
 
     def _load_matrix_file(self) -> None:
         file_name, _selected_filter = QFileDialog.getOpenFileName(

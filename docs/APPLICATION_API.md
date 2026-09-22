@@ -78,3 +78,26 @@ mismatches are informational; unsupported schemas, workflows, malformed JSON,
 invalid branch ids, braid generators, or matrix inputs raise typed `Project*Error`
 subclasses. JSON serialization is UTF-8 and deterministic, with no pickle,
 eval, or executable payloads.
+
+## M5 explanations, documentation, and export boundaries
+
+`MathematicalExplanation`, `get_branch_explanation`,
+`build_invariant_explanation`, and `build_custom_rmatrix_explanation` provide
+frontend-neutral explanation DTOs. Branch status and display names are derived
+from the same `list_evaluation_branches` catalog used for evaluation; the
+explanation layer is descriptive only and never evaluates an invariant or
+constructs an operator. The custom workflow is explicitly `operator-only` and
+states the separate structural, braid-relation, raw-R YBE, and knot-invariant
+boundaries.
+
+`DocumentationResource`, `list_documentation_resources`,
+`documentation_resource_path`, and `read_documentation` identify the offline
+Markdown resources used by the maintained Help viewer. The PyInstaller spec
+bundles the user guide and mathematical implementation guide under `docs/`.
+
+Result export continues to use `format_application_braid_result`,
+`serialize_application_braid_result`, and
+`serialize_custom_braid_operator_result`. Desktop workflow `export_result_to_path`
+helpers only select a service serializer and write its deterministic output;
+they do not reimplement mathematical formatting. Braid SVG/PNG export remains
+available through the renderer-neutral preview service and its Qt view.

@@ -28,6 +28,24 @@ The installer is unsigned, so Windows SmartScreen may show its usual warning for
 
 **安装说明：** 运行安装程序，保留默认的当前用户安装位置，然后从开始菜单启动（可选创建桌面快捷方式）。无需管理员权限，也不会修改 PATH。
 
+## Screenshots and demo / 截图与演示
+
+Public screenshots are refreshed from the real maintained PySide6 application;
+the repository does not use fabricated mockups. Maintainers can reproduce the
+captures after installing the desktop dependencies with:
+
+```powershell
+python tools/capture_desktop_screenshots.py --output-dir docs/images
+```
+
+On a headless Linux maintainer machine, set `QT_QPA_PLATFORM=offscreen` before
+running the same command. The script loads the maintained trefoil and custom
+sl2 check-R examples, captures the actual workflow and explanation dock, and
+does not evaluate an invariant. Review the resulting `docs/images/*.png` files
+on Windows before publishing them. See [the screenshot refresh notes](docs/images/README.md).
+
+公共截图由真实维护中的 PySide6 应用刷新，不使用虚构的界面模型。安装桌面依赖后，维护者可运行上面的命令生成截图；脚本只加载维护中的示例，不会计算不变量。发布前请在 Windows 上检查生成的 `docs/images/*.png`。
+
 ## Current status
 
 The historical source recovery, package/test baseline, service-layer refactor, and the core M3 desktop workflow are complete.
@@ -41,11 +59,10 @@ The repository now contains:
 - representative regression fixtures from the authoritative recovered implementation;
 - an offline external Knot Atlas oracle suite for independent mathematical validation.
 
-M4 distribution is now complete through release-machinery preparation. The
-first supported target is a reproducible PyInstaller `onedir` Windows build
-produced and smoke-tested by GitHub Actions. The maintained preview version is
-`0.1.0`; the tagged release workflow is ready, but no `v0.1.0` tag or public
-release has been created by this change.
+M4 distribution is complete. The supported Windows release provides a reproducible
+PyInstaller `onedir` application, a per-user Inno Setup installer, a portable ZIP,
+and SHA-256 checksums. The public `v0.1.0` release is available through the
+bilingual download links above; current main contains additional post-v0.1.0 M5 work.
 
 ## Desktop application
 
@@ -207,8 +224,9 @@ The executable is produced under `dist\\Calculator-of-Knots-and-Links\\`. A pack
 The Windows GitHub Actions workflow builds the bundle, smoke-tests the packaged executable, creates `Calculator-of-Knots-and-Links-windows-x64.zip`, extracts that ZIP, smoke-tests the extracted executable again, and only then uploads it as an Actions artifact.
 
 See `docs/DISTRIBUTION.md` for exact local-build, release, and artifact-download
-instructions. CI now builds both the portable ZIP and the Inno Setup installer;
-the real `v0.1.0` GitHub Release has not yet been published.
+instructions. CI builds both the portable ZIP and the Inno Setup installer;
+the public `v0.1.0` GitHub Release is published, while current main contains
+additional productization work intended for a later release.
 
 ## Development principle
 

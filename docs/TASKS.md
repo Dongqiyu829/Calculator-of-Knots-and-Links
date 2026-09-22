@@ -65,7 +65,7 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 - [x] Add a maintained Qt-native braid visualization with project-native crossing semantics, zoom/pan/fit, and SVG/PNG export.
 - [x] Curated example library with provenance/status metadata and service-driven searchable browser.
 - [x] Deterministic versioned `.knotcalc.json` save/load for invariant and custom R/check-R setups without automatic evaluation.
-- [ ] Export results.
-- [ ] Mathematical explanation panel.
-- [ ] User documentation.
-- [ ] Screenshots and installation instructions in README.
+- [x] Export results through a coherent File → Export route while preserving service serializers and preview SVG/PNG exports.
+- [x] Mathematical explanation panel backed by frontend-neutral service descriptors with formal/candidate/operator-only boundaries.
+- [x] Bilingual offline user documentation and Help access in the maintained PySide6 application.
+- [x] README screenshots/demo refresh path and bilingual installation/download guidance.

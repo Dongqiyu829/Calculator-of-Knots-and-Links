@@ -35,11 +35,13 @@ from src.services import (
     build_catalog_braid_input,
     build_custom_braid_input,
     build_custom_braid_word,
+    build_invariant_explanation,
     build_invariant_project,
     evaluate_braid_result,
     evaluate_catalog_result,
     format_application_braid_result,
     format_application_branch_result,
+    get_branch_explanation,
     list_catalog_examples,
     list_evaluation_branches,
     parse_q_text,
@@ -106,6 +108,9 @@ class _InvariantWorker(QObject):
 class InvariantCalculationWorkflow(QWidget):
     """Normal catalog/custom-braid calculation flow for maintained branches."""
 
+    explanationChanged = Signal(object)
+    resultChanged = Signal(object)
+
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("invariantCalculationWorkflow")
@@ -136,8 +141,10 @@ class InvariantCalculationWorkflow(QWidget):
         title.setStyleSheet("font-size: 18px; font-weight: 600;")
         layout.addWidget(title)
         oracle_note = QLabel(
-            "Project-native braid conventions are used exactly as entered. Offline external-oracle coverage exists for "
-            "the formal Jones/sl3 branches; the sl2 spin-1 branch remains candidate."
+            "\n".join(
+                f"{descriptor.display_name} ({descriptor.status}): {get_branch_explanation(descriptor.branch_id).summary}"
+                for descriptor in self._branches
+            )
         )
         oracle_note.setWordWrap(True)
         oracle_note.setStyleSheet("color: #555;")
@@ -181,6 +188,7 @@ class InvariantCalculationWorkflow(QWidget):
                 note.setStyleSheet("margin-left: 24px; color: #805000;")
             branch_layout.addWidget(note)
             self._branch_checks.append((check, descriptor))
+            check.stateChanged.connect(lambda _state: self._emit_explanation())
         layout.addWidget(branch_group)
 
         execution_group = QGroupBox("Calculation", self)
@@ -188,6 +196,7 @@ class InvariantCalculationWorkflow(QWidget):
         self.q_input = QLineEdit("2", execution_group)
         self.q_input.setObjectName("invariantQInput")
         self.q_input.setPlaceholderText("2, 3/2, q, or another SymPy-compatible expression")
+        self.q_input.textChanged.connect(lambda _text: self._emit_explanation())
         execution_layout.addRow("q:", self.q_input)
         calculation_row = QWidget(execution_group)
         calculation_layout = QHBoxLayout(calculation_row)
@@ -234,6 +243,7 @@ class InvariantCalculationWorkflow(QWidget):
         self.result_tabs.addTab(self._placeholder_result, "Results")
         layout.addWidget(self.result_tabs, 1)
         self._update_catalog_preview()
+        self._emit_explanation()
 
     def _build_catalog_source(self) -> QWidget:
         source = QWidget(self)
@@ -267,27 +277,24 @@ class InvariantCalculationWorkflow(QWidget):
         self.custom_notes_input.setPlaceholderText("Optional note")
         self.custom_strands_spin.valueChanged.connect(self._update_braid_preview)
         self.custom_generators_input.textChanged.connect(self._update_braid_preview)
-        convention = QLabel(
-            "Positive i means project sigma_i; negative -i means its inverse. No external braid-sign conversion is applied.",
-            source,
-        )
-        convention.setWordWrap(True)
-        convention.setStyleSheet("color: #555;")
+        self.custom_strands_spin.valueChanged.connect(lambda _value: self._emit_explanation())
+        self.custom_generators_input.textChanged.connect(lambda _text: self._emit_explanation())
         layout.addRow("Strands:", self.custom_strands_spin)
         layout.addRow("Generators:", self.custom_generators_input)
         layout.addRow("Label:", self.custom_label_input)
         layout.addRow("Notes:", self.custom_notes_input)
-        layout.addRow("Convention:", convention)
         return source
 
     def _source_changed(self) -> None:
         self.source_stack.setCurrentIndex(self.source_combo.currentIndex())
         self._update_braid_preview()
+        self._emit_explanation()
 
     def _update_catalog_preview(self) -> None:
         index = self.example_combo.currentIndex()
         if index < 0 or index >= len(self._examples):
             self.example_preview.clear()
+            self._emit_explanation()
             return
         example = self._examples[index]
         metadata = []
@@ -301,6 +308,7 @@ class InvariantCalculationWorkflow(QWidget):
             f"{metadata_text}\n{example.notes}"
         )
         self._update_braid_preview()
+        self._emit_explanation()
 
     def _update_braid_preview(self) -> None:
         """Refresh the vector preview from the service-owned input model."""
@@ -312,8 +320,44 @@ class InvariantCalculationWorkflow(QWidget):
                 braid_input = build_custom_braid_input(self.custom_strands_spin.value(), self.custom_generators_input.text())
         except ApplicationServiceError as exc:
             self.braid_preview.set_message(f"Preview unavailable: {exc}")
+            self.explanationChanged.emit(None)
             return
         self.braid_preview.set_braid_word(braid_input.braid_word)
+        self._emit_explanation(braid_input)
+
+    def current_explanation(self):
+        """Return contextual service-owned guidance without evaluating anything."""
+
+        try:
+            if str(self.source_combo.currentData()) == "catalog":
+                braid_input = build_catalog_braid_input(self.example_combo.currentText())
+            else:
+                braid_input = build_custom_braid_input(self.custom_strands_spin.value(), self.custom_generators_input.text())
+        except ApplicationServiceError:
+            return None
+        return build_invariant_explanation(
+            braid_input.braid_word,
+            branch_ids=self._selected_branch_ids(),
+            source_label=braid_input.source_label,
+        )
+
+    def _emit_explanation(self, braid_input: Any | None = None) -> None:
+        if braid_input is None:
+            try:
+                if str(self.source_combo.currentData()) == "catalog":
+                    braid_input = build_catalog_braid_input(self.example_combo.currentText())
+                else:
+                    braid_input = build_custom_braid_input(self.custom_strands_spin.value(), self.custom_generators_input.text())
+            except ApplicationServiceError:
+                self.explanationChanged.emit(None)
+                return
+        self.explanationChanged.emit(
+            build_invariant_explanation(
+                braid_input.braid_word,
+                branch_ids=self._selected_branch_ids(),
+                source_label=braid_input.source_label,
+            )
+        )
 
     def _selected_branch_ids(self) -> tuple[str, ...]:
         return tuple(descriptor.branch_id for check, descriptor in self._branch_checks if check.isChecked())
@@ -403,6 +447,7 @@ class InvariantCalculationWorkflow(QWidget):
     def _calculation_succeeded(self, result: object) -> None:
         assert isinstance(result, ApplicationBraidResult)
         self._last_result = result
+        self.resultChanged.emit(result)
         self._render_result(result)
         self.copy_selected_button.setEnabled(True)
         self.copy_all_button.setEnabled(True)
@@ -470,7 +515,7 @@ class InvariantCalculationWorkflow(QWidget):
             format_application_branch_result(branch),
         ]
         if branch.status == "candidate":
-            lines.append("Candidate status is preserved: this output is not presented as theorem-level formal normalization.")
+            lines.extend(get_branch_explanation(branch.branch_id).warnings)
         return "\n".join(lines)
 
     def _current_result_text(self) -> str | None:
@@ -507,13 +552,24 @@ class InvariantCalculationWorkflow(QWidget):
         )
         if not file_name:
             return
-        content = format_application_braid_result(self._last_result) if "Text" in selected_filter else serialize_application_braid_result(self._last_result)
         try:
-            Path(file_name).write_text(content, encoding="utf-8")
-        except OSError as exc:
+            self.export_result_to_path(file_name, "text" if "Text" in selected_filter else "json")
+        except (ApplicationServiceError, OSError) as exc:
             self._set_error(f"Could not export result: {exc}")
             return
         self.status_label.setText(f"Exported result to {file_name}.")
+
+    def export_result_to_path(self, path: str | Path, file_format: str = "json") -> Path:
+        """Write the selected result using the maintained service serializers."""
+
+        if self._last_result is None:
+            raise ApplicationServiceError("No invariant calculation result is available to export.")
+        if file_format not in {"text", "json"}:
+            raise ApplicationServiceError(f"Unsupported invariant export format '{file_format}'.")
+        content = format_application_braid_result(self._last_result) if file_format == "text" else serialize_application_braid_result(self._last_result)
+        target = Path(path)
+        target.write_text(content, encoding="utf-8", newline="\n")
+        return target
 
     def _result_tab_changed(self, _index: int) -> None:
         self.copy_selected_button.setEnabled(self._last_result is not None)

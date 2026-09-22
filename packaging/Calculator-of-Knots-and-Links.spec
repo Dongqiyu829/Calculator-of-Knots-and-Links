@@ -23,7 +23,13 @@ analysis = Analysis(
     [str(project_root / "packaging" / "desktop_entry.py")],
     pathex=[str(project_root)],
     binaries=[],
-    datas=[],
+    # Help must remain useful for offline packaged users.  Keep the source
+    # Markdown paths stable so src.services.documentation resolves them both
+    # from a checkout and from PyInstaller's extracted onedir directory.
+    datas=[
+        (str(project_root / "docs" / "USER_GUIDE.md"), "docs"),
+        (str(project_root / "docs" / "MATHEMATICAL_IMPLEMENTATION.md"), "docs"),
+    ],
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},

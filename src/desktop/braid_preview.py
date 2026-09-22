@@ -99,6 +99,7 @@ class BraidPreviewWidget(QWidget):
         self.view.scene().setSceneRect(QRectF())
         self.metadata_label.setText(message)
         self._set_export_enabled(False)
+        self.geometryChanged.emit(None)
 
     def set_braid_word(self, braid_word: Any, *, viewport_width: int | None = None, viewport_height: int | None = None) -> BraidPreviewGeometry:
         width = viewport_width or max(self.view.viewport().width(), 620)

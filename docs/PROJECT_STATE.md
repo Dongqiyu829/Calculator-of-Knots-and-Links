@@ -203,3 +203,15 @@ The browser includes the recovered catalog, calibrated 5_1/5_2 evidence, braid
 convention demonstrations, and custom check-R diagnostics including the
 relation-failure negative control. No branch status or mathematical behavior is
 changed.
+
+Issue #45 completes the remaining M5 productization layer. A frontend-neutral
+`src.services` explanation catalog now owns branch descriptions, formula lines,
+normalization/variable statements, formal/candidate/operator-only status, and
+documentation references; the PySide6 workflows render that data in a
+contextual Mathematics dock. File → Export provides result text/JSON,
+custom-operator JSON, and braid preview SVG/PNG actions with unavailable
+formats disabled. The bilingual offline user guide is available from Help and
+is included in the PyInstaller onedir bundle. README documents a maintainer
+refresh script that captures the real maintained app, rather than fabricated
+mockups. No invariant, R-matrix, braid, q, normalization, Knot Atlas fixture,
+external-oracle, or application-version behavior changed.

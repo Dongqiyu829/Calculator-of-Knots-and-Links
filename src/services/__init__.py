@@ -28,6 +28,21 @@ from .custom_rmatrix import (
     serialize_custom_braid_operator_result,
     validate_custom_matrix,
 )
+from .documentation import (
+    DOCUMENTATION_RESOURCES,
+    DocumentationResource,
+    documentation_resource_path,
+    get_documentation_resource,
+    list_documentation_resources,
+    read_documentation,
+)
+from .explanations import (
+    MathematicalExplanation,
+    build_custom_rmatrix_explanation,
+    build_invariant_explanation,
+    get_branch_explanation,
+    get_custom_rmatrix_explanation,
+)
 
 from .braid_evaluation import (
     BraidInputState,
