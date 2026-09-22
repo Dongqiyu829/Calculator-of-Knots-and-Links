@@ -111,7 +111,9 @@ class CuratedExample:
 
 
 def _default_branches() -> tuple[str, ...]:
-    return tuple(descriptor.branch_id for descriptor in list_evaluation_branches())
+    """Recommend maintained formal branches unless an example opts into candidate status explicitly."""
+
+    return tuple(descriptor.branch_id for descriptor in list_evaluation_branches() if descriptor.status == "formal")
 
 
 def _catalog_examples() -> tuple[CuratedExample, ...]:
