@@ -63,8 +63,8 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 ## M5 — Productization
 
 - [x] Add a maintained Qt-native braid visualization with project-native crossing semantics, zoom/pan/fit, and SVG/PNG export.
-- [ ] Curated example library.
-- [ ] Save/load calculations.
+- [x] Curated example library with provenance/status metadata and service-driven searchable browser.
+- [x] Deterministic versioned `.knotcalc.json` save/load for invariant and custom R/check-R setups without automatic evaluation.
 - [ ] Export results.
 - [ ] Mathematical explanation panel.
 - [ ] User documentation.

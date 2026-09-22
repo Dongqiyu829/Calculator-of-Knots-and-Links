@@ -88,6 +88,20 @@ Current built-in branches are:
 
 The candidate branch remains explicitly labelled as such and is not presented as having a fully resolved external normalization.
 
+### Curated examples and project files
+
+The desktop window includes a searchable curated example browser. Examples are
+evidence-backed presets for knots/links, braid-sign demonstrations, and custom
+R/check-R diagnostics. Their status and provenance remain visible; selecting
+**Load example** only populates the matching workflow and refreshes its braid
+preview—it never starts an expensive calculation.
+
+Use **File → Save Project** or **Save Project As…** to write a deterministic,
+UTF-8 `.knotcalc.json` setup document. **Open Project…** restores either the
+invariant or custom R/check-R tab without trusting or evaluating a stored
+result. The format is versioned (`schema_version: 1`) and keeps symbolic q
+and matrix input as text.
+
 ### Custom R / check-R workflow
 
 The advanced desktop tab accepts user-supplied local matrices and constructs braid-group operators.
