@@ -290,7 +290,10 @@ def parse_project(text: str) -> ApplicationProjectDocument:
 
 def save_project_file(path: str | Path, document: ApplicationProjectDocument) -> Path:
     target = Path(path)
-    target.write_text(serialize_project(document), encoding="utf-8", newline="\n")
+    try:
+        target.write_text(serialize_project(document), encoding="utf-8", newline="\n")
+    except OSError as exc:
+        raise ProjectFileError(f"Could not write project file '{target}': {exc}") from exc
     return target
 
 
