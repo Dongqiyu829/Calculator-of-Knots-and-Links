@@ -17,7 +17,7 @@ The repository now contains:
 - representative regression fixtures from the authoritative recovered implementation;
 - an offline external Knot Atlas oracle suite for independent mathematical validation.
 
-The next milestone is M4 distribution: PyInstaller, Windows builds, standalone downloadable artifacts, version metadata, and release automation.
+M4 distribution is now in progress. The first supported target is a reproducible PyInstaller `onedir` Windows build produced and smoke-tested by GitHub Actions; stable version metadata, tagged releases, and installer strategy remain follow-up work.
 
 ## Desktop application
 
@@ -143,18 +143,22 @@ Important project documents:
 - `docs/EXTERNAL_VALIDATION.md` — independent Knot Atlas validation
 - `docs/REPRESENTATIVE_REGRESSIONS.md` — recovered compatibility baselines
 - `docs/AUTHORITATIVE_RECOVERY.md` — source-recovery provenance
+- `docs/DISTRIBUTION.md` — Windows standalone build and artifact instructions
 
 ## Distribution status
 
-A standalone Windows executable is **not yet published**.
+The first Windows standalone distribution path uses a PyInstaller `onedir` bundle. On Windows:
 
-Planned M4 work includes:
+```powershell
+python -m pip install -e ".[desktop,build]"
+python -m PyInstaller --clean --noconfirm packaging/Calculator-of-Knots-and-Links.spec
+```
 
-- PyInstaller configuration;
-- Windows build automation in GitHub Actions;
-- standalone downloadable builds;
-- version metadata;
-- release workflow and installer strategy.
+The executable is produced under `dist\\Calculator-of-Knots-and-Links\\`. A packaging-only `--smoke-test` mode constructs the maintained PySide6 window, verifies bundled runtime imports, and exits without entering the normal event loop or evaluating an invariant.
+
+The Windows GitHub Actions workflow builds the bundle, smoke-tests the packaged executable, creates `Calculator-of-Knots-and-Links-windows-x64.zip`, extracts that ZIP, smoke-tests the extracted executable again, and only then uploads it as an Actions artifact.
+
+See `docs/DISTRIBUTION.md` for exact local-build and artifact-download instructions. This is not yet a tagged GitHub Release or installer.
 
 ## Development principle
 

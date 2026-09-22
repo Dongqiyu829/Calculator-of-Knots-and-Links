@@ -31,13 +31,7 @@ The archived P01 and P03 symbolic audit JSON outputs also reproduce exactly.
 
 ## Immediate objective
 
-Maintain the installable Python baseline and practical test tiers while retaining
-the recovered `src` package and its mathematical behavior. M2 is complete: its
-`src.services` API supplies input parsing/evaluation, branch and built-in-example
-discovery, structured errors, result DTOs, and application reports. Maintained
-workbench and Tkinter compatibility adapters share that path. M3 has begun with
-a maintained PySide6 shell that reads lightweight catalog and branch metadata
-only through `src.services`; it performs no invariant evaluation on startup.
+M3 desktop functionality is complete: the maintained PySide6 application supports built-in invariant evaluation and the custom R/check-R operator workflow through `src.services`, with expensive work kept off the UI thread. The immediate objective is M4 distribution: produce a reproducible Windows standalone bundle and then add stable versioning, tagged releases, and an installer strategy without changing mathematical behavior.
 
 ## Architecture direction
 
@@ -141,7 +135,7 @@ changed. The candidate sl2 spin-1 normalization remains deliberately unresolved
 research but does not block an M3 frontend that displays its established status.
 There is no known engineering dependency blocking M3.
 
-### M3 — Desktop application (in progress)
+### M3 — Desktop application (complete)
 
 The first PySide6 `QMainWindow` shell is available through `python -m src.desktop`
 after installing the `desktop` dependency group. It provides a service-driven
@@ -187,3 +181,10 @@ service DTO reports with their formal/candidate status, normalization, variable
 convention, representation, metadata, and warnings intact. Copy, JSON, and
 file export use service report/serialization helpers; no live Atlas lookup or
 mathematical convention change is introduced.
+
+
+### M4 — Distribution (in progress)
+
+Issue #34 introduces the first maintained Windows distribution path. A checked-in PyInstaller `onedir` specification packages the PySide6 desktop application and SymPy runtime without requiring the user to install Python. A Windows GitHub Actions workflow runs the fast regression suite, builds the executable, smoke-tests the packaged application, creates a deterministic Windows ZIP, extracts it, and smoke-tests the extracted executable before upload.
+
+The first M4 step deliberately favors a reliable folder-style bundle over a fragile one-file executable. Stable application version metadata, tagged GitHub Releases, and installer strategy remain follow-up work. See `docs/DISTRIBUTION.md`.
