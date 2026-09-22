@@ -9,6 +9,7 @@ from .branch_catalog import (
     list_evaluation_branches,
 )
 from .catalog_examples import ApplicationCatalogExample, get_catalog_example, list_catalog_examples
+from .braid_preview import BraidPreviewGeometry, build_braid_preview_geometry, render_braid_preview_svg
 from .custom_rmatrix import (
     ApplicationCustomBraidOperatorResult,
     ApplicationCustomMatrixValidation,
@@ -70,6 +71,7 @@ __all__ = [
     "BraidInputError",
     "BraidInputState",
     "BraidInputValidationError",
+    "BraidPreviewGeometry",
     "DEFAULT_EVALUATION_MODEL_IDS",
     "EvaluationBranchDescriptor",
     "GeneratorParseError",
@@ -86,6 +88,7 @@ __all__ = [
     "build_custom_braid_input",
     "build_custom_braid_word",
     "build_custom_rmatrix_model",
+    "build_braid_preview_geometry",
     "evaluate_braid_input",
     "evaluate_braid_input_result",
     "evaluate_braid_word",
@@ -107,6 +110,7 @@ __all__ = [
     "parse_q_text",
     "parse_custom_matrix",
     "serialize_custom_braid_operator_result",
+    "render_braid_preview_svg",
     "serialize_application_braid_result",
     "validate_custom_matrix",
 ]
