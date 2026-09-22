@@ -1,4 +1,4 @@
-"""First PySide6 shell, intentionally limited to lightweight application metadata."""
+"""Maintained PySide6 shell and custom braid-operator workflow."""
 
 from __future__ import annotations
 
@@ -16,18 +16,21 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QSplitter,
     QStatusBar,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
 
 from src.services import ApplicationCatalogExample, list_catalog_examples, list_evaluation_branches
 
+from .custom_matrix_workflow import CustomMatrixWorkflow
+
 
 APPLICATION_TITLE = "Calculator of Knots and Links"
 
 
 class DesktopMainWindow(QMainWindow):
-    """Static service-driven shell for the future desktop calculation workflow."""
+    """Service-driven desktop shell with an explicit custom R/check-R mode."""
 
     def __init__(self) -> None:
         super().__init__()
@@ -38,7 +41,7 @@ class DesktopMainWindow(QMainWindow):
         self._build_menu()
         self._build_central_widget()
         self.setStatusBar(QStatusBar(self))
-        self.statusBar().showMessage("Ready. Select an example and models; evaluation will be added in a later milestone.")
+        self.statusBar().showMessage("Ready. Catalog evaluation is pending; custom R/check-R operators are available in their own tab.")
 
     @property
     def examples(self) -> tuple[ApplicationCatalogExample, ...]:
@@ -78,13 +81,28 @@ class DesktopMainWindow(QMainWindow):
         subtitle.setStyleSheet("color: #555;")
         root_layout.addWidget(subtitle)
 
-        splitter = QSplitter(self)
+        tabs = QTabWidget(root)
+        tabs.setObjectName("desktopWorkflowTabs")
+        tabs.addTab(self._build_catalog_shell(), "Built-in preview")
+        self.custom_matrix_workflow = CustomMatrixWorkflow(tabs)
+        tabs.addTab(self.custom_matrix_workflow, "Custom R/check-R operator")
+        root_layout.addWidget(tabs, 1)
+        self.workflow_tabs = tabs
+        self.setCentralWidget(root)
+
+    def _build_catalog_shell(self) -> QWidget:
+        """Retain the original metadata-only catalog shell without evaluating it."""
+
+        catalog_shell = QWidget(self)
+        layout = QVBoxLayout(catalog_shell)
+        layout.setContentsMargins(0, 0, 0, 0)
+        splitter = QSplitter(catalog_shell)
         splitter.addWidget(self._build_source_panel())
         splitter.addWidget(self._build_workspace_panel())
         splitter.setStretchFactor(0, 0)
         splitter.setStretchFactor(1, 1)
-        root_layout.addWidget(splitter, 1)
-        self.setCentralWidget(root)
+        layout.addWidget(splitter)
+        return catalog_shell
 
     def _build_source_panel(self) -> QWidget:
         panel = QWidget(self)
@@ -120,8 +138,9 @@ class DesktopMainWindow(QMainWindow):
         workspace = QGroupBox("Preview and results", self)
         layout = QVBoxLayout(workspace)
         placeholder = QLabel(
-            "This first desktop shell loads examples and branch status only.\n\n"
-            "Braid editing, evaluation, result details, export, and background computation will be added in subsequent M3 tasks."
+            "This built-in preview loads examples and branch status only.\n\n"
+            "The Custom R/check-R operator tab separately supports explicit matrix validation and background braid-operator construction. "
+            "Built-in invariant evaluation remains a later M3 task."
         )
         placeholder.setWordWrap(True)
         placeholder.setStyleSheet("padding: 24px; color: #444;")
@@ -142,7 +161,8 @@ class DesktopMainWindow(QMainWindow):
         QMessageBox.about(
             self,
             f"About {APPLICATION_TITLE}",
-            "PySide6 desktop shell. It uses the frozen application service contract and does not evaluate invariants on startup.",
+            "PySide6 desktop shell. It uses the frozen application service contract and does not evaluate invariants on startup. "
+            "The custom R/check-R tab constructs operators only, not knot/link invariants.",
         )
 
 

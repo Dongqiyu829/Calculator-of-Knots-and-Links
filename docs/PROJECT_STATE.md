@@ -161,3 +161,12 @@ coherent A2 fundamental variable map. It also preserves the A1 weight-2 versus
 spin-1 candidate mismatch as diagnostic evidence. Custom check-R parity and
 negative controls, including an invertible matrix that fails the braid
 relation, protect the convention boundary. See `docs/EXTERNAL_VALIDATION.md`.
+
+The maintained PySide6 application now has a dedicated Custom R/check-R
+operator tab. It accepts explicit convention-labelled matrix text or a small
+text/JSON file, validates shape/dimension/invertibility and optional relations,
+constructs a signed custom braid operator through `src.services`, and renders
+the resulting matrix, diagnostics, warnings, and copy/export JSON. Expensive
+service operations run in a Qt worker thread. This UI adds no invariant
+normalization and states that boundary prominently; built-in invariant
+evaluation remains a separate M3 task.
