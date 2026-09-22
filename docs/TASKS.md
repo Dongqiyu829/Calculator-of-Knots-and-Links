@@ -55,8 +55,8 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 - [x] Add PyInstaller build configuration.
 - [x] Add Windows build workflow in GitHub Actions.
 - [x] Produce a standalone downloadable build artifact with packaged executable smoke validation.
-- [ ] Add version metadata.
-- [ ] Add release workflow and installer strategy.
+- [x] Add single-source `0.1.0` version metadata and lightweight version checks.
+- [x] Add tag-driven release workflow and document the portable ZIP installer strategy.
 
 ## M5 — Productization
 
