@@ -353,7 +353,7 @@ For custom matrices, `ApplicationCustomMatrixValidation` distinguishes:
 A matrix can be square, dimension-compatible, and invertible while still failing the braid relation. The test suite explicitly uses
 
 ```math
-\operatorname{diag}(1,2,3,4)
+\mathrm{diag}(1,2,3,4)
 ```
 
 as such a negative control.
@@ -514,7 +514,7 @@ This distinction is mathematically important: both local operators are $9\times9
 
 ## 10. From a local $\check R$ to an $n$-strand braid operator
 
-Suppose $V$ has dimension $d$, and $\check R\in\operatorname{End}(V\otimes V)$.
+Suppose $V$ has dimension $d$, and $\check R\in\mathrm{End}(V\otimes V)$.
 
 For an $n$-strand braid, the positive Artin generator is represented by
 
@@ -572,7 +572,7 @@ For every generator it stores diagnostics including:
 Given a global braid operator $\rho(\beta)$, the most immediate scalar is
 
 ```math
-\operatorname{Tr}(\rho(\beta)).
+\mathrm{Tr}(\rho(\beta)).
 ```
 
 The code computes this in `compute_raw_closure_trace`.
@@ -604,7 +604,7 @@ F(\beta)
 =
 \alpha^{-w(\beta)}
 \beta_0^{-n}
-\operatorname{Tr}
+\mathrm{Tr}
 \left(
 \rho(\beta)\mu^{\otimes n}
 \right).
@@ -622,13 +622,13 @@ The pieces have distinct roles:
 The code separately records
 
 ```math
-\operatorname{Tr}(\rho(\beta))
+\mathrm{Tr}(\rho(\beta))
 ```
 
 and
 
 ```math
-\operatorname{Tr}
+\mathrm{Tr}
 \left(
 \rho(\beta)\mu^{\otimes n}
 \right)
@@ -658,7 +658,7 @@ The current project uses
 
 ```math
 \mu=
-\operatorname{diag}(q^{-2},1,q^2),
+\mathrm{diag}(q^{-2},1,q^2),
 \qquad
 \alpha=q^3,
 \qquad
@@ -671,7 +671,7 @@ The current candidate layer uses
 
 ```math
 \mu=
-\operatorname{diag}(q^{-2},1,q^2),
+\mathrm{diag}(q^{-2},1,q^2),
 \qquad
 \alpha=q^4,
 \qquad
@@ -766,7 +766,7 @@ The EYB layer computes
 
 ```math
 q^{-6}
-\operatorname{Tr}
+\mathrm{Tr}
 \left(
 \check R^3(\mu\otimes\mu)
 \right),
@@ -907,7 +907,7 @@ The sl3 branch uses:
 3. the global braid operator;
 4. the sl3 EYB data
 ```math
-   \mu=\operatorname{diag}(q^{-2},1,q^2),
+   \mu=\mathrm{diag}(q^{-2},1,q^2),
    \quad
    \alpha=q^3,
    \quad
@@ -961,7 +961,7 @@ The candidate invariant layer then computes:
 1. raw closure trace;
 2. weighted trace using
 ```math
-   \mu=\operatorname{diag}(q^{-2},1,q^2);
+   \mu=\mathrm{diag}(q^{-2},1,q^2);
 ```
 3. candidate EYB-style normalization with
 ```math
@@ -976,7 +976,7 @@ C(\beta;q)
 =
 \frac{
 q^{-4w(\beta)}
-\operatorname{Tr}
+\mathrm{Tr}
 \left(
 \rho(\beta)\mu^{\otimes n}
 \right)
@@ -1081,7 +1081,7 @@ If $\check R$ satisfies the braid relation, then the local data support the brai
 
 ```math
 B_n\longrightarrow
-\operatorname{GL}(V^{\otimes n})
+\mathrm{GL}(V^{\otimes n})
 ```
 
 when the required inverses exist.
@@ -1220,7 +1220,7 @@ For a local braid matrix $B$, the current helper constructs the polynomial
 ```math
 m_{\mathrm{candidate}}(x)
 =
-\prod_{\lambda\in\operatorname{Spec}_{\mathrm{distinct}}(B)}
+\prod_{\lambda\in\mathrm{Spec}_{\mathrm{distinct}}(B)}
 (x-\lambda).
 ```
 
@@ -1556,7 +1556,7 @@ and compute
 ```math
 \alpha^{-w}
 \beta_0^{-n}
-\operatorname{Tr}
+\mathrm{Tr}
 \left(
 \rho(\beta)\mu^{\otimes n}
 \right).
