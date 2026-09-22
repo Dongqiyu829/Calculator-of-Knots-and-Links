@@ -154,3 +154,10 @@ through `src.services`. It accepts explicit raw `R` or direct `check-R` input,
 validates tensor-square dimension/invertibility and optional relation checks,
 and returns deterministic operator DTOs. It intentionally provides no enhanced
 trace or link-invariant recipe and does not alter any built-in branch.
+
+An offline independent Knot Atlas oracle suite now calibrates Atlas braid signs
+across four knots, freezes exact Jones checks through `6_1`, and records the
+coherent A2 fundamental variable map. It also preserves the A1 weight-2 versus
+spin-1 candidate mismatch as diagnostic evidence. Custom check-R parity and
+negative controls, including an invertible matrix that fails the braid
+relation, protect the convention boundary. See `docs/EXTERNAL_VALIDATION.md`.

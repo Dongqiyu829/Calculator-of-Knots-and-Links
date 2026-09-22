@@ -77,6 +77,23 @@ The implemented EYB formula is
   convention. Knot Atlas comparison substitutes `q -> q^2`.
 - Ordinary raw closure trace is diagnostic output and is not Markov normalized.
 
+## Independent Knot Atlas calibration
+
+The offline external-oracle suite documented in `docs/EXTERNAL_VALIDATION.md`
+calibrates Knot Atlas minimum braids across `3_1`, `4_1`, `5_1`, and `5_2`.
+Atlas generator signs must be globally negated before they are interpreted in
+the project: `project_generator = -atlas_generator`. This does not redefine the
+project's positive Artin generator; it is an explicit source-to-project map.
+
+The exact Jones comparison uses `q_atlas = q_project^2`. The independent A2
+fundamental comparison has a different coherent map,
+`q_atlas = q_project^-1`. The Knot Atlas A1 weight-2 table does not currently
+admit a coherent tested substitution and monomial shift for the sl2 spin-1
+candidate branch. That mismatch preserves the candidate status and does not
+change any built-in matrix or normalization. The recovered helper's older
+`J_2` expressions are compatibility evidence, not the authoritative external
+fixture used by this calibration.
+
 ## Fixed branch order and profile encoding
 
 The benchmark layer fixes the comparison order as:
