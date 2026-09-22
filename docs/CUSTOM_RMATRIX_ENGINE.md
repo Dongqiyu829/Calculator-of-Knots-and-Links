@@ -63,3 +63,19 @@ The result records the explicit input kind, local dimension, braid word,
 operator dimensions and entries, ordered generator diagnostics, relation and
 invertibility statuses, and warnings. PySide6 code should use only this service
 surface, not `src.rmatrix.custom_rmatrix`.
+
+## PySide6 workflow
+
+The maintained desktop application exposes this engine in the **Custom
+R/check-R operator** tab. The user must select `R` or `check-R` explicitly;
+the initial selector intentionally has no mathematical default. The tab accepts
+matrix text (or text/JSON file contents), an auto-inferred or explicitly
+validated local dimension, optional relation checks, strand count, and signed
+generator text. It renders structured validation, operator dimensions, matrix
+entries, diagnostics, warnings, and deterministic copy/export JSON.
+
+Validation and operator construction run in a Qt worker thread. Negative
+generators visibly warn that an invertible `check-R` is required; the service
+remains responsible for the definitive failure if an inverse is requested from
+a singular matrix. The UI estimates tensor growth before construction and
+repeats the operator-only / non-invariant boundary in its results.

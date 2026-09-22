@@ -43,7 +43,8 @@ def test_desktop_window_constructs_from_service_catalogs_without_evaluation() ->
     assert window.branches == list_evaluation_branches()
     assert window.example_combo.count() == len(window.examples)
     assert any("candidate" in selector.text() for selector in window.findChildren(QCheckBox))
-    assert "evaluation will be added" in window.statusBar().currentMessage().lower()
+    assert "custom r/check-r operators" in window.statusBar().currentMessage().lower()
+    assert window.workflow_tabs.count() == 2
     window.close()
 
 
