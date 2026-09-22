@@ -56,3 +56,10 @@ def test_custom_explanation_keeps_operator_only_boundary_and_relation_status() -
     assert "check-R = P R" in explanation.formula_lines[0]
     assert any("not a validated braid-group representation" in warning for warning in explanation.warnings)
     assert explanation.metadata["relation_status"] == "failed"
+
+
+def test_sl2_explanation_freezes_project_variable_and_documentation_reference() -> None:
+    explanation = get_branch_explanation("sl2_fundamental")
+    assert "t = q^-2" in explanation.variable_convention
+    assert "q_atlas = q_project^2" in explanation.variable_convention
+    assert "docs/MATHEMATICAL_IMPLEMENTATION.md §13" in explanation.documentation_refs
