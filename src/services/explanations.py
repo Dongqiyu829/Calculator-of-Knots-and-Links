@@ -81,10 +81,10 @@ def _branch_explanation(branch_id: str) -> MathematicalExplanation:
                 "J_project(beta;q) = F_EYB(beta;q) / F_EYB(unknot;q)",
             ),
             normalization="Dimension 2; mu = diag(q^-1, q), alpha = q^2, beta0 = 1; reduced by the current one-strand unknot value.",
-            variable_convention="The project variable is q. For the independent Jones comparison, q_atlas = q_project^2.",
+            variable_convention="The maintained project relation is t = q^-2. For the independent Knot Atlas comparison, q_atlas = q_project^2.",
             output_name="Jones-compatible output",
             representation_dimension=2,
-            documentation_refs=("docs/MATHEMATICAL_IMPLEMENTATION.md §15", "docs/MATH_CONVENTIONS.md §6"),
+            documentation_refs=("docs/MATHEMATICAL_IMPLEMENTATION.md §13", "docs/MATH_CONVENTIONS.md §6"),
             branch_statuses=((descriptor.branch_id, descriptor.status),),
             details=(
                 "The closure uses the enhanced trace rather than an ordinary trace alone.",
