@@ -37,6 +37,7 @@ def test_supported_service_api_is_explicit_and_narrow() -> None:
         "BraidInputError",
         "BraidInputState",
         "BraidInputValidationError",
+        "BraidPreviewGeometry",
         "DEFAULT_EVALUATION_MODEL_IDS",
         "EvaluationBranchDescriptor",
         "GeneratorParseError",
@@ -53,6 +54,7 @@ def test_supported_service_api_is_explicit_and_narrow() -> None:
         "build_custom_braid_input",
         "build_custom_braid_word",
         "build_custom_rmatrix_model",
+        "build_braid_preview_geometry",
         "evaluate_braid_input",
         "evaluate_braid_input_result",
         "evaluate_braid_word",
@@ -74,6 +76,7 @@ def test_supported_service_api_is_explicit_and_narrow() -> None:
         "parse_q_text",
         "parse_custom_matrix",
         "serialize_custom_braid_operator_result",
+        "render_braid_preview_svg",
         "serialize_application_braid_result",
         "validate_custom_matrix",
     }
