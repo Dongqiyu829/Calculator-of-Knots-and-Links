@@ -193,8 +193,8 @@ The executable is produced under `dist\\Calculator-of-Knots-and-Links\\`. A pack
 The Windows GitHub Actions workflow builds the bundle, smoke-tests the packaged executable, creates `Calculator-of-Knots-and-Links-windows-x64.zip`, extracts that ZIP, smoke-tests the extracted executable again, and only then uploads it as an Actions artifact.
 
 See `docs/DISTRIBUTION.md` for exact local-build, release, and artifact-download
-instructions. This change prepares the release workflow but does not create a
-tagged GitHub Release or installer.
+instructions. CI now builds both the portable ZIP and the Inno Setup installer;
+the real `v0.1.0` GitHub Release has not yet been published.
 
 ## Development principle
 
