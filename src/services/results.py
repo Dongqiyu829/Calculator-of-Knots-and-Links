@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Callable
 
 import sympy as sp
 
@@ -35,6 +35,7 @@ class ApplicationBranchResult:
     variable_convention: str
     notes: str = ""
     metadata: dict[str, Any] = field(default_factory=dict)
+    primary_output_expression: Any | None = field(default=None, repr=False, compare=False)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -115,11 +116,12 @@ def _presentation_text(value: sp.Expr) -> str:
     return str(sp.expand(value))
 
 
-def _is_numeric_parameter(q_parameter_text: str | None) -> bool:
-    if not q_parameter_text:
+def _is_scalar_q_parameter(q_parameter: Any | None) -> bool:
+    if q_parameter is None:
         return False
     try:
-        return not sp.sympify(q_parameter_text).free_symbols
+        parsed = sp.sympify(q_parameter)
+        return not parsed.free_symbols
     except (sp.SympifyError, TypeError):
         return False
 
@@ -143,17 +145,16 @@ def _laurent_terms(expression: sp.Expr, symbol: sp.Symbol) -> dict[int, sp.Expr]
 
 
 def _convert_laurent_expression(
-    expression: str | None,
+    expression: sp.Expr | None,
     *,
-    source_symbol: str,
+    source_symbol: sp.Symbol | None,
     target_symbol: str,
-    exponent_map,
+    exponent_map: Callable[[int], int | None],
 ) -> str | None:
-    if expression is None:
+    if expression is None or source_symbol is None:
         return None
-    source = sp.Symbol(source_symbol)
     target = sp.Symbol(target_symbol)
-    laurent_terms = _laurent_terms(sp.sympify(expression), source)
+    laurent_terms = _laurent_terms(expression, source_symbol)
     if laurent_terms is None:
         return None
     converted = sp.Integer(0)
@@ -165,10 +166,22 @@ def _convert_laurent_expression(
     return _presentation_text(converted)
 
 
-def build_polynomial_presentation(result: ApplicationBranchResult, *, q_parameter_text: str | None = None) -> PolynomialPresentation:
+def _project_symbol(expression: sp.Expr | None) -> sp.Symbol | None:
+    if expression is None:
+        return None
+    symbols = tuple(expression.free_symbols)
+    return symbols[0] if len(symbols) == 1 else None
+
+
+def build_polynomial_presentation(
+    result: ApplicationBranchResult,
+    *,
+    q_parameter: Any | None = None,
+    q_parameter_text: str | None = None,
+) -> PolynomialPresentation:
     """Build compact variable/polynomial presentation for one branch DTO."""
 
-    if _is_numeric_parameter(q_parameter_text):
+    if _is_scalar_q_parameter(q_parameter):
         return PolynomialPresentation(
             primary_project_expression=result.primary_output,
             project_variable_convention=result.variable_convention,
@@ -178,15 +191,16 @@ def build_polynomial_presentation(result: ApplicationBranchResult, *, q_paramete
         )
 
     if result.branch_id == "sl2_fundamental":
+        source_symbol = _project_symbol(result.primary_output_expression)
         standard_expression = _convert_laurent_expression(
-            result.primary_output,
-            source_symbol="q",
+            result.primary_output_expression,
+            source_symbol=source_symbol,
             target_symbol="t",
             exponent_map=lambda exponent: None if exponent % 2 else -exponent // 2,
         )
         atlas_expression = _convert_laurent_expression(
-            result.primary_output,
-            source_symbol="q",
+            result.primary_output_expression,
+            source_symbol=source_symbol,
             target_symbol="q_atlas",
             exponent_map=lambda exponent: None if exponent % 2 else exponent // 2,
         )
@@ -195,7 +209,7 @@ def build_polynomial_presentation(result: ApplicationBranchResult, *, q_paramete
                 primary_project_expression=result.primary_output,
                 project_variable_convention=result.variable_convention,
                 atlas_comparable_expression=atlas_expression,
-                atlas_variable_name="Knot Atlas-comparable q_atlas",
+                atlas_variable_name="Knot Atlas-comparable q_atlas" if atlas_expression is not None else None,
                 conversion_status="unavailable",
                 conversion_reason="The current project-q expression is not an exact even-exponent Laurent polynomial, so no standard Jones t-form is shown.",
                 evaluation_parameter_text=q_parameter_text,
@@ -206,16 +220,17 @@ def build_polynomial_presentation(result: ApplicationBranchResult, *, q_paramete
             standard_polynomial_expression=standard_expression,
             standard_variable_name="Standard Jones variable t",
             atlas_comparable_expression=atlas_expression,
-            atlas_variable_name="Knot Atlas-comparable q_atlas",
+            atlas_variable_name="Knot Atlas-comparable q_atlas" if atlas_expression is not None else None,
             conversion_status="exact",
             conversion_reason="Exact Laurent conversion from project q is available.",
             evaluation_parameter_text=q_parameter_text,
         )
 
     if result.branch_id == "sl3_fundamental":
+        source_symbol = _project_symbol(result.primary_output_expression)
         atlas_expression = _convert_laurent_expression(
-            result.primary_output,
-            source_symbol="q",
+            result.primary_output_expression,
+            source_symbol=source_symbol,
             target_symbol="q_atlas",
             exponent_map=lambda exponent: -exponent,
         )
@@ -231,7 +246,7 @@ def build_polynomial_presentation(result: ApplicationBranchResult, *, q_paramete
             primary_project_expression=result.primary_output,
             project_variable_convention=result.variable_convention,
             atlas_comparable_expression=atlas_expression,
-            atlas_variable_name="Knot Atlas-comparable A2 variable q_atlas",
+            atlas_variable_name="Knot Atlas-comparable A2 variable q_atlas" if atlas_expression is not None else None,
             conversion_status="exact",
             conversion_reason="Exact Laurent conversion to the maintained A2 Atlas-comparable variable is available.",
             evaluation_parameter_text=q_parameter_text,
@@ -249,12 +264,13 @@ def build_polynomial_presentation(result: ApplicationBranchResult, *, q_paramete
 def build_application_branch_presentation(
     result: ApplicationBranchResult,
     *,
+    q_parameter: Any | None = None,
     q_parameter_text: str | None = None,
 ) -> ApplicationBranchPresentation:
     """Build the compact user-facing presentation descriptor for one branch."""
 
     explanation = get_branch_explanation(result.branch_id)
-    polynomial = build_polynomial_presentation(result, q_parameter_text=q_parameter_text)
+    polynomial = build_polynomial_presentation(result, q_parameter=q_parameter, q_parameter_text=q_parameter_text)
     candidate_warning = None
     warnings = explanation.warnings
     if result.status == "candidate" and warnings:
@@ -294,6 +310,7 @@ def application_branch_result_from_internal(result: InvariantBranchResult) -> Ap
         variable_convention=result.variable_convention,
         notes=result.notes,
         metadata=dict(result.metadata),
+        primary_output_expression=None if result.primary_output is None else sp.simplify(result.primary_output),
     )
 
 
@@ -373,10 +390,15 @@ def format_application_branch_result(result: ApplicationBranchResult) -> str:
     return "\n".join(lines)
 
 
-def format_application_branch_compact(result: ApplicationBranchResult, *, q_parameter_text: str | None = None) -> str:
+def format_application_branch_compact(
+    result: ApplicationBranchResult,
+    *,
+    q_parameter: Any | None = None,
+    q_parameter_text: str | None = None,
+) -> str:
     """Format one branch in the maintained compact on-screen presentation."""
 
-    presentation = build_application_branch_presentation(result, q_parameter_text=q_parameter_text)
+    presentation = build_application_branch_presentation(result, q_parameter=q_parameter, q_parameter_text=q_parameter_text)
     lines = [
         presentation.display_name,
         f"Status: {presentation.status}",
@@ -414,14 +436,19 @@ def format_application_braid_result(result: ApplicationBraidResult) -> str:
     return "\n".join(lines)
 
 
-def format_application_braid_compact_result(result: ApplicationBraidResult, *, q_parameter_text: str | None = None) -> str:
+def format_application_braid_compact_result(
+    result: ApplicationBraidResult,
+    *,
+    q_parameter: Any | None = None,
+    q_parameter_text: str | None = None,
+) -> str:
     """Format a compact result view from the existing application DTOs."""
 
     lines = [f"########## {result.example_label} ##########"]
     if result.notes:
         lines.append(f"Notes: {result.notes}")
     for branch_result in result.branch_results:
-        lines.extend(("", format_application_branch_compact(branch_result, q_parameter_text=q_parameter_text)))
+        lines.extend(("", format_application_branch_compact(branch_result, q_parameter=q_parameter, q_parameter_text=q_parameter_text)))
     return "\n".join(lines)
 
 

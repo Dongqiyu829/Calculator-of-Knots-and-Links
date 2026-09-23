@@ -126,6 +126,7 @@ class InvariantCalculationWorkflow(QWidget):
         self._active_jobs: list[tuple[QThread, _InvariantWorker]] = []
         self._last_result: ApplicationBraidResult | None = None
         self._last_q_text = "2"
+        self._last_q_parameter: Any = parse_q_text("2")
         self._build_widget()
 
     @property
@@ -532,7 +533,7 @@ class InvariantCalculationWorkflow(QWidget):
         worker = _InvariantWorker(request)
         worker.moveToThread(thread)
         thread.started.connect(worker.run)
-        worker.succeeded.connect(self._calculation_succeeded)
+        worker.succeeded.connect(lambda result, submitted_request=request: self._calculation_succeeded(result, submitted_request))
         worker.failed.connect(self._calculation_failed)
         worker.succeeded.connect(lambda _result, active_thread=thread: active_thread.quit())
         worker.failed.connect(lambda _message, active_thread=thread: active_thread.quit())
@@ -541,15 +542,12 @@ class InvariantCalculationWorkflow(QWidget):
         self._active_jobs.append((thread, worker))
         thread.start()
 
-    @Slot(object)
-    def _calculation_succeeded(self, result: object) -> None:
+    def _calculation_succeeded(self, result: object, request: _InvariantRequest | None = None) -> None:
         assert isinstance(result, ApplicationBraidResult)
         self._last_result = result
-        current_thread = self.sender()
-        if isinstance(current_thread, _InvariantWorker):
-            self._last_q_text = current_thread._request.q_text
-        else:
-            self._last_q_text = self.q_input.text()
+        if request is not None:
+            self._last_q_text = request.q_text
+            self._last_q_parameter = request.q_parameter
         self.resultChanged.emit(result)
         self._render_result(result)
         self.copy_selected_button.setEnabled(True)
@@ -597,7 +595,13 @@ class InvariantCalculationWorkflow(QWidget):
         summary = QPlainTextEdit(self.result_tabs)
         summary.setReadOnly(True)
         if self._result_view_mode() == "compact":
-            summary.setPlainText(format_application_braid_compact_result(result, q_parameter_text=self._last_q_text))
+            summary.setPlainText(
+                format_application_braid_compact_result(
+                    result,
+                    q_parameter=self._last_q_parameter,
+                    q_parameter_text=self._last_q_text,
+                )
+            )
         else:
             summary.setPlainText(format_application_braid_result(result))
         self.result_tabs.addTab(summary, "All results")
@@ -611,7 +615,7 @@ class InvariantCalculationWorkflow(QWidget):
 
     def _format_branch_card(self, branch: ApplicationBranchResult, result: ApplicationBraidResult) -> str:
         if self._result_view_mode() == "compact":
-            return format_application_branch_compact(branch, q_parameter_text=self._last_q_text)
+            return format_application_branch_compact(branch, q_parameter=self._last_q_parameter, q_parameter_text=self._last_q_text)
         status_prefix = "CANDIDATE — " if branch.status == "candidate" else ""
         lines = [
             f"{status_prefix}{branch.display_name}",
