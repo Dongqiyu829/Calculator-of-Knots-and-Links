@@ -6,12 +6,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from PySide6.QtCore import QObject, QThread, Signal, Slot
+from PySide6.QtCore import QObject, QThread, Qt, Signal, Slot
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QFileDialog,
+    QFrame,
     QFormLayout,
     QGroupBox,
     QHBoxLayout,
@@ -19,7 +20,10 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QPlainTextEdit,
     QPushButton,
+    QScrollArea,
+    QSizePolicy,
     QSpinBox,
+    QSplitter,
     QStackedWidget,
     QTabWidget,
     QVBoxLayout,
@@ -134,64 +138,117 @@ class InvariantCalculationWorkflow(QWidget):
 
     def _build_widget(self) -> None:
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(12)
+        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setSpacing(6)
+        self.page_tabs = QTabWidget(self)
+        self.page_tabs.setObjectName("invariantPageTabs")
+        self.setup_page = QWidget(self.page_tabs)
+        self.calculation_page = QWidget(self.page_tabs)
+        self.page_tabs.addTab(self.setup_page, "Braid setup / preview")
+        self.page_tabs.addTab(self.calculation_page, "Calculation / results")
+        layout.addWidget(self.page_tabs, 1)
 
-        title = QLabel("Built-in invariant calculation")
-        title.setStyleSheet("font-size: 18px; font-weight: 600;")
-        layout.addWidget(title)
-        oracle_note = QLabel(
-            "\n".join(
-                f"{descriptor.display_name} ({descriptor.status}): {get_branch_explanation(descriptor.branch_id).summary}"
-                for descriptor in self._branches
-            )
-        )
-        oracle_note.setWordWrap(True)
-        oracle_note.setStyleSheet("color: #555;")
-        layout.addWidget(oracle_note)
+        setup_layout = QVBoxLayout(self.setup_page)
+        setup_layout.setContentsMargins(4, 8, 4, 4)
+        setup_layout.setSpacing(8)
+        setup_intro = QLabel("Choose a built-in example or switch to Manual braid input. The diagram updates as you edit; calculation starts only when requested.", self.setup_page)
+        setup_intro.setWordWrap(True)
+        setup_layout.addWidget(setup_intro)
 
-        input_group = QGroupBox("Input", self)
+        self.setup_splitter = QSplitter(Qt.Orientation.Horizontal, self.setup_page)
+        self.setup_splitter.setObjectName("invariantSetupSplitter")
+        self.setup_splitter.setChildrenCollapsible(False)
+        input_scroll = QScrollArea(self.setup_splitter)
+        input_scroll.setObjectName("invariantInputScroll")
+        input_scroll.setWidgetResizable(True)
+        input_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        input_scroll.setMinimumWidth(245)
+        input_panel = QWidget(input_scroll)
+        input_panel_layout = QVBoxLayout(input_panel)
+        input_panel_layout.setContentsMargins(0, 0, 6, 0)
+        input_group = QGroupBox("Braid input", input_panel)
         input_layout = QFormLayout(input_group)
         self.source_combo = QComboBox(input_group)
         self.source_combo.setObjectName("invariantSourceMode")
         self.source_combo.addItem("Built-in example", "catalog")
-        self.source_combo.addItem("Custom braid", "custom")
+        self.source_combo.addItem("Manual braid input", "custom")
         self.source_combo.currentIndexChanged.connect(self._source_changed)
-        input_layout.addRow("Source:", self.source_combo)
+        input_layout.addRow("Input mode:", self.source_combo)
 
         self.source_stack = QStackedWidget(input_group)
         self.source_stack.addWidget(self._build_catalog_source())
         self.source_stack.addWidget(self._build_custom_source())
         input_layout.addRow(self.source_stack)
-        layout.addWidget(input_group)
+        input_panel_layout.addWidget(input_group)
+        input_panel_layout.addStretch(1)
+        input_scroll.setWidget(input_panel)
+        self.setup_splitter.addWidget(input_scroll)
 
-        preview_group = QGroupBox("Braid diagram", self)
+        preview_group = QGroupBox("Braid diagram — wheel to zoom, drag to pan", self.setup_splitter)
         preview_layout = QVBoxLayout(preview_group)
         self.braid_preview = BraidPreviewWidget(preview_group)
-        self.braid_preview.setMinimumHeight(285)
+        self.braid_preview.setMinimumHeight(380)
+        self.braid_preview.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         preview_layout.addWidget(self.braid_preview)
-        layout.addWidget(preview_group)
+        self.setup_splitter.addWidget(preview_group)
+        self.setup_splitter.setStretchFactor(0, 0)
+        self.setup_splitter.setStretchFactor(1, 1)
+        self.setup_splitter.setSizes([310, 680])
+        setup_layout.addWidget(self.setup_splitter, 1)
 
-        branch_group = QGroupBox("Invariant branches", self)
+        calculation_layout = QVBoxLayout(self.calculation_page)
+        calculation_layout.setContentsMargins(4, 8, 4, 4)
+        calculation_layout.setSpacing(8)
+        calculation_intro = QLabel("Select invariant branches and q, then Calculate. The current braid comes from the Braid setup / preview page.", self.calculation_page)
+        calculation_intro.setWordWrap(True)
+        calculation_layout.addWidget(calculation_intro)
+        self.calculation_splitter = QSplitter(Qt.Orientation.Vertical, self.calculation_page)
+        self.calculation_splitter.setObjectName("invariantCalculationSplitter")
+        self.calculation_splitter.setChildrenCollapsible(False)
+        controls = QWidget(self.calculation_splitter)
+        controls_layout = QVBoxLayout(controls)
+        controls_layout.setContentsMargins(0, 0, 0, 0)
+        controls_layout.setSpacing(8)
+        self.branch_splitter = QSplitter(Qt.Orientation.Horizontal, controls)
+        self.branch_splitter.setObjectName("invariantBranchSplitter")
+        self.branch_splitter.setChildrenCollapsible(False)
+
+        branch_group = QGroupBox("Invariant branches — select one or more", self.branch_splitter)
         branch_layout = QVBoxLayout(branch_group)
+        branch_scroll = QScrollArea(branch_group)
+        branch_scroll.setObjectName("invariantBranchScroll")
+        branch_scroll.setWidgetResizable(True)
+        branch_scroll.setMinimumHeight(145)
+        branch_list = QWidget(branch_scroll)
+        branch_list_layout = QVBoxLayout(branch_list)
         self._branch_checks: list[tuple[QCheckBox, Any]] = []
         for descriptor in self._branches:
-            check = QCheckBox(f"{descriptor.display_name} ({descriptor.status})", branch_group)
+            check = QCheckBox(f"{descriptor.display_name} ({descriptor.status})", branch_list)
             check.setObjectName(f"branch_{descriptor.model_id}")
             check.setChecked(True)
             check.setToolTip(descriptor.user_note)
-            branch_layout.addWidget(check)
-            note = QLabel(descriptor.user_note, branch_group)
-            note.setWordWrap(True)
-            note.setStyleSheet("margin-left: 24px; color: #555;")
-            if descriptor.status == "candidate":
-                note.setStyleSheet("margin-left: 24px; color: #805000;")
-            branch_layout.addWidget(note)
+            branch_list_layout.addWidget(check)
             self._branch_checks.append((check, descriptor))
             check.stateChanged.connect(lambda _state: self._emit_explanation())
-        layout.addWidget(branch_group)
+            check.clicked.connect(lambda _checked, branch=descriptor: self._show_branch_details(branch.branch_id))
+        branch_list_layout.addStretch(1)
+        branch_scroll.setWidget(branch_list)
+        branch_layout.addWidget(branch_scroll)
+        self.branch_splitter.addWidget(branch_group)
 
-        execution_group = QGroupBox("Calculation", self)
+        detail_group = QGroupBox("Branch details", self.branch_splitter)
+        detail_layout = QVBoxLayout(detail_group)
+        self.branch_details = QPlainTextEdit(detail_group)
+        self.branch_details.setObjectName("invariantBranchDetails")
+        self.branch_details.setReadOnly(True)
+        detail_layout.addWidget(self.branch_details)
+        self.branch_splitter.addWidget(detail_group)
+        self.branch_splitter.setSizes([300, 420])
+        controls_layout.addWidget(self.branch_splitter, 1)
+        if self._branches:
+            self._show_branch_details(self._branches[0].branch_id)
+
+        execution_group = QGroupBox("Calculation", controls)
         execution_layout = QFormLayout(execution_group)
         self.q_input = QLineEdit("2", execution_group)
         self.q_input.setObjectName("invariantQInput")
@@ -199,8 +256,8 @@ class InvariantCalculationWorkflow(QWidget):
         self.q_input.textChanged.connect(lambda _text: self._emit_explanation())
         execution_layout.addRow("q:", self.q_input)
         calculation_row = QWidget(execution_group)
-        calculation_layout = QHBoxLayout(calculation_row)
-        calculation_layout.setContentsMargins(0, 0, 0, 0)
+        action_layout = QHBoxLayout(calculation_row)
+        action_layout.setContentsMargins(0, 0, 0, 0)
         self.calculate_button = QPushButton("Calculate", calculation_row)
         self.calculate_button.setObjectName("calculateInvariants")
         self.calculate_button.clicked.connect(self._request_calculation)
@@ -220,34 +277,57 @@ class InvariantCalculationWorkflow(QWidget):
         self.export_button.setObjectName("exportInvariantResult")
         self.export_button.setEnabled(False)
         self.export_button.clicked.connect(self._export_result)
-        calculation_layout.addWidget(self.calculate_button)
-        calculation_layout.addStretch(1)
-        calculation_layout.addWidget(self.copy_selected_button)
-        calculation_layout.addWidget(self.copy_all_button)
-        calculation_layout.addWidget(self.copy_json_button)
-        calculation_layout.addWidget(self.export_button)
+        action_layout.addWidget(self.calculate_button)
+        action_layout.addStretch(1)
+        action_layout.addWidget(self.copy_selected_button)
+        action_layout.addWidget(self.copy_all_button)
+        action_layout.addWidget(self.copy_json_button)
+        action_layout.addWidget(self.export_button)
         execution_layout.addRow(calculation_row)
-        layout.addWidget(execution_group)
+        controls_layout.addWidget(execution_group)
+        self.calculation_splitter.addWidget(controls)
 
-        self.status_label = QLabel("Ready. Choose an input, branches, and q; calculation runs outside the UI thread.", self)
+        results_panel = QWidget(self.calculation_splitter)
+        results_layout = QVBoxLayout(results_panel)
+        results_layout.setContentsMargins(0, 0, 0, 0)
+        self.status_label = QLabel("Ready. Choose an input, branches, and q; calculation runs outside the UI thread.", results_panel)
         self.status_label.setObjectName("invariantCalculationStatus")
         self.status_label.setWordWrap(True)
-        layout.addWidget(self.status_label)
+        results_layout.addWidget(self.status_label)
 
-        self.result_tabs = QTabWidget(self)
+        self.result_tabs = QTabWidget(results_panel)
         self.result_tabs.setObjectName("invariantResultTabs")
         self.result_tabs.currentChanged.connect(self._result_tab_changed)
         self._placeholder_result = QPlainTextEdit(self.result_tabs)
         self._placeholder_result.setReadOnly(True)
         self._placeholder_result.setPlainText("No calculation has been run.")
         self.result_tabs.addTab(self._placeholder_result, "Results")
-        layout.addWidget(self.result_tabs, 1)
+        results_layout.addWidget(self.result_tabs, 1)
+        self.calculation_splitter.addWidget(results_panel)
+        self.calculation_splitter.setStretchFactor(0, 0)
+        self.calculation_splitter.setStretchFactor(1, 1)
+        self.calculation_splitter.setSizes([300, 360])
+        calculation_layout.addWidget(self.calculation_splitter, 1)
         self._update_catalog_preview()
         self._emit_explanation()
+
+    def _show_branch_details(self, branch_id: str) -> None:
+        explanation = get_branch_explanation(branch_id)
+        descriptor = next(branch for branch in self._branches if branch.branch_id == branch_id)
+        self.branch_details.setPlainText(
+            f"{descriptor.display_name} ({descriptor.status})\n\n"
+            f"{explanation.summary}\n\n{descriptor.user_note}\n\n"
+            f"Output: {explanation.output_name}\n"
+            f"Normalization: {explanation.normalization}\n"
+            f"Variable: {explanation.variable_convention}"
+        )
 
     def _build_catalog_source(self) -> QWidget:
         source = QWidget(self)
         layout = QFormLayout(source)
+        heading = QLabel("Built-in example", source)
+        heading.setStyleSheet("font-weight: 600;")
+        layout.addRow(heading)
         self.example_combo = QComboBox(source)
         self.example_combo.setObjectName("invariantCatalogExample")
         for example in self._examples:
@@ -263,6 +343,12 @@ class InvariantCalculationWorkflow(QWidget):
     def _build_custom_source(self) -> QWidget:
         source = QWidget(self)
         layout = QFormLayout(source)
+        heading = QLabel("Manual braid input", source)
+        heading.setStyleSheet("font-weight: 600;")
+        layout.addRow(heading)
+        convention = QLabel("Enter a signed Artin word in order: +i = σᵢ, −i = σᵢ⁻¹. Example: 1 -2 1.", source)
+        convention.setWordWrap(True)
+        layout.addRow(convention)
         self.custom_strands_spin = QSpinBox(source)
         self.custom_strands_spin.setObjectName("invariantCustomStrands")
         self.custom_strands_spin.setRange(1, 12)
@@ -400,6 +486,7 @@ class InvariantCalculationWorkflow(QWidget):
         for check, descriptor in self._branch_checks:
             check.setChecked(descriptor.branch_id in selected)
         self._update_braid_preview()
+        self.page_tabs.setCurrentWidget(self.setup_page)
 
     def load_curated_example(self, example: Any) -> None:
         document = example.build_project()
@@ -454,6 +541,7 @@ class InvariantCalculationWorkflow(QWidget):
         self.copy_json_button.setEnabled(True)
         self.export_button.setEnabled(True)
         self.status_label.setText("Calculation complete. Formal and candidate branch statuses are shown in the result tabs.")
+        self.page_tabs.setCurrentWidget(self.calculation_page)
 
     @Slot(str)
     def _calculation_failed(self, message: str) -> None:

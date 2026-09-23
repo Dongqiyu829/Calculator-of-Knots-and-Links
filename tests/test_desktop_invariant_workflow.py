@@ -23,7 +23,7 @@ if _qt_import.returncode != 0:
     pytest.skip("PySide6 Qt runtime is unavailable", allow_module_level=True)
 
 from PySide6.QtGui import QGuiApplication
-from PySide6.QtWidgets import QApplication, QLabel
+from PySide6.QtWidgets import QApplication
 
 from src.desktop import InvariantCalculationWorkflow
 from src.desktop.invariant_workflow import _InvariantRequest, _InvariantWorker
@@ -109,7 +109,9 @@ def test_branch_descriptors_and_candidate_status_come_from_service_data() -> Non
         descriptor.branch_id for descriptor in descriptors
     ]
     assert any("candidate" in label for label in labels)
-    assert any("Knot Atlas" in note.text() for note in workflow.findChildren(QLabel))
+    candidate_check = next(check for check, descriptor in workflow._branch_checks if descriptor.branch_id == "sl2_spin1")
+    candidate_check.click()
+    assert "Knot Atlas" in workflow.branch_details.toPlainText()
     workflow.close()
 
 

@@ -39,7 +39,13 @@ The **Mathematics / How it works** dock is contextual. Its text comes from the
 frontend-neutral service catalog and changes with the selected branch, braid,
 or matrix input. Opening it never evaluates an invariant.
 
+Use **View → Curated examples** or **View → Mathematics / How it works** to
+open the side panels. They share one dock area and can be closed to give the
+working page more room.
+
 **Mathematics / How it works** 面板会随当前分支、辫子或矩阵输入变化。说明文字来自前端无关的 service 目录；打开面板不会计算不变量。
+
+通过 **View → Curated examples** 或 **View → Mathematics / How it works** 打开侧边面板。两者共用一个停靠区域；关闭后可扩大工作页面。
 
 ## Curated examples / 精选示例
 
@@ -82,6 +88,20 @@ and the **File → Export** menu.
 图形会正确区分正、负生成元的上下穿越。预览控件以及 **File → Export** 菜单都可导出 SVG 和 PNG。
 
 ## Built-in invariant workflow / 内置不变量工作流
+
+The invariant tab has two pages. On **Braid setup / preview**, choose
+**Built-in example** or **Manual braid input** from Input mode. For a manual
+braid, enter the strand count and signed generators; the large diagram updates
+without calculating. The input and preview areas can be resized by dragging
+their divider. On **Calculation / results**, select branches from the
+scrollable checklist, read the selected branch details beside it, enter `q`,
+and press **Calculate**. The control and result areas are also resizable.
+
+不变量标签页分成两页。在 **Braid setup / preview** 中，通过 Input mode 选择
+**Built-in example** 或 **Manual braid input**。手动输入时填写股线数和带符号的
+生成元；大幅预览图会更新，但不会自动计算。拖动分隔线可调整输入区和预览区大小。
+在 **Calculation / results** 中，从可滚动的列表勾选分支，在旁边阅读分支详情，
+输入 `q` 后点击 **Calculate**。控制区与结果区同样可以调整大小。
 
 Choose one or more branch checkboxes. The service-owned explanation identifies
 representation dimension, tensor channels, enhanced trace, normalization, and
