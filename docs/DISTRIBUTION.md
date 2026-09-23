@@ -5,10 +5,9 @@ Setup 6 installer. PySide6 and SymPy have a large runtime footprint, so the
 folder-style bundle remains the packaged source for both the installer and the
 portable ZIP; no fragile `onefile` build is introduced.
 
-The maintained application version is now `0.1.1`, sourced only from
-`src/version.py`. This PR prepares and validates the `v0.1.1` release candidate;
-it intentionally does not create the `v0.1.1` tag or publish the release. Until
-that tag is created, the latest published release remains `v0.1.0`.
+The maintained application version is `0.1.1`, sourced only from
+`src/version.py`. The `v0.1.1` tag and GitHub Release are published, and the
+stable latest-download links resolve to its installer, portable ZIP, and checksum.
 
 ## Local build
 
@@ -63,7 +62,7 @@ uses GitHub's provided token. Stable names intentionally match the README's
 
 ## Clean-machine acceptance checklist
 
-- [ ] Download the `v0.1.1` candidate installer and `SHA256SUMS.txt`; verify the installer hash.
+- [ ] Download the published `v0.1.1` installer and `SHA256SUMS.txt`; verify the installer hash.
 - [ ] Install without administrator elevation into the default `%LOCALAPPDATA%\Programs` location.
 - [ ] Launch from the Start Menu; optionally verify the desktop shortcut.
 - [ ] Open the invariant tab and confirm that the braid preview renders.
@@ -81,9 +80,8 @@ uses GitHub's provided token. Stable names intentionally match the README's
 - [ ] Uninstall from Windows Settings and verify the per-user application directory is removed.
 - [ ] Extract the portable ZIP, run `--version`, and run the packaged smoke check.
 
-The unsigned preview binary may receive the normal Windows SmartScreen warning.
-Code signing and publication of the `v0.1.1` release remain outside this PR;
-the latest published release is `v0.1.0` until the final tag-and-publish sequence.
+The unsigned binary may receive the normal Windows SmartScreen warning. Code
+signing is not currently enabled; `v0.1.1` is the published stable release.
 
 ## Scope and caveats
 
