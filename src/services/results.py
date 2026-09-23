@@ -173,6 +173,19 @@ def _project_symbol(expression: sp.Expr | None) -> sp.Symbol | None:
     return symbols[0] if len(symbols) == 1 else None
 
 
+def _symbol_from_q_parameter(q_parameter: Any | None) -> sp.Symbol | None:
+    """Return the single symbolic q context supplied by the calculation request."""
+
+    if q_parameter is None:
+        return None
+    try:
+        parsed = sp.sympify(q_parameter)
+    except (sp.SympifyError, TypeError):
+        return None
+    symbols = tuple(parsed.free_symbols)
+    return symbols[0] if len(symbols) == 1 else None
+
+
 def build_polynomial_presentation(
     result: ApplicationBranchResult,
     *,
@@ -191,7 +204,7 @@ def build_polynomial_presentation(
         )
 
     if result.branch_id == "sl2_fundamental":
-        source_symbol = _project_symbol(result.primary_output_expression)
+        source_symbol = _project_symbol(result.primary_output_expression) or _symbol_from_q_parameter(q_parameter)
         standard_expression = _convert_laurent_expression(
             result.primary_output_expression,
             source_symbol=source_symbol,
@@ -227,7 +240,7 @@ def build_polynomial_presentation(
         )
 
     if result.branch_id == "sl3_fundamental":
-        source_symbol = _project_symbol(result.primary_output_expression)
+        source_symbol = _project_symbol(result.primary_output_expression) or _symbol_from_q_parameter(q_parameter)
         atlas_expression = _convert_laurent_expression(
             result.primary_output_expression,
             source_symbol=source_symbol,
