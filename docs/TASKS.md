@@ -94,4 +94,4 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 ## M6 — v0.1.3 release
 
 - [x] Prepare single-source `0.1.3` version metadata, bilingual notes, and accurate pre-tag distribution documentation for merged #54/#55 work.
-- [ ] Validate the non-publishing Windows release candidate, merge the reviewed PR, then publish and verify `v0.1.3` through the existing tag-driven workflow.
+- [x] Merge the reviewed release-candidate PR, then publish and verify `v0.1.3` through the existing tag-driven Windows workflow. The manual non-publishing dry run was unavailable through the connected GitHub interface; PR Windows CI and the tagged release build both passed.

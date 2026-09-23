@@ -1,6 +1,6 @@
 # Calculator of Knots and Links v0.1.3
 
-> Release candidate. The `v0.1.3` tag and GitHub Release have not yet been published.
+Published as [v0.1.3](https://github.com/Dongqiyu829/Calculator-of-Knots-and-Links/releases/tag/v0.1.3).
 
 ## English
 
