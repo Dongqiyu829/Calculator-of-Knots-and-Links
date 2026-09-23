@@ -137,15 +137,19 @@ def test_q_2_and_symbolic_q_results_render_through_application_dtos() -> None:
     numeric = evaluate_catalog_result("unknot_1", branch_ids=("sl2_fundamental",), q=parse_q_text("2"))
     workflow._calculation_succeeded(numeric, _catalog_request("unknot_1", ("sl2_fundamental",), "2"))
 
-    assert "Primary output: 1" in workflow.result_tabs.widget(0).toPlainText()
+    assert "Primary output (Jones-compatible output): 1" in workflow.result_tabs.widget(0).toPlainText()
     assert workflow.result_mode_combo.currentData() == "compact"
-    assert "Status: formal" in workflow.result_tabs.widget(1).toPlainText()
-    assert "Standard Jones variable t" in workflow.result_tabs.widget(1).toPlainText()
+    numeric_card = workflow.result_tabs.widget(1).toPlainText()
+    assert "Status: formal" in numeric_card
+    assert "Scalar evaluation at q = 2." in numeric_card
+    assert "Standard Jones variable t" not in numeric_card
 
     workflow.q_input.setText("q")
     symbolic = evaluate_catalog_result("unknot_1", branch_ids=("sl2_fundamental",), q=parse_q_text("q"))
     workflow._calculation_succeeded(symbolic, _catalog_request("unknot_1", ("sl2_fundamental",), "q"))
-    assert "Project q expression:" in workflow.result_tabs.widget(1).toPlainText()
+    symbolic_card = workflow.result_tabs.widget(1).toPlainText()
+    assert "Project q expression:" in symbolic_card
+    assert "Standard Jones variable t" in symbolic_card
     workflow.close()
 
 
@@ -160,7 +164,8 @@ def test_multiple_branch_result_cards_preserve_candidate_status() -> None:
 
     assert workflow.result_tabs.count() == 3
     candidate_card = workflow.result_tabs.widget(2).toPlainText()
-    assert "CANDIDATE" in candidate_card
+    assert "Status: candidate" in candidate_card
+    assert "Warning:" in candidate_card
     assert "not presented as theorem-level formal normalization" in candidate_card
     workflow.close()
 
