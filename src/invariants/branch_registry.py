@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
+from functools import lru_cache
 from typing import Any
 
 import sympy as sp
@@ -9,8 +11,9 @@ import sympy as sp
 from src.braid.braid_operator import BraidOperatorBuilder
 from src.braid.braid_word import BraidWord
 from src.catalog.braid_examples import BraidExample
-from src.rmatrix.sl2_rmatrix import build_sl2_spin1_rmatrix
+from src.rmatrix.sl2_rmatrix import build_sl2_fundamental_rmatrix, build_sl2_spin1_rmatrix
 from src.rmatrix.sl3_rmatrix import build_sl3_fundamental_rmatrix
+from src.rmatrix.rmatrix_base import RMatrixData
 
 from .branch_results import InvariantBranchResult
 from .eyb_invariant import build_sl3_fundamental_eyb_data, compute_eyb_invariant
@@ -21,6 +24,24 @@ from .sl2_3d_colored_jones_candidate import (
     SL2_3D_USER_FACING_NAME,
     compute_sl2_3d_candidate_output,
 )
+
+
+@lru_cache(maxsize=32)
+def _cached_builtin_rmatrix(branch_id: str, q: sp.Expr) -> RMatrixData:
+    """Cache local data by exact branch and q; never hand out the mutable master."""
+
+    if branch_id == "sl2_fundamental":
+        return build_sl2_fundamental_rmatrix(q, diagnostics=False)
+    if branch_id == "sl3_fundamental":
+        return build_sl3_fundamental_rmatrix(q, diagnostics=False)
+    if branch_id == "sl2_spin1":
+        # The candidate branch exposes projector checks in its public metadata.
+        return build_sl2_spin1_rmatrix(q)
+    raise ValueError(f"Unknown built-in branch: {branch_id}")
+
+
+def _builtin_rmatrix(branch_id: str, q: sp.Expr) -> RMatrixData:
+    return deepcopy(_cached_builtin_rmatrix(branch_id, q))
 
 
 def _coerce_braid_word(target: BraidWord | BraidExample) -> tuple[BraidWord, dict[str, Any]]:
@@ -45,7 +66,9 @@ def evaluate_sl2_fundamental_branch(
     """Evaluate the formal sl2 Jones-compatible branch in the unified branch format."""
 
     braid_word, source_metadata = _coerce_braid_word(target)
-    result = compute_sl2_jones_compatible_output(braid_word, q=q)
+    parameter = q if q is not None else sp.Symbol("q", nonzero=True)
+    operator_data = BraidOperatorBuilder(braid_word, _builtin_rmatrix("sl2_fundamental", parameter)).build()
+    result = compute_sl2_jones_compatible_output(operator_data, q=parameter)
     return InvariantBranchResult(
         branch_id="sl2_fundamental",
         representation_name=result.representation_name,
@@ -79,7 +102,7 @@ def evaluate_sl3_fundamental_branch(
     braid_word, source_metadata = _coerce_braid_word(target)
     operator_data = BraidOperatorBuilder(
         braid_word=braid_word,
-        rmatrix=build_sl3_fundamental_rmatrix(parameter),
+        rmatrix=_builtin_rmatrix("sl3_fundamental", parameter),
     ).build()
     result = compute_eyb_invariant(operator_data, eyb_data=build_sl3_fundamental_eyb_data(parameter))
     primary_output = sp.simplify(result.eyb_normalized_expression)
@@ -112,8 +135,9 @@ def evaluate_sl2_spin1_branch(
 
     parameter = q if q is not None else sp.Symbol("q", nonzero=True)
     braid_word, source_metadata = _coerce_braid_word(target)
-    rmatrix = build_sl2_spin1_rmatrix(parameter)
-    result = compute_sl2_3d_candidate_output(braid_word, q=parameter)
+    rmatrix = _builtin_rmatrix("sl2_spin1", parameter)
+    operator_data = BraidOperatorBuilder(braid_word, rmatrix).build()
+    result = compute_sl2_3d_candidate_output(operator_data, q=parameter)
     return InvariantBranchResult(
         branch_id="sl2_spin1",
         representation_name=result.representation_name,

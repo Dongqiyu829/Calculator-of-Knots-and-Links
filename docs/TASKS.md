@@ -75,3 +75,10 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 ## Post-v0.1.1 desktop hotfix
 
 - [x] Give invariant braid setup/preview and calculation/results separate resizable pages, with explicit manual input, readable scrollable branches, and optional shared side docks.
+
+## M6 — Measured mathematical performance
+
+- [x] Add a reproducible, non-CI benchmark/profiling harness and record symbolic/numeric baseline and after measurements.
+- [x] Separate built-in runtime R construction from validated research diagnostics for formal branches; retain candidate projector metadata.
+- [x] Reuse bounded, defensively copied local data and exact one-strand normalization scalars; verify matrix/output equivalence.
+- [x] Document matrix-free contraction and sl2 Hecke/Temperley–Lieb follow-up designs without implementing those backends in this pass.

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from functools import lru_cache
 from typing import Any
 
 import sympy as sp
@@ -440,12 +441,13 @@ def current_sl2_3d_unknot_normalization(q: sp.Expr | None = None) -> sp.Expr:
     """Return the current candidate unreduced value on the 1-strand unknot."""
 
     parameter = q if q is not None else sp.Symbol("q", nonzero=True)
-    braid_word = get_braid_example("unknot_1").to_braid_word()
-    _operator_data, _raw_trace, _quantum_trace, unreduced_candidate = compute_sl2_3d_candidate_unreduced_output(
-        braid_word,
-        q=parameter,
-    )
-    return sp.simplify(unreduced_candidate)
+    return _sl2_3d_unknot_scalar(parameter)
+
+
+@lru_cache(maxsize=64)
+def _sl2_3d_unknot_scalar(q: sp.Expr) -> sp.Expr:
+    # The one-strand identity has rho = I, writhe = 0, beta = 1.
+    return sp.simplify(sp.trace(current_sl2_3d_candidate_mu(q)))
 
 
 def compute_sl2_3d_candidate_output(

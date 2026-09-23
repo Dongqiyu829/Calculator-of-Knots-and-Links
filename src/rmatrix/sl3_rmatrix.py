@@ -28,7 +28,7 @@ def _matrix_units(size: int) -> dict[tuple[int, int], sp.Matrix]:
     return units
 
 
-def build_sl3_fundamental_rmatrix(q: sp.Expr | None = None) -> RMatrixData:
+def build_sl3_fundamental_rmatrix(q: sp.Expr | None = None, *, diagnostics: bool = True) -> RMatrixData:
     """Build the sl3 fundamental raw matrix and local braiding operator.
 
     Parameters
@@ -36,6 +36,10 @@ def build_sl3_fundamental_rmatrix(q: sp.Expr | None = None) -> RMatrixData:
     q:
         SymPy expression for the deformation parameter. If omitted, a symbolic q
         is created.
+    diagnostics:
+        Keep eigenvalue, minimal-polynomial, projector, and YBE diagnostics.
+        The validated research path is the default; built-in runtime evaluation
+        may request the identical matrices without those audits.
 
     Returns
     -------
@@ -71,10 +75,6 @@ def build_sl3_fundamental_rmatrix(q: sp.Expr | None = None) -> RMatrixData:
             )
 
     braid_matrix = build_local_braiding_from_raw(raw_matrix, rep.dimension)
-    braid_eigenvalues = compute_eigen_data(braid_matrix)
-    raw_eigenvalues = compute_eigen_data(raw_matrix)
-    minimal_polynomial = compute_minimal_polynomial(braid_matrix)
-    factorized_minimal_polynomial = None if minimal_polynomial is None else sp.factor(minimal_polynomial)
     basis_order = tuple(
         f"{left} tensor {right}"
         for left in rep.basis_labels
@@ -92,6 +92,32 @@ def build_sl3_fundamental_rmatrix(q: sp.Expr | None = None) -> RMatrixData:
             "eigenvalue": str(sp.simplify(-parameter ** -1)),
         },
     ]
+    notes = (
+        "Raw matrix is the standard Hecke-type fundamental U_q(sl3) matrix-form object on the ordered basis "
+        "(e_1 tensor e_1, e_1 tensor e_2, ..., e_3 tensor e_3). braid_matrix is obtained by applying the "
+        "tensor swap."
+    )
+    convention_notes = (
+        "matrix stores the raw literature-facing object. braid_matrix stores the local braid generator. "
+        "The channel labels refer to the 6 and 3bar decomposition of braid_matrix."
+    )
+    if not diagnostics:
+        return RMatrixData(
+            rep=rep,
+            matrix=raw_matrix,
+            braid_matrix=braid_matrix,
+            dim=raw_matrix.rows,
+            basis_order=basis_order,
+            eigenvalues=[],
+            minimal_polynomial=None,
+            notes=notes,
+            convention_notes=convention_notes,
+            eigenvalue_channels=eigenvalue_channels,
+        )
+    braid_eigenvalues = compute_eigen_data(braid_matrix)
+    raw_eigenvalues = compute_eigen_data(raw_matrix)
+    minimal_polynomial = compute_minimal_polynomial(braid_matrix)
+    factorized_minimal_polynomial = None if minimal_polynomial is None else sp.factor(minimal_polynomial)
     channel_projectors = [
         build_channel_projector_data(
             channel_label="sym",
@@ -143,15 +169,8 @@ def build_sl3_fundamental_rmatrix(q: sp.Expr | None = None) -> RMatrixData:
         basis_order=basis_order,
         eigenvalues=braid_eigenvalues,
         minimal_polynomial=minimal_polynomial,
-        notes=(
-            "Raw matrix is the standard Hecke-type fundamental U_q(sl3) matrix-form object on the ordered basis "
-            "(e_1 tensor e_1, e_1 tensor e_2, ..., e_3 tensor e_3). braid_matrix is obtained by applying the "
-            "tensor swap."
-        ),
-        convention_notes=(
-            "matrix stores the raw literature-facing object. braid_matrix stores the local braid generator. "
-            "The channel labels refer to the 6 and 3bar decomposition of braid_matrix."
-        ),
+        notes=notes,
+        convention_notes=convention_notes,
         validation_data=validation,
         matrix_eigenvalues=raw_eigenvalues,
         factorized_minimal_polynomial=factorized_minimal_polynomial,

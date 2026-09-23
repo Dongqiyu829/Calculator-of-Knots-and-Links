@@ -31,7 +31,7 @@ The archived P01 and P03 symbolic audit JSON outputs also reproduce exactly.
 
 ## Immediate objective
 
-M3 desktop functionality, M4 Windows distribution, and M5 productization are complete. **v0.1.2 is published as the current stable release.** It includes the post-v0.1.1 desktop usability hotfix without changing mathematical behavior.
+M3 desktop functionality, M4 Windows distribution, and M5 productization are complete. **v0.1.2 is published as the current stable release.** It includes the post-v0.1.1 desktop usability hotfix. M6 now has a measured symbolic-performance baseline and focused fast path; mathematical behavior is unchanged.
 
 ## Architecture direction
 
@@ -234,3 +234,18 @@ at normal window size. Curated examples and Mathematics remain available from
 View as tabified side docks, closed by default. Existing services, project
 documents, exports, and mathematical behavior are unchanged; release preparation
 bumps only the maintained application version to `0.1.2`.
+
+### M6 — Performance baseline and low-risk fast path
+
+Issue #55 adds a reproducible benchmark/profiling harness and before/after
+measurements in `docs/PERFORMANCE.md`. Profiling identified repeated local
+spin-1 projector/YBE/eigen diagnostics as the dominant symbolic trefoil cost.
+Formal built-in runtime evaluation now constructs the same raw R and check-R
+without eagerly repeating those research diagnostics; direct validated builders
+remain the default. The spin-1 candidate retains its public projector-check
+metadata and reuses one validated local construction. Bounded caches isolate
+mutable local data by copy, and the one-strand identity normalization uses its
+exact trace-of-mu scalar. Representative outputs, external oracle mappings,
+formal/candidate status, and all mathematical conventions remain unchanged.
+Matrix-free and Hecke/Temperley–Lieb backends are documented as future work,
+not implemented in this pass.
