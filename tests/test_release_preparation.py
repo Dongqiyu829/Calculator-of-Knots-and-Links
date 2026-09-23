@@ -27,16 +27,14 @@ def test_release_candidate_version_and_notes_are_bilingual_and_conservative() ->
         "operator-only",
     ):
         assert phrase in notes
-    assert "tag is created" in notes
+    assert "was published on 2026-09-23" in notes
 
 
-def test_readme_and_distribution_describe_pre_tag_state_and_stable_assets() -> None:
+def test_readme_and_distribution_describe_published_state_and_stable_assets() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     distribution = (ROOT / "docs" / "DISTRIBUTION.md").read_text(encoding="utf-8")
-    assert "0.1.1` release candidate" in readme
-    assert "latest published release remains **v0.1.0**" in readme
-    assert "`v0.1.1` tag or publish" in distribution
-    assert "latest published release remains `v0.1.0`" in distribution
+    assert "v0.1.1 is the latest published release" in readme
+    assert "`v0.1.1` tag and GitHub Release are published" in distribution
     for asset in (
         "Calculator-of-Knots-and-Links-Windows-x64-Setup.exe",
         "Calculator-of-Knots-and-Links-Windows-x64-Portable.zip",

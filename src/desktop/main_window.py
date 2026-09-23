@@ -48,7 +48,7 @@ class DesktopMainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle(APPLICATION_TITLE)
-        self.resize(1100, 700)
+        self.resize(1220, 780)
         self._project_path: Path | None = None
         self._build_menu()
         self._build_central_widget()
@@ -106,6 +106,8 @@ class DesktopMainWindow(QMainWindow):
         self.export_png_action.triggered.connect(lambda: self._export_active_preview("png"))
         export_menu.addAction(self.export_png_action)
 
+        self.view_menu = self.menuBar().addMenu("&View")
+
         help_menu = self.menuBar().addMenu("&Help")
         about_action = QAction("&About", self)
         about_action.triggered.connect(self._show_about)
@@ -122,17 +124,13 @@ class DesktopMainWindow(QMainWindow):
     def _build_central_widget(self) -> None:
         root = QWidget(self)
         root_layout = QVBoxLayout(root)
-        root_layout.setContentsMargins(20, 20, 20, 20)
-        root_layout.setSpacing(16)
+        root_layout.setContentsMargins(10, 8, 10, 8)
+        root_layout.setSpacing(6)
 
         title = QLabel(APPLICATION_TITLE)
         title.setObjectName("applicationTitle")
         title.setStyleSheet("font-size: 22px; font-weight: 600;")
         root_layout.addWidget(title)
-        subtitle = QLabel("Desktop calculation workspace — service-driven application boundary")
-        subtitle.setStyleSheet("color: #555;")
-        root_layout.addWidget(subtitle)
-
         tabs = QTabWidget(root)
         tabs.setObjectName("desktopWorkflowTabs")
         self.invariant_workflow = InvariantCalculationWorkflow(tabs)
@@ -147,18 +145,23 @@ class DesktopMainWindow(QMainWindow):
 
         self.example_browser = CuratedExampleBrowser(self)
         self.example_browser.exampleLoaded.connect(self._load_curated_example)
-        dock = QDockWidget("Curated examples", self)
-        dock.setObjectName("curatedExamplesDock")
-        dock.setWidget(self.example_browser)
-        dock.setMinimumWidth(320)
-        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
+        self.example_browser_dock = QDockWidget("Curated examples", self)
+        self.example_browser_dock.setObjectName("curatedExamplesDock")
+        self.example_browser_dock.setWidget(self.example_browser)
+        self.example_browser_dock.setMinimumWidth(260)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.example_browser_dock)
 
         self.explanation_panel = ExplanationPanel(self)
         self.explanation_panel_dock = QDockWidget("Mathematics / How it works", self)
         self.explanation_panel_dock.setObjectName("mathematicalExplanationDock")
         self.explanation_panel_dock.setWidget(self.explanation_panel)
-        self.explanation_panel_dock.setMinimumHeight(180)
-        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.explanation_panel_dock)
+        self.explanation_panel_dock.setMinimumWidth(260)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.explanation_panel_dock)
+        self.tabifyDockWidget(self.example_browser_dock, self.explanation_panel_dock)
+        self.view_menu.addAction(self.example_browser_dock.toggleViewAction())
+        self.view_menu.addAction(self.explanation_panel_dock.toggleViewAction())
+        self.example_browser_dock.hide()
+        self.explanation_panel_dock.hide()
         self.invariant_workflow.explanationChanged.connect(self.explanation_panel.set_explanation)
         self.custom_matrix_workflow.explanationChanged.connect(self.explanation_panel.set_explanation)
         self.invariant_workflow.resultChanged.connect(lambda _result: self._update_export_actions())

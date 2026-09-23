@@ -70,3 +70,7 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 - [x] Mathematical explanation panel backed by frontend-neutral service descriptors with formal/candidate/operator-only boundaries.
 - [x] Bilingual offline user documentation and Help access in the maintained PySide6 application.
 - [x] README screenshots/demo refresh path and bilingual installation/download guidance.
+
+## Post-v0.1.1 desktop hotfix
+
+- [x] Give invariant braid setup/preview and calculation/results separate resizable pages, with explicit manual input, readable scrollable branches, and optional shared side docks.

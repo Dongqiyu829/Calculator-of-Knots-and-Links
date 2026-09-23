@@ -225,3 +225,11 @@ is included in the PyInstaller onedir bundle. README documents a maintainer
 refresh script that captures the real maintained app, rather than fabricated
 mockups. No invariant, R-matrix, braid, q, normalization, Knot Atlas fixture,
 external-oracle, or application-version behavior changed.
+
+The post-v0.1.1 desktop usability hotfix divides the maintained invariant tab
+into braid setup/preview and calculation/results pages. Manual braid input is
+explicit in the setup mode selector; the preview has a larger minimum area.
+Resizable splitters and scrollable branch selection keep the workflow usable
+at normal window size. Curated examples and Mathematics remain available from
+View as tabified side docks, closed by default. Existing services, project
+documents, exports, mathematical behavior, and application version are unchanged.

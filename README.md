@@ -91,6 +91,10 @@ python -m src.desktop --version
 ### Built-in invariant workflow
 
 The primary desktop tab supports both catalog examples and project-native custom braids.
+Its **Braid setup / preview** page offers an explicit **Manual braid input** mode
+and a large resizable diagram. **Calculation / results** keeps a scrollable
+branch checklist, separate branch details, and result tabs. The curated example
+and Mathematics panels open from **View** and share a side dock area.
 
 Users can:
 
