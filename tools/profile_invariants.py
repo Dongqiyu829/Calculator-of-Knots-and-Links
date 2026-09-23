@@ -46,6 +46,9 @@ CASES = tuple(
         ("sl2_fundamental", "five_strand", 5, (1, 2, 3, 4)),
     )
     for mode in ("symbolic", "q2")
+) + (
+    Case("sl3_fundamental_figure_eight_q2", "sl3_fundamental", 3, (1, -2, 1, -2), False),
+    Case("sl2_spin1_figure_eight_q2", "sl2_spin1", 3, (1, -2, 1, -2), False),
 )
 EVALUATORS = {
     "sl2_fundamental": evaluate_sl2_fundamental_branch,
@@ -54,7 +57,7 @@ EVALUATORS = {
 }
 
 
-def run_case(case: Case, *, profile: bool = False, repeat: int = 1) -> dict[str, object]:
+def run_case(case: Case, *, profile: bool = False, repeat: int = 1, backend: str = "explicit") -> dict[str, object]:
     q = sp.Symbol("q", nonzero=True) if case.symbolic else sp.Integer(2)
     braid = BraidWord.from_iterable(case.strands, case.generators, label=case.name)
     profiler = cProfile.Profile() if profile else None
@@ -65,7 +68,7 @@ def run_case(case: Case, *, profile: bool = False, repeat: int = 1) -> dict[str,
         start = perf_counter()
         if profiler is not None:
             profiler.enable()
-        result = EVALUATORS[case.branch](braid, q=q)
+        result = EVALUATORS[case.branch](braid, q=q, backend=backend)
         if profiler is not None:
             profiler.disable()
         elapsed_samples.append(perf_counter() - start)
@@ -75,6 +78,7 @@ def run_case(case: Case, *, profile: bool = False, repeat: int = 1) -> dict[str,
         raise AssertionError(f"Repeated evaluations of {case.name} differed")
     record: dict[str, object] = {
         "case": case.name,
+        "backend": backend,
         "branch": case.branch,
         "q": "symbolic" if case.symbolic else "2",
         "matrix_dimension": (2 if case.branch == "sl2_fundamental" else 3) ** case.strands,
@@ -98,6 +102,7 @@ def main() -> None:
     parser.add_argument("--case", default="all", choices=("all", *(case.name for case in CASES)))
     parser.add_argument("--profile", action="store_true", help="include top cumulative cProfile functions")
     parser.add_argument("--repeat", type=int, default=1, help="repeat within one process to show warm-cache behavior")
+    parser.add_argument("--backend", choices=("explicit", "matrix_free"), default="explicit")
     args = parser.parse_args()
     if args.repeat < 1:
         parser.error("--repeat must be at least 1")
@@ -106,7 +111,7 @@ def main() -> None:
         "python": platform.python_version(),
         "sympy": sp.__version__,
         "platform": platform.platform(),
-        "cases": [run_case(case, profile=args.profile, repeat=args.repeat) for case in selected],
+        "cases": [run_case(case, profile=args.profile, repeat=args.repeat, backend=args.backend) for case in selected],
     }
     json.dump(payload, sys.stdout, indent=2)
     print()

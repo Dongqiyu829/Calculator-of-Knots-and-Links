@@ -14,7 +14,7 @@ import sympy as sp
 
 from src.braid.braid_word import BraidWord
 from src.catalog.braid_examples import get_braid_example
-from src.invariants.branch_registry import evaluate_current_branches
+from src.invariants.branch_registry import EvaluationBackend, evaluate_current_branches
 from src.invariants.multibranch_benchmark import MultiBranchBenchmarkEntry
 
 from .branch_catalog import validate_branch_ids
@@ -100,6 +100,7 @@ def evaluate_catalog_example(
     *,
     branch_ids: tuple[str, ...] | list[str] | None = None,
     q: sp.Expr | None = None,
+    backend: EvaluationBackend = "explicit",
 ) -> MultiBranchBenchmarkEntry:
     """Evaluate one catalog example through the selected existing branches."""
 
@@ -110,7 +111,7 @@ def evaluate_catalog_example(
     selected_branch_ids = validate_branch_ids(branch_ids)
     return MultiBranchBenchmarkEntry(
         example_label=example.label,
-        branch_results=tuple(evaluate_current_branches(example, branch_ids=selected_branch_ids, q=q)),
+        branch_results=tuple(evaluate_current_branches(example, branch_ids=selected_branch_ids, q=q, backend=backend)),
         notes=example.notes,
         metadata={
             "input_mode": "catalog",
@@ -124,11 +125,14 @@ def evaluate_catalog_example(
 
 
 def evaluate_catalog_result(
-    example_label: str, *, branch_ids: tuple[str, ...] | list[str] | None = None, q: sp.Expr | None = None
+    example_label: str, *, branch_ids: tuple[str, ...] | list[str] | None = None, q: sp.Expr | None = None,
+    backend: EvaluationBackend = "explicit",
 ) -> ApplicationBraidResult:
     """Evaluate a catalog example and expose only the application DTO."""
 
-    return application_braid_result_from_internal(evaluate_catalog_example(example_label, branch_ids=branch_ids, q=q))
+    return application_braid_result_from_internal(
+        evaluate_catalog_example(example_label, branch_ids=branch_ids, q=q, backend=backend)
+    )
 
 
 def evaluate_braid_word(
@@ -136,13 +140,14 @@ def evaluate_braid_word(
     *,
     branch_ids: tuple[str, ...] | list[str] | None = None,
     q: sp.Expr | None = None,
+    backend: EvaluationBackend = "explicit",
 ) -> MultiBranchBenchmarkEntry:
     """Evaluate one arbitrary validated braid word through selected branches."""
 
     selected_branch_ids = validate_branch_ids(branch_ids)
     return MultiBranchBenchmarkEntry(
         example_label=braid_word.label or "custom_braid",
-        branch_results=tuple(evaluate_current_branches(braid_word, branch_ids=selected_branch_ids, q=q)),
+        branch_results=tuple(evaluate_current_branches(braid_word, branch_ids=selected_branch_ids, q=q, backend=backend)),
         notes=braid_word.notes,
         metadata={
             "input_mode": "custom",
@@ -153,11 +158,14 @@ def evaluate_braid_word(
 
 
 def evaluate_braid_result(
-    braid_word: BraidWord, *, branch_ids: tuple[str, ...] | list[str] | None = None, q: sp.Expr | None = None
+    braid_word: BraidWord, *, branch_ids: tuple[str, ...] | list[str] | None = None, q: sp.Expr | None = None,
+    backend: EvaluationBackend = "explicit",
 ) -> ApplicationBraidResult:
     """Evaluate an arbitrary braid word and expose only the application DTO."""
 
-    return application_braid_result_from_internal(evaluate_braid_word(braid_word, branch_ids=branch_ids, q=q))
+    return application_braid_result_from_internal(
+        evaluate_braid_word(braid_word, branch_ids=branch_ids, q=q, backend=backend)
+    )
 
 
 def evaluate_custom_braid(
@@ -166,18 +174,24 @@ def evaluate_custom_braid(
     *,
     branch_ids: tuple[str, ...] | list[str] | None = None,
     q: sp.Expr | None = None,
+    backend: EvaluationBackend = "explicit",
 ) -> MultiBranchBenchmarkEntry:
     """Build then evaluate a custom braid using the recovered input semantics."""
 
-    return evaluate_braid_word(build_custom_braid_word(num_strands, generator_text), branch_ids=branch_ids, q=q)
+    return evaluate_braid_word(
+        build_custom_braid_word(num_strands, generator_text), branch_ids=branch_ids, q=q, backend=backend
+    )
 
 
 def evaluate_custom_result(
-    num_strands: int, generator_text: str, *, branch_ids: tuple[str, ...] | list[str] | None = None, q: sp.Expr | None = None
+    num_strands: int, generator_text: str, *, branch_ids: tuple[str, ...] | list[str] | None = None,
+    q: sp.Expr | None = None, backend: EvaluationBackend = "explicit",
 ) -> ApplicationBraidResult:
     """Build/evaluate custom input and expose only the application DTO."""
 
-    return application_braid_result_from_internal(evaluate_custom_braid(num_strands, generator_text, branch_ids=branch_ids, q=q))
+    return application_braid_result_from_internal(
+        evaluate_custom_braid(num_strands, generator_text, branch_ids=branch_ids, q=q, backend=backend)
+    )
 
 
 def build_catalog_braid_input(example_label: str) -> BraidInputState:
@@ -216,22 +230,26 @@ def evaluate_braid_input(
     *,
     branch_ids: tuple[str, ...] | list[str] | None = None,
     q: sp.Expr | None = None,
+    backend: EvaluationBackend = "explicit",
 ) -> MultiBranchBenchmarkEntry:
     """Evaluate a catalog or custom input through the same shared path."""
 
     if braid_input.source_mode == "catalog":
-        return evaluate_catalog_example(braid_input.source_label, branch_ids=branch_ids, q=q)
+        return evaluate_catalog_example(braid_input.source_label, branch_ids=branch_ids, q=q, backend=backend)
     if braid_input.source_mode == "custom":
-        return evaluate_braid_word(braid_input.braid_word, branch_ids=branch_ids, q=q)
+        return evaluate_braid_word(braid_input.braid_word, branch_ids=branch_ids, q=q, backend=backend)
     raise BraidInputValidationError(f"Unknown braid input source mode: {braid_input.source_mode}")
 
 
 def evaluate_braid_input_result(
-    braid_input: BraidInputState, *, branch_ids: tuple[str, ...] | list[str] | None = None, q: sp.Expr | None = None
+    braid_input: BraidInputState, *, branch_ids: tuple[str, ...] | list[str] | None = None,
+    q: sp.Expr | None = None, backend: EvaluationBackend = "explicit",
 ) -> ApplicationBraidResult:
     """Evaluate an input state and expose only the application DTO."""
 
-    return application_braid_result_from_internal(evaluate_braid_input(braid_input, branch_ids=branch_ids, q=q))
+    return application_braid_result_from_internal(
+        evaluate_braid_input(braid_input, branch_ids=branch_ids, q=q, backend=backend)
+    )
 
 
 def braid_word_from_entry(entry: MultiBranchBenchmarkEntry) -> BraidWord:

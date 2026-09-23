@@ -95,3 +95,7 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 
 - [x] Prepare single-source `0.1.3` version metadata, bilingual notes, and accurate pre-tag distribution documentation for merged #54/#55 work.
 - [x] Merge the reviewed release-candidate PR, then publish and verify `v0.1.3` through the existing tag-driven Windows workflow. The manual non-publishing dry run was unavailable through the connected GitHub interface; PR Windows CI and the tagged release build both passed.
+
+## M6 — Matrix-free EYB scalar backend
+
+- [x] Profile the v0.1.3 baseline and add an opt-in exact local-contraction backend for all three built-in branches, with explicit-matrix parity and benchmark evidence. Keep explicit evaluation as the default/reference and Custom R/check-R full-operator path unchanged.
