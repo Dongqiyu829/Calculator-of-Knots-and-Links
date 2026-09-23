@@ -42,7 +42,30 @@ def test_identity_and_long_words_have_stable_geometry_and_metadata() -> None:
     long_geometry = build_braid_preview_geometry(long_word, viewport_width=300, viewport_height=180)
     assert long_geometry.height >= 180
     assert len(long_geometry.crossings) == 60
-    assert len(long_geometry.segments) >= 3 * len(long_word.generators)
+    assert len(long_geometry.segments) == 6
+
+
+def test_non_crossing_step_boundaries_and_changed_strand_joins_stay_continuous() -> None:
+    geometry = build_braid_preview_geometry(BraidWord.from_iterable(5, (1, 4), label="disjoint"))
+    assert len(geometry.segments) == 5
+    unchanged = next(segment for segment in geometry.segments if segment.strand_identity == 3)
+    assert len({point[0] for point in unchanged.points}) == 1
+    assert [point[1] for point in unchanged.points] == sorted(point[1] for point in unchanged.points)
+
+    repeated_crossing = build_braid_preview_geometry(BraidWord.from_iterable(2, (1, 1), label="repeat"))
+    assert len(repeated_crossing.segments) == 2
+    assert all(segment.points[0][1] < segment.points[-1][1] for segment in repeated_crossing.segments)
+
+
+def test_crossing_masks_are_localized_to_registered_crossings() -> None:
+    geometry = build_braid_preview_geometry(BraidWord.from_iterable(3, (1, -2, 1, -2), label="figure_eight"))
+    assert len(geometry.crossings) == 4
+    for crossing in geometry.crossings:
+        mask_start, mask_end = crossing.under_mask_points
+        midpoint = ((mask_start[0] + mask_end[0]) / 2.0, (mask_start[1] + mask_end[1]) / 2.0)
+        assert midpoint == (crossing.x, crossing.y)
+        assert crossing.over_redraw_points[1] == (crossing.x, crossing.y)
+        assert mask_start != mask_end
 
 
 def test_svg_export_is_deterministic_and_contains_semantic_metadata() -> None:
@@ -52,3 +75,5 @@ def test_svg_export_is_deterministic_and_contains_semantic_metadata() -> None:
     assert "figure_eight" in svg
     assert "generators: 1 -2 1 -2" in svg
     assert "final permutation" in svg
+    assert svg.count('stroke="#fbfcfe" stroke-width="11"') == len(geometry.crossings)
+    assert svg.count('stroke-width="5"') == len(geometry.segments) + len(geometry.crossings)
