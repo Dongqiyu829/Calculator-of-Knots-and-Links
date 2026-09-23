@@ -41,7 +41,9 @@ def test_release_workflow_keeps_dry_run_non_publishing_and_publishes_three_asset
     assert "packaging\\windows\\build.ps1" in workflow
     assert "if: github.event_name == 'workflow_dispatch'" in workflow
     assert "if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')" in workflow
-    assert "non-publishing dry run, e.g. v0.1.3" in workflow
+    assert "non-publishing dry run, e.g. v0.1.4" in workflow
+    assert "gh release upload" in workflow
+    assert "--clobber" in workflow
     for asset in ASSET_NAMES:
         assert asset in workflow
 
