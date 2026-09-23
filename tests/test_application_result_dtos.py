@@ -87,3 +87,16 @@ def test_spin1_compact_presentation_never_claims_standard_colored_jones_identifi
     assert presentation.polynomial.standard_polynomial_expression is None
     assert "Standard Jones variable t" not in report
     assert "no final standard colored-Jones variable identification" in presentation.concise_variable_label
+
+
+def test_symbolic_constant_jones_output_converts_to_constant_standard_polynomial() -> None:
+    result = evaluate_catalog_result("unknot_1", branch_ids=("sl2_fundamental",), q=parse_q_text("q"))
+    presentation = build_application_branch_presentation(
+        result.branch_results[0],
+        q_parameter=parse_q_text("q"),
+        q_parameter_text="q",
+    )
+
+    assert presentation.polynomial.conversion_status == "exact"
+    assert presentation.polynomial.standard_polynomial_expression == "1"
+    assert presentation.polynomial.atlas_comparable_expression == "1"
