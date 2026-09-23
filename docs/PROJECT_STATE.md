@@ -31,7 +31,7 @@ The archived P01 and P03 symbolic audit JSON outputs also reproduce exactly.
 
 ## Immediate objective
 
-M3 desktop functionality, M4 Windows distribution, and M5 productization are complete. **v0.1.2 is published as the current stable release.** It includes the post-v0.1.1 desktop usability hotfix. M6 now has a measured symbolic-performance baseline and focused fast path; mathematical behavior is unchanged.
+M3 desktop functionality, M4 Windows distribution, and M5 productization are complete. **v0.1.2 remains the current published stable release.** The merged M6 preview-continuity, Compact/Detailed presentation, exact variable relabeling, and measured performance work are prepared in source as the `0.1.3` release candidate. The `v0.1.3` tag and Release are not yet published; mathematical behavior is unchanged.
 
 ## Architecture direction
 
@@ -186,7 +186,7 @@ mathematical convention change is introduced.
 
 Issue #34 introduces the first maintained Windows distribution path. A checked-in PyInstaller `onedir` specification packages the PySide6 desktop application and SymPy runtime without requiring the user to install Python. A Windows GitHub Actions workflow runs the fast regression suite, builds the executable, smoke-tests the packaged application, creates a deterministic Windows ZIP, extracts it, and smoke-tests the extracted executable before upload.
 
-The first M4 step deliberately favors a reliable folder-style bundle over a fragile one-file executable. The maintained application version is sourced only from `src/version.py` as `0.1.2`; setuptools metadata, desktop `--version`, packaged `--version`, and Help/About use that source. The tag validator accepts only exact `vX.Y.Z` tags and requires equality with the maintained version. The shared Windows build script now runs fast tests, the existing onedir build, packaged and extracted portable smoke/version checks, Inno Setup 6 compilation, and expected-file/checksum verification. The tagged workflow publishes the stable installer, portable ZIP, and `SHA256SUMS.txt` only for a real tag push using `GITHUB_TOKEN`. Manual dispatch with `v0.1.2` is explicitly non-publishing and uploads the same three candidate assets for validation; clean-machine install/uninstall remains documented rather than forcing fragile silent UI automation.
+The first M4 step deliberately favors a reliable folder-style bundle over a fragile one-file executable. The maintained application version is sourced only from `src/version.py` as `0.1.3` for the current release candidate; setuptools metadata, desktop `--version`, packaged `--version`, and Help/About use that source. The tag validator accepts only exact `vX.Y.Z` tags and requires equality with the maintained version. The shared Windows build script runs fast tests, the existing onedir build, packaged and extracted portable smoke/version checks, Inno Setup 6 compilation, and expected-file/checksum verification. The tagged workflow publishes the stable installer, portable ZIP, and `SHA256SUMS.txt` only for a real tag push using `GITHUB_TOKEN`. Manual dispatch with `v0.1.3` is explicitly non-publishing and uploads the same three candidate assets for validation; clean-machine install/uninstall remains documented rather than forcing fragile silent UI automation.
 
 The `v0.1.2` tag and GitHub Release are published. The installer remains unsigned
 and installs per-user under `%LOCALAPPDATA%\Programs` without PATH changes or
@@ -254,3 +254,9 @@ not implemented in this pass.
 ### M6 — Result presentation and preview continuity
 
 Issue #54 adds one maintained post-release presentation pass without changing invariant mathematics. The braid-preview service now describes continuous physical strands plus crossing-local mask/overpass semantics shared by the Qt preview and SVG export, preventing false non-crossing strand breaks from segment-wide halos. The maintained invariant workflow also defaults to a Compact result view backed by service presentation descriptors. Symbolic sl2 results can show an exact standard Jones-variable `t` form and an Atlas-comparable `q_atlas` form when the conversion is an unambiguous Laurent relabeling; symbolic sl3 can show the maintained Atlas-comparable A2 variable form, while numeric `q` inputs remain scalar-only presentations and the spin-1 branch remains explicitly candidate-only.
+
+Issue #59 prepares the merged M6 work for v0.1.3 with a single-source version
+bump, bilingual release-candidate notes, and truthful pre-tag documentation.
+The existing Windows onedir installer/portable/checksum machinery and
+tag/version guard remain intact. No matrix-free or Temperley–Lieb backend is
+part of this release.

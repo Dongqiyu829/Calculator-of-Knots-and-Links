@@ -26,11 +26,13 @@ The installer is unsigned, so Windows SmartScreen may show its usual warning for
 
 **Release state / 发布状态:** **v0.1.2 is the latest published release.** The
 stable `releases/latest/download/...` links above resolve to its Windows
-installer, portable ZIP, and checksum assets.
+installer, portable ZIP, and checksum assets. This source tree is prepared as
+the `0.1.3` release candidate; its tag and Release are not published yet.
 
 **发布状态：****v0.1.2 已正式发布并且是当前最新版本。** 上面的稳定
 `releases/latest/download/...` 链接会直接指向 v0.1.2 的 Windows 安装版、
-便携版 ZIP 和校验文件。
+便携版 ZIP 和校验文件。当前源码已准备为 `0.1.3` 发布候选版，尚未创建相应
+标签或正式发布。
 
 **Install / 安装:** run the installer, keep the per-user default location, and launch from the Start Menu (an optional desktop shortcut is available). No administrator elevation or PATH change is needed.
 
@@ -69,7 +71,8 @@ The repository now contains:
 
 M4 distribution is complete. The supported Windows release provides a reproducible
 PyInstaller `onedir` application, a per-user Inno Setup installer, a portable ZIP,
-and SHA-256 checksums. **v0.1.2 is published and is the current stable release.**
+and SHA-256 checksums. **v0.1.2 remains the current published stable release;
+the source is prepared for v0.1.3.**
 
 ## Desktop application
 
@@ -240,7 +243,8 @@ The Windows GitHub Actions workflow builds the bundle, smoke-tests the packaged 
 See `docs/DISTRIBUTION.md` for exact local-build, release, and artifact-download
 instructions. CI builds both the portable ZIP and the Inno Setup installer.
 Manual workflow dispatch remains available as a non-publishing validation path
-for future releases. See the [v0.1.2 release notes](docs/RELEASE_NOTES_0.1.2.md).
+for future releases. See the [v0.1.3 release-candidate notes](docs/RELEASE_NOTES_0.1.3.md)
+and the [published v0.1.2 notes](docs/RELEASE_NOTES_0.1.2.md).
 
 ## Development principle
 
