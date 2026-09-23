@@ -137,6 +137,19 @@ opening an example, explanation, or project file.
 
 ## Custom R/check-R workflow / 自定义 R/check-R 工作流
 
+The Custom R/check-R tab is split into two pages. **Matrix & braid setup /
+preview** keeps the matrix and braid controls in a scrollable left panel and a
+large resizable braid preview on the right. **Validation / operator results**
+keeps validation and full operator output in separately resizable result panes.
+Successful validation or evaluation brings the results page into view; loading
+a project returns to setup/preview without evaluating.
+
+自定义 R/check-R 标签页分成两页。**Matrix & braid setup / preview** 将矩阵和
+辫子设置放在左侧可滚动面板，右侧保留大幅可调整的辫子预览；
+**Validation / operator results** 将验证信息与完整算子输出放在可分别调整大小的
+结果区。验证或计算成功后会切到结果页；加载项目只恢复设置并回到预览页，不会
+自动计算。
+
 Choose the input kind explicitly:
 
 - raw `R` is converted by the maintained convention `check-R = P R`;

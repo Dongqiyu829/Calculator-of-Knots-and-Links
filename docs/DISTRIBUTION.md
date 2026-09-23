@@ -5,10 +5,10 @@ Setup 6 installer. PySide6 and SymPy have a large runtime footprint, so the
 folder-style bundle remains the packaged source for both the installer and the
 portable ZIP; no fragile `onefile` build is introduced.
 
-The maintained application version is `0.1.3`, sourced only from
-`src/version.py`. The `v0.1.3` tag and GitHub Release are published; the
-tag-driven Windows workflow successfully built, smoke-tested, and uploaded
-the installer, portable ZIP, and checksum manifest.
+The maintained application version is `0.1.4`, sourced only from
+`src/version.py`. The tag-driven Windows workflow validates that an exact
+`v0.1.4` tag matches that version before it builds, smoke-tests, and publishes
+the installer, portable ZIP, checksum manifest, and maintained release notes.
 
 ## Local build
 
@@ -63,7 +63,7 @@ uses GitHub's provided token. Stable names intentionally match the README's
 
 ## Clean-machine acceptance checklist
 
-- [ ] On a clean Windows machine, download the `v0.1.3` installer and `SHA256SUMS.txt`; independently verify the installer hash.
+- [ ] On a clean Windows machine, download the `v0.1.4` installer and `SHA256SUMS.txt`; independently verify the installer hash.
 - [ ] Install without administrator elevation into the default `%LOCALAPPDATA%\Programs` location.
 - [ ] Launch from the Start Menu; optionally verify the desktop shortcut.
 - [ ] Open the invariant tab and confirm that the braid preview renders.
@@ -82,7 +82,7 @@ uses GitHub's provided token. Stable names intentionally match the README's
 - [ ] Extract the portable ZIP, run `--version`, and run the packaged smoke check.
 
 The unsigned binary may receive the normal Windows SmartScreen warning. Code
-signing is not currently enabled; `v0.1.3` is the published stable release.
+signing is not currently enabled; the maintained release line is `v0.1.4`.
 
 ## Scope and caveats
 

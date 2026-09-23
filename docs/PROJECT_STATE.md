@@ -31,7 +31,7 @@ The archived P01 and P03 symbolic audit JSON outputs also reproduce exactly.
 
 ## Immediate objective
 
-M3 desktop functionality, M4 Windows distribution, and M5 productization are complete. **v0.1.3 is the current published stable release.** It includes the merged M6 preview-continuity, Compact/Detailed presentation, exact variable relabeling, and measured performance work. Mathematical behavior is unchanged.
+M3 desktop functionality, M4 Windows distribution, M5 productization, the M7 matrix-free backend, M8 Temperley–Lieb backend, and M9 desktop integration are complete. **v0.1.4 is the maintained release target.** It includes the post-v0.1.3 exact scalar backends, desktop backend selection, packaged Qt callback fix, and Custom R/check-R two-page layout. Mathematical conventions and established primary outputs are unchanged.
 
 ## Architecture direction
 
@@ -311,3 +311,16 @@ Custom R/check-R, and the published version remain unchanged.
 ### M9 — Custom R/check-R desktop layout parity
 
 Issue #70 brings the maintained Custom R/check-R operator workflow in line with the invariant workflow's desktop structure. Matrix and braid setup now live on a scrollable setup/preview page with a large resizable braid diagram, while validation controls and operator diagnostics live on a separate results page with a vertical splitter. Existing widget/service semantics, project save/load behavior, operator-only mathematical boundary, and custom matrix serialization remain unchanged. The worker lifecycle also uses bound Qt signal/slot cleanup rather than Python lambda lifecycle callbacks.
+
+
+### M10 — v0.1.4 release
+
+v0.1.4 packages the completed post-v0.1.3 work: the exact matrix-free EYB
+backend for all maintained built-in branches, the sl2-fundamental exact
+Temperley–Lieb backend, desktop backend selection with matrix-free as the
+desktop default, the packaged Qt GUI-thread callback fix verified by real
+Windows user testing, and the Custom R/check-R two-page resizable layout.
+The explicit global-matrix service default remains the reference for existing
+callers. Release preparation changes only version/documentation/packaging
+metadata; no mathematical convention or established output is intentionally
+changed.
