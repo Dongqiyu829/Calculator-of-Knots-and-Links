@@ -12,6 +12,7 @@ from src.invariants.branch_results import InvariantBranchResult
 from src.invariants.multibranch_benchmark import MultiBranchBenchmarkEntry
 
 from .branch_catalog import get_evaluation_branch
+from .explanations import get_branch_explanation
 
 
 def _text(value: object | None) -> str | None:
@@ -80,6 +81,200 @@ class ApplicationBraidResult:
             "branch_results": [result.to_dict() for result in self.branch_results],
             "metadata": dict(self.metadata),
         }
+
+
+@dataclass(frozen=True, slots=True)
+class PolynomialPresentation:
+    """Frontend-neutral polynomial/variable display information."""
+
+    primary_project_expression: str | None
+    project_variable_convention: str
+    standard_polynomial_expression: str | None = None
+    standard_variable_name: str | None = None
+    atlas_comparable_expression: str | None = None
+    atlas_variable_name: str | None = None
+    conversion_status: str = "not_applicable"
+    conversion_reason: str = ""
+    evaluation_parameter_text: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ApplicationBranchPresentation:
+    """Compact display descriptor built from an existing branch DTO."""
+
+    display_name: str
+    status: str
+    primary_output_label: str
+    primary_output: str | None
+    concise_variable_label: str
+    candidate_warning: str | None
+    polynomial: PolynomialPresentation
+
+
+def _presentation_text(value: sp.Expr) -> str:
+    return str(sp.expand(value))
+
+
+def _is_numeric_parameter(q_parameter_text: str | None) -> bool:
+    if not q_parameter_text:
+        return False
+    try:
+        return not sp.sympify(q_parameter_text).free_symbols
+    except (sp.SympifyError, TypeError):
+        return False
+
+
+def _laurent_terms(expression: sp.Expr, symbol: sp.Symbol) -> dict[int, sp.Expr] | None:
+    expanded = sp.expand(sp.cancel(expression))
+    if expanded == 0:
+        return {0: sp.Integer(0)}
+    terms: dict[int, sp.Expr] = {}
+    for term in sp.Add.make_args(expanded):
+        coefficient, exponent = term.as_coeff_exponent(symbol)
+        if exponent.is_integer is not True:
+            return None
+        if sp.simplify(term - coefficient * symbol**exponent) != 0:
+            return None
+        if coefficient.free_symbols:
+            return None
+        integer_exponent = int(exponent)
+        terms[integer_exponent] = sp.simplify(terms.get(integer_exponent, sp.Integer(0)) + coefficient)
+    return {exponent: coefficient for exponent, coefficient in terms.items() if coefficient != 0}
+
+
+def _convert_laurent_expression(
+    expression: str | None,
+    *,
+    source_symbol: str,
+    target_symbol: str,
+    exponent_map,
+) -> str | None:
+    if expression is None:
+        return None
+    source = sp.Symbol(source_symbol)
+    target = sp.Symbol(target_symbol)
+    laurent_terms = _laurent_terms(sp.sympify(expression), source)
+    if laurent_terms is None:
+        return None
+    converted = sp.Integer(0)
+    for exponent, coefficient in laurent_terms.items():
+        mapped_exponent = exponent_map(exponent)
+        if mapped_exponent is None:
+            return None
+        converted += coefficient * target**mapped_exponent
+    return _presentation_text(converted)
+
+
+def build_polynomial_presentation(result: ApplicationBranchResult, *, q_parameter_text: str | None = None) -> PolynomialPresentation:
+    """Build compact variable/polynomial presentation for one branch DTO."""
+
+    if _is_numeric_parameter(q_parameter_text):
+        return PolynomialPresentation(
+            primary_project_expression=result.primary_output,
+            project_variable_convention=result.variable_convention,
+            conversion_status="scalar_only",
+            conversion_reason="Numeric q input gives a scalar evaluation only; no polynomial is inferred from that value.",
+            evaluation_parameter_text=q_parameter_text,
+        )
+
+    if result.branch_id == "sl2_fundamental":
+        standard_expression = _convert_laurent_expression(
+            result.primary_output,
+            source_symbol="q",
+            target_symbol="t",
+            exponent_map=lambda exponent: None if exponent % 2 else -exponent // 2,
+        )
+        atlas_expression = _convert_laurent_expression(
+            result.primary_output,
+            source_symbol="q",
+            target_symbol="q_atlas",
+            exponent_map=lambda exponent: None if exponent % 2 else exponent // 2,
+        )
+        if standard_expression is None:
+            return PolynomialPresentation(
+                primary_project_expression=result.primary_output,
+                project_variable_convention=result.variable_convention,
+                atlas_comparable_expression=atlas_expression,
+                atlas_variable_name="Knot Atlas-comparable q_atlas",
+                conversion_status="unavailable",
+                conversion_reason="The current project-q expression is not an exact even-exponent Laurent polynomial, so no standard Jones t-form is shown.",
+                evaluation_parameter_text=q_parameter_text,
+            )
+        return PolynomialPresentation(
+            primary_project_expression=result.primary_output,
+            project_variable_convention=result.variable_convention,
+            standard_polynomial_expression=standard_expression,
+            standard_variable_name="Standard Jones variable t",
+            atlas_comparable_expression=atlas_expression,
+            atlas_variable_name="Knot Atlas-comparable q_atlas",
+            conversion_status="exact",
+            conversion_reason="Exact Laurent conversion from project q is available.",
+            evaluation_parameter_text=q_parameter_text,
+        )
+
+    if result.branch_id == "sl3_fundamental":
+        atlas_expression = _convert_laurent_expression(
+            result.primary_output,
+            source_symbol="q",
+            target_symbol="q_atlas",
+            exponent_map=lambda exponent: -exponent,
+        )
+        if atlas_expression is None:
+            return PolynomialPresentation(
+                primary_project_expression=result.primary_output,
+                project_variable_convention=result.variable_convention,
+                conversion_status="unavailable",
+                conversion_reason="The current project-q expression is not an exact Laurent polynomial in the maintained A2 variable conversion.",
+                evaluation_parameter_text=q_parameter_text,
+            )
+        return PolynomialPresentation(
+            primary_project_expression=result.primary_output,
+            project_variable_convention=result.variable_convention,
+            atlas_comparable_expression=atlas_expression,
+            atlas_variable_name="Knot Atlas-comparable A2 variable q_atlas",
+            conversion_status="exact",
+            conversion_reason="Exact Laurent conversion to the maintained A2 Atlas-comparable variable is available.",
+            evaluation_parameter_text=q_parameter_text,
+        )
+
+    return PolynomialPresentation(
+        primary_project_expression=result.primary_output,
+        project_variable_convention=result.variable_convention,
+        conversion_status="not_applicable",
+        conversion_reason="No standard polynomial relabeling is presented for this branch.",
+        evaluation_parameter_text=q_parameter_text,
+    )
+
+
+def build_application_branch_presentation(
+    result: ApplicationBranchResult,
+    *,
+    q_parameter_text: str | None = None,
+) -> ApplicationBranchPresentation:
+    """Build the compact user-facing presentation descriptor for one branch."""
+
+    explanation = get_branch_explanation(result.branch_id)
+    polynomial = build_polynomial_presentation(result, q_parameter_text=q_parameter_text)
+    candidate_warning = None
+    warnings = explanation.warnings
+    if result.status == "candidate" and warnings:
+        candidate_warning = warnings[0]
+    concise_variable_label = {
+        "sl2_fundamental": "Project q; standard Jones variable t = q_project^-2; Atlas-comparable q_atlas = q_project^2.",
+        "sl3_fundamental": "Project q; Atlas-comparable A2 variable q_atlas = q_project^-1.",
+        "sl2_spin1": "Project q only; no final standard colored-Jones variable identification is presented.",
+    }.get(result.branch_id, explanation.variable_convention)
+    if polynomial.conversion_status == "scalar_only" and polynomial.evaluation_parameter_text is not None:
+        concise_variable_label = f"Scalar evaluation at q = {polynomial.evaluation_parameter_text}."
+    return ApplicationBranchPresentation(
+        display_name=result.display_name,
+        status=result.status,
+        primary_output_label=result.primary_output_label,
+        primary_output=result.primary_output,
+        concise_variable_label=concise_variable_label,
+        candidate_warning=candidate_warning,
+        polynomial=polynomial,
+    )
 
 
 def application_branch_result_from_internal(result: InvariantBranchResult) -> ApplicationBranchResult:
@@ -178,6 +373,36 @@ def format_application_branch_result(result: ApplicationBranchResult) -> str:
     return "\n".join(lines)
 
 
+def format_application_branch_compact(result: ApplicationBranchResult, *, q_parameter_text: str | None = None) -> str:
+    """Format one branch in the maintained compact on-screen presentation."""
+
+    presentation = build_application_branch_presentation(result, q_parameter_text=q_parameter_text)
+    lines = [
+        presentation.display_name,
+        f"Status: {presentation.status}",
+        f"Primary output ({presentation.primary_output_label}): {presentation.primary_output or 'not available'}",
+    ]
+    if presentation.polynomial.conversion_status == "scalar_only":
+        lines.append(f"Variable summary: {presentation.concise_variable_label}")
+        lines.append(presentation.polynomial.conversion_reason)
+    else:
+        lines.append(f"Variable summary: {presentation.concise_variable_label}")
+        lines.append(f"Project q expression: {presentation.polynomial.primary_project_expression or 'not available'}")
+        if presentation.polynomial.standard_polynomial_expression is not None and presentation.polynomial.standard_variable_name is not None:
+            lines.append(
+                f"{presentation.polynomial.standard_variable_name} (t = q_project^-2): {presentation.polynomial.standard_polynomial_expression}"
+            )
+        elif result.branch_id == "sl2_fundamental":
+            lines.append(f"Standard Jones conversion: {presentation.polynomial.conversion_reason}")
+        if presentation.polynomial.atlas_comparable_expression is not None and presentation.polynomial.atlas_variable_name is not None:
+            lines.append(f"{presentation.polynomial.atlas_variable_name}: {presentation.polynomial.atlas_comparable_expression}")
+        elif result.branch_id == "sl3_fundamental":
+            lines.append(f"Atlas-comparable conversion: {presentation.polynomial.conversion_reason}")
+    if presentation.candidate_warning:
+        lines.append(f"Warning: {presentation.candidate_warning}")
+    return "\n".join(lines)
+
+
 def format_application_braid_result(result: ApplicationBraidResult) -> str:
     """Format a full application result for text-oriented frontends."""
 
@@ -186,6 +411,17 @@ def format_application_braid_result(result: ApplicationBraidResult) -> str:
         lines.append(f"Notes: {result.notes}")
     for branch_result in result.branch_results:
         lines.extend(("", format_application_branch_result(branch_result)))
+    return "\n".join(lines)
+
+
+def format_application_braid_compact_result(result: ApplicationBraidResult, *, q_parameter_text: str | None = None) -> str:
+    """Format a compact result view from the existing application DTOs."""
+
+    lines = [f"########## {result.example_label} ##########"]
+    if result.notes:
+        lines.append(f"Notes: {result.notes}")
+    for branch_result in result.branch_results:
+        lines.extend(("", format_application_branch_compact(branch_result, q_parameter_text=q_parameter_text)))
     return "\n".join(lines)
 
 

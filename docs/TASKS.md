@@ -75,3 +75,10 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 ## Post-v0.1.1 desktop hotfix
 
 - [x] Give invariant braid setup/preview and calculation/results separate resizable pages, with explicit manual input, readable scrollable branches, and optional shared side docks.
+
+## M6 — Result presentation and preview continuity
+
+- [x] Remove false non-crossing strand breaks from the maintained braid preview by localizing every visible gap to a registered crossing shared by the Qt and SVG renderers.
+- [x] Add Compact and Detailed maintained result views, defaulting to Compact without changing deterministic JSON export content.
+- [x] Add exact symbolic relabeling for sl2 standard Jones-variable `t` form and maintained Atlas-comparable variable forms only when the conversion is an unambiguous Laurent rewrite.
+- [x] Keep numeric `q` results scalar-only in Compact mode and keep the sl2 spin-1 branch explicitly candidate-only without claiming a final standard colored-Jones identification.

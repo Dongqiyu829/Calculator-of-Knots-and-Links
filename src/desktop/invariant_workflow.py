@@ -43,7 +43,9 @@ from src.services import (
     build_invariant_project,
     evaluate_braid_result,
     evaluate_catalog_result,
+    format_application_braid_compact_result,
     format_application_braid_result,
+    format_application_branch_compact,
     format_application_branch_result,
     get_branch_explanation,
     list_catalog_examples,
@@ -68,6 +70,7 @@ class _InvariantRequest:
     custom_notes: str
     branch_ids: tuple[str, ...]
     q_parameter: Any
+    q_text: str
 
 
 class _InvariantWorker(QObject):
@@ -122,6 +125,7 @@ class InvariantCalculationWorkflow(QWidget):
         self._branches = list_evaluation_branches()
         self._active_jobs: list[tuple[QThread, _InvariantWorker]] = []
         self._last_result: ApplicationBraidResult | None = None
+        self._last_q_text = "2"
         self._build_widget()
 
     @property
@@ -255,6 +259,12 @@ class InvariantCalculationWorkflow(QWidget):
         self.q_input.setPlaceholderText("2, 3/2, q, or another SymPy-compatible expression")
         self.q_input.textChanged.connect(lambda _text: self._emit_explanation())
         execution_layout.addRow("q:", self.q_input)
+        self.result_mode_combo = QComboBox(execution_group)
+        self.result_mode_combo.setObjectName("invariantResultMode")
+        self.result_mode_combo.addItem("Compact", "compact")
+        self.result_mode_combo.addItem("Detailed", "detailed")
+        self.result_mode_combo.currentIndexChanged.connect(self._result_mode_changed)
+        execution_layout.addRow("Result view:", self.result_mode_combo)
         calculation_row = QWidget(execution_group)
         action_layout = QHBoxLayout(calculation_row)
         action_layout.setContentsMargins(0, 0, 0, 0)
@@ -512,6 +522,7 @@ class InvariantCalculationWorkflow(QWidget):
             custom_notes=self.custom_notes_input.text().strip(),
             branch_ids=branch_ids,
             q_parameter=parameter,
+            q_text=self.q_input.text(),
         )
         self._start_worker(request)
 
@@ -534,6 +545,11 @@ class InvariantCalculationWorkflow(QWidget):
     def _calculation_succeeded(self, result: object) -> None:
         assert isinstance(result, ApplicationBraidResult)
         self._last_result = result
+        current_thread = self.sender()
+        if isinstance(current_thread, _InvariantWorker):
+            self._last_q_text = current_thread._request.q_text
+        else:
+            self._last_q_text = self.q_input.text()
         self.resultChanged.emit(result)
         self._render_result(result)
         self.copy_selected_button.setEnabled(True)
@@ -576,10 +592,14 @@ class InvariantCalculationWorkflow(QWidget):
         self.result_tabs.clear()
 
     def _render_result(self, result: ApplicationBraidResult) -> None:
+        current_index = self.result_tabs.currentIndex()
         self._clear_result_tabs()
         summary = QPlainTextEdit(self.result_tabs)
         summary.setReadOnly(True)
-        summary.setPlainText(format_application_braid_result(result))
+        if self._result_view_mode() == "compact":
+            summary.setPlainText(format_application_braid_compact_result(result, q_parameter_text=self._last_q_text))
+        else:
+            summary.setPlainText(format_application_braid_result(result))
         self.result_tabs.addTab(summary, "All results")
         for branch in result.branch_results:
             card = QPlainTextEdit(self.result_tabs)
@@ -587,9 +607,11 @@ class InvariantCalculationWorkflow(QWidget):
             card.setPlainText(self._format_branch_card(branch, result))
             label = f"{branch.display_name} ({branch.status})"
             self.result_tabs.addTab(card, label)
+        self.result_tabs.setCurrentIndex(min(max(current_index, 0), self.result_tabs.count() - 1))
 
-    @staticmethod
-    def _format_branch_card(branch: ApplicationBranchResult, result: ApplicationBraidResult) -> str:
+    def _format_branch_card(self, branch: ApplicationBranchResult, result: ApplicationBraidResult) -> str:
+        if self._result_view_mode() == "compact":
+            return format_application_branch_compact(branch, q_parameter_text=self._last_q_text)
         status_prefix = "CANDIDATE — " if branch.status == "candidate" else ""
         lines = [
             f"{status_prefix}{branch.display_name}",
@@ -605,6 +627,14 @@ class InvariantCalculationWorkflow(QWidget):
         if branch.status == "candidate":
             lines.extend(get_branch_explanation(branch.branch_id).warnings)
         return "\n".join(lines)
+
+    def _result_view_mode(self) -> str:
+        return str(self.result_mode_combo.currentData() or "compact")
+
+    @Slot()
+    def _result_mode_changed(self) -> None:
+        if self._last_result is not None:
+            self._render_result(self._last_result)
 
     def _current_result_text(self) -> str | None:
         widget = self.result_tabs.currentWidget()
