@@ -46,6 +46,20 @@ def _sl2_only(workflow: InvariantCalculationWorkflow) -> None:
         check.setChecked(descriptor.branch_id == "sl2_fundamental")
 
 
+def _catalog_request(example_label: str, branch_ids: tuple[str, ...], q_text: str) -> _InvariantRequest:
+    return _InvariantRequest(
+        source_mode="catalog",
+        example_label=example_label,
+        num_strands=1,
+        generator_text="",
+        custom_label="",
+        custom_notes="",
+        branch_ids=branch_ids,
+        q_parameter=parse_q_text(q_text),
+        q_text=q_text,
+    )
+
+
 def test_catalog_selection_shows_project_native_braid_metadata() -> None:
     workflow = _workflow()
     index = workflow.example_combo.findText("trefoil")
@@ -67,6 +81,7 @@ def test_custom_braid_source_uses_service_validation_worker() -> None:
         custom_notes="",
         branch_ids=("sl2_fundamental",),
         q_parameter=sp.Integer(2),
+        q_text="2",
     )
     received: list[str] = []
     worker = _InvariantWorker(request)
@@ -88,6 +103,7 @@ def test_valid_custom_braid_evaluates_through_the_service_worker() -> None:
         custom_notes="service-only custom input",
         branch_ids=("sl2_fundamental",),
         q_parameter=sp.Integer(2),
+        q_text="2",
     )
     received: list[object] = []
     worker = _InvariantWorker(request)
@@ -119,15 +135,17 @@ def test_q_2_and_symbolic_q_results_render_through_application_dtos() -> None:
     workflow = _workflow()
     _sl2_only(workflow)
     numeric = evaluate_catalog_result("unknot_1", branch_ids=("sl2_fundamental",), q=parse_q_text("2"))
-    workflow._calculation_succeeded(numeric)
+    workflow._calculation_succeeded(numeric, _catalog_request("unknot_1", ("sl2_fundamental",), "2"))
 
     assert "Primary output: 1" in workflow.result_tabs.widget(0).toPlainText()
+    assert workflow.result_mode_combo.currentData() == "compact"
     assert "Status: formal" in workflow.result_tabs.widget(1).toPlainText()
-    assert "Result metadata:" in workflow.result_tabs.widget(1).toPlainText()
+    assert "Standard Jones variable t" in workflow.result_tabs.widget(1).toPlainText()
 
+    workflow.q_input.setText("q")
     symbolic = evaluate_catalog_result("unknot_1", branch_ids=("sl2_fundamental",), q=parse_q_text("q"))
-    workflow._calculation_succeeded(symbolic)
-    assert "Variable convention:" in workflow.result_tabs.widget(1).toPlainText()
+    workflow._calculation_succeeded(symbolic, _catalog_request("unknot_1", ("sl2_fundamental",), "q"))
+    assert "Project q expression:" in workflow.result_tabs.widget(1).toPlainText()
     workflow.close()
 
 
@@ -138,7 +156,7 @@ def test_multiple_branch_result_cards_preserve_candidate_status() -> None:
         branch_ids=("sl2_fundamental", "sl2_spin1"),
         q=sp.Integer(2),
     )
-    workflow._calculation_succeeded(result)
+    workflow._calculation_succeeded(result, _catalog_request("unknot_1", ("sl2_fundamental", "sl2_spin1"), "2"))
 
     assert workflow.result_tabs.count() == 3
     candidate_card = workflow.result_tabs.widget(2).toPlainText()
@@ -157,6 +175,7 @@ def test_worker_calls_catalog_result_service_facade() -> None:
         custom_notes="",
         branch_ids=("sl2_fundamental",),
         q_parameter=sp.Integer(2),
+        q_text="2",
     )
     expected = evaluate_catalog_result("unknot_1", branch_ids=("sl2_fundamental",), q=sp.Integer(2))
     received: list[object] = []
@@ -173,7 +192,8 @@ def test_worker_calls_catalog_result_service_facade() -> None:
 def test_copy_text_json_and_export_use_service_reporting_serialization(tmp_path) -> None:
     workflow = _workflow()
     result = evaluate_catalog_result("unknot_1", branch_ids=("sl2_fundamental",), q=sp.Integer(2))
-    workflow._calculation_succeeded(result)
+    workflow._calculation_succeeded(result, _catalog_request("unknot_1", ("sl2_fundamental",), "2"))
+    workflow.result_mode_combo.setCurrentIndex(workflow.result_mode_combo.findData("compact"))
 
     workflow._copy_all_text()
     assert "########## unknot_1 ##########" in QGuiApplication.clipboard().text()
@@ -186,6 +206,27 @@ def test_copy_text_json_and_export_use_service_reporting_serialization(tmp_path)
     ):
         workflow._export_result()
     assert '"source_mode": "catalog"' in export_path.read_text(encoding="utf-8")
+    workflow.close()
+
+
+def test_result_mode_switch_uses_cached_result_without_recalculation() -> None:
+    workflow = _workflow()
+    workflow.q_input.setText("q")
+    result = evaluate_catalog_result("trefoil", branch_ids=("sl2_fundamental",), q=parse_q_text("q"))
+    workflow._calculation_succeeded(result, _catalog_request("trefoil", ("sl2_fundamental",), "q"))
+    assert workflow._last_result is result
+    compact_text = workflow.result_tabs.widget(1).toPlainText()
+    assert "Standard Jones variable t" in compact_text
+
+    with patch("src.desktop.invariant_workflow.evaluate_catalog_result") as catalog_evaluation:
+        with patch("src.desktop.invariant_workflow.evaluate_braid_result") as braid_evaluation:
+            workflow.result_mode_combo.setCurrentIndex(workflow.result_mode_combo.findData("detailed"))
+
+    assert not catalog_evaluation.called
+    assert not braid_evaluation.called
+    detailed_text = workflow.result_tabs.widget(1).toPlainText()
+    assert "Model id:" in detailed_text
+    assert workflow._last_result is result
     workflow.close()
 
 
