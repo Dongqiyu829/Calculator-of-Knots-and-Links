@@ -24,14 +24,13 @@ The installer is unsigned, so Windows SmartScreen may show its usual warning for
 
 安装程序未进行代码签名，因此 Windows SmartScreen 可能对新下载显示常规提示；需要时请核对校验和。
 
-**Release state / 发布状态:** the current source version is **0.1.1 release
-candidate**. The latest published release remains **v0.1.0** until the reviewed
-`v0.1.1` tag is created; the stable `releases/latest/download/...` links above
-will continue to resolve to the latest published assets without README edits.
+**Release state / 发布状态:** **v0.1.1 is the latest published release.** The
+stable `releases/latest/download/...` links above resolve to its Windows
+installer, portable ZIP, and checksum assets.
 
-**发布状态：**当前源代码版本为 **0.1.1 release candidate（候选版本）**。在审阅后的
-`v0.1.1` 标签创建前，最新公开版本仍是 **v0.1.0**；上面的稳定
-`releases/latest/download/...` 链接会继续指向最新公开资源，无需每次发布修改 README。
+**发布状态：****v0.1.1 已正式发布并且是当前最新版本。** 上面的稳定
+`releases/latest/download/...` 链接会直接指向 v0.1.1 的 Windows 安装版、
+便携版 ZIP 和校验文件。
 
 **Install / 安装:** run the installer, keep the per-user default location, and launch from the Start Menu (an optional desktop shortcut is available). No administrator elevation or PATH change is needed.
 
@@ -70,8 +69,7 @@ The repository now contains:
 
 M4 distribution is complete. The supported Windows release provides a reproducible
 PyInstaller `onedir` application, a per-user Inno Setup installer, a portable ZIP,
-and SHA-256 checksums. The current source is the `0.1.1` release candidate;
-the latest published release remains `v0.1.0` until the new tag is created.
+and SHA-256 checksums. **v0.1.1 is published and is the current stable release.**
 
 ## Desktop application
 
@@ -233,9 +231,9 @@ The executable is produced under `dist\\Calculator-of-Knots-and-Links\\`. A pack
 The Windows GitHub Actions workflow builds the bundle, smoke-tests the packaged executable, creates `Calculator-of-Knots-and-Links-windows-x64.zip`, extracts that ZIP, smoke-tests the extracted executable again, and only then uploads it as an Actions artifact.
 
 See `docs/DISTRIBUTION.md` for exact local-build, release, and artifact-download
-instructions. CI builds both the portable ZIP and the Inno Setup installer;
-the manual `v0.1.1` workflow dispatch is non-publishing and uploads candidate
-assets for validation. See the [v0.1.1 release notes](docs/RELEASE_NOTES_0.1.1.md).
+instructions. CI builds both the portable ZIP and the Inno Setup installer.
+Manual workflow dispatch remains available as a non-publishing validation path
+for future releases. See the [v0.1.1 release notes](docs/RELEASE_NOTES_0.1.1.md).
 
 ## Development principle
 
