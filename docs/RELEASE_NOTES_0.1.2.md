@@ -1,10 +1,10 @@
 # Calculator of Knots and Links v0.1.2
 
-> `v0.1.2` is prepared as a desktop usability hotfix release candidate.
+> `v0.1.2` is the published desktop usability hotfix release.
 
 ## English
 
-This release candidate focuses only on desktop workflow usability:
+This release focuses only on desktop workflow usability:
 
 - split the invariant tab into **Braid setup / preview** and
   **Calculation / results** pages;
@@ -19,7 +19,7 @@ are unchanged.
 
 ## 中文
 
-本次发布候选仅包含桌面工作流可用性热修复：
+本次正式发布仅包含桌面工作流可用性热修复：
 
 - 将不变量标签页拆分为 **Braid setup / preview** 与
   **Calculation / results** 两页；
