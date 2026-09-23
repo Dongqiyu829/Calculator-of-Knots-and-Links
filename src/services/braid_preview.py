@@ -60,6 +60,8 @@ class BraidPreviewCrossing:
     under_strand: int
     x: float
     y: float
+    under_mask_points: tuple[tuple[float, float], tuple[float, float]]
+    over_redraw_points: tuple[tuple[float, float], ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -110,7 +112,7 @@ def _crossing_points(start_x: float, start_y: float, end_x: float, end_y: float)
     return ((start_x, start_y), (mid_x, mid_y), (end_x, end_y))
 
 
-def _split_at_gap(points: tuple[tuple[float, float], ...], gap: float) -> tuple[tuple[tuple[float, float], ...], tuple[tuple[float, float], ...]]:
+def _crossing_window(points: tuple[tuple[float, float], ...], gap: float) -> tuple[tuple[float, float], tuple[float, float]]:
     start, center, end = points
     dx_start, dy_start = center[0] - start[0], center[1] - start[1]
     dx_end, dy_end = end[0] - center[0], end[1] - center[1]
@@ -118,7 +120,18 @@ def _split_at_gap(points: tuple[tuple[float, float], ...], gap: float) -> tuple[
     second_length = max((dx_end * dx_end + dy_end * dy_end) ** 0.5, 1.0)
     before = (center[0] - dx_start * gap / (2 * first_length), center[1] - dy_start * gap / (2 * first_length))
     after = (center[0] + dx_end * gap / (2 * second_length), center[1] + dy_end * gap / (2 * second_length))
-    return ((start, before), (after, end))
+    return before, after
+
+
+def _local_crossing_segment(points: tuple[tuple[float, float], ...], gap: float) -> tuple[tuple[float, float], ...]:
+    before, after = _crossing_window(points, gap)
+    return (before, points[1], after)
+
+
+def _append_points(target: list[tuple[float, float]], points: tuple[tuple[float, float], ...]) -> None:
+    for point in points:
+        if not target or target[-1] != point:
+            target.append(point)
 
 
 def build_braid_preview_geometry(
@@ -145,13 +158,17 @@ def build_braid_preview_geometry(
     bottom = height - BOTTOM_MARGIN
     step_height = (bottom - top) / max(len(generators), 1)
 
-    segments: list[BraidPreviewSegment] = []
+    strand_paths: dict[int, list[tuple[float, float]]] = {
+        identity: [(lane_x[identity - 1], top)] for identity in range(1, strands + 1)
+    }
     crossings: list[BraidPreviewCrossing] = []
     current_order = list(range(1, strands + 1))
 
     if not generators:
-        for identity, x in enumerate(lane_x, start=1):
-            segments.append(BraidPreviewSegment("identity", identity, None, None, ((x, top), (x, bottom)), _color(identity)))
+        segments = tuple(
+            BraidPreviewSegment("identity", identity, None, None, ((x, top), (x, bottom)), _color(identity))
+            for identity, x in enumerate(lane_x, start=1)
+        )
         return BraidPreviewGeometry(
             width, height, strands, generators, braid_word.writhe(), compute_braid_permutation(braid_word), tuple(segments), tuple(crossings), braid_word.label
         )
@@ -167,7 +184,7 @@ def build_braid_preview_geometry(
             if lane in (pair, pair + 1):
                 continue
             identity = current_order[lane]
-            segments.append(BraidPreviewSegment("unchanged", identity, step_index, generator, ((lane_x[lane], current_y), (lane_x[lane], next_y)), _color(identity)))
+            _append_points(strand_paths[identity], ((lane_x[lane], next_y),))
 
         left_x, right_x = lane_x[pair], lane_x[pair + 1]
         crossing_x = (left_x + right_x) / 2.0
@@ -182,15 +199,29 @@ def build_braid_preview_geometry(
             under_identity = current_order[pair]
             over_points = _crossing_points(right_x, current_y, left_x, next_y)
             under_points = _crossing_points(left_x, current_y, right_x, next_y)
-        under_first, under_second = _split_at_gap(under_points, min(CROSSING_GAP, lane_spacing * 0.24))
-        segments.append(BraidPreviewSegment("under", under_identity, step_index, generator, under_first, _color(under_identity)))
-        segments.append(BraidPreviewSegment("under", under_identity, step_index, generator, under_second, _color(under_identity)))
-        segments.append(BraidPreviewSegment("over", over_identity, step_index, generator, over_points, _color(over_identity), over=True))
-        crossings.append(BraidPreviewCrossing(step_index, generator, pair + 1, over_identity, under_identity, crossing_x, crossing_y))
+        gap = min(CROSSING_GAP, lane_spacing * 0.24)
+        _append_points(strand_paths[over_identity], over_points[1:])
+        _append_points(strand_paths[under_identity], under_points[1:])
+        before, after = _crossing_window(under_points, gap)
+        crossings.append(
+            BraidPreviewCrossing(
+                step_index,
+                generator,
+                pair + 1,
+                over_identity,
+                under_identity,
+                crossing_x,
+                crossing_y,
+                (before, after),
+                _local_crossing_segment(over_points, gap * 1.35),
+            )
+        )
         current_order = next_order
 
-    for lane, identity in enumerate(current_order):
-        segments.append(BraidPreviewSegment("terminal", identity, len(generators), None, ((lane_x[lane], top + len(generators) * step_height), (lane_x[lane], bottom)), _color(identity)))
+    segments = tuple(
+        BraidPreviewSegment("strand", identity, None, None, tuple(points), _color(identity))
+        for identity, points in sorted(strand_paths.items())
+    )
 
     return BraidPreviewGeometry(
         width, height, strands, generators, braid_word.writhe(), compute_braid_permutation(braid_word), tuple(segments), tuple(crossings), braid_word.label
@@ -231,11 +262,15 @@ def render_braid_preview_svg(
         lines.append(f'<text x="{x:g}" y="{geometry.height - 20:g}" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#334155">{geometry.final_permutation[index]}</text>')
     for segment in geometry.segments:
         points = " ".join(f"{x:g},{y:g}" for x, y in segment.points)
-        if segment.over:
-            lines.append(f'<polyline points="{points}" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>')
-        dash = ' stroke-dasharray="1 0"' if segment.role != "under" else ""
-        lines.append(f'<polyline points="{points}" fill="none" stroke="{segment.color}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"{dash}/>')
+        lines.append(f'<polyline points="{points}" fill="none" stroke="{segment.color}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>')
     for crossing in geometry.crossings:
+        mask_points = " ".join(f"{x:g},{y:g}" for x, y in crossing.under_mask_points)
+        lines.append(f'<polyline points="{mask_points}" fill="none" stroke="#fbfcfe" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>')
+        over_points = " ".join(f"{x:g},{y:g}" for x, y in crossing.over_redraw_points)
+        lines.append(
+            f'<polyline points="{over_points}" fill="none" stroke="{_color(crossing.over_strand)}" '
+            'stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'
+        )
         label = f"{crossing.step_index}: σ{abs(crossing.generator)}" + ("⁻¹" if crossing.generator < 0 else "")
         lines.append(f'<text x="{geometry.width - RIGHT_MARGIN + 20:g}" y="{crossing.y + 5:g}" font-family="sans-serif" font-size="12" fill="#475569">{escape(label)}</text>')
     if geometry.is_identity:
