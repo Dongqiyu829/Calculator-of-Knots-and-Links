@@ -135,6 +135,7 @@ def evaluate_temperley_lieb_jones(braid_word: BraidWord, *, q: sp.Expr) -> Tempe
     closed diagram contributes ``(q+q^-1)**number_of_loops``.
     """
 
+    q = sp.sympify(q)
     strands = braid_word.num_strands
     delta = q + q**-1
     identity = identity_diagram(strands)

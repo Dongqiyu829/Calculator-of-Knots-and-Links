@@ -103,6 +103,14 @@ def test_tl_complete_offline_jones_oracle_set() -> None:
         assert sp.simplify(actual - expected) == 0, case["knot"]
 
 
+def test_tl_plain_integer_q_remains_exact() -> None:
+    word = BraidWord.from_iterable(2, (1, 1, 1))
+    actual = evaluate_temperley_lieb_jones(word, q=2).reduced_expression
+    reference = evaluate_sl2_fundamental_branch(word, q=sp.Integer(2)).primary_output
+    assert actual == reference
+    assert not actual.has(sp.Float)
+
+
 @pytest.mark.parametrize("q", (Q, sp.Integer(2), sp.Integer(3), sp.Integer(5)))
 @pytest.mark.parametrize("strands,generators", ((2, (1, 1, 1)), (3, (1, -2, 1, -2))))
 def test_tl_positive_and_negative_stabilization_match_reference(strands, generators, q) -> None:
