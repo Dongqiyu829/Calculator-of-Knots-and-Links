@@ -60,6 +60,7 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 - [x] Add the per-user Inno Setup installer, shared Windows artifact build script, stable release assets, checksum manifest, and installer/portable smoke checks.
 - [x] Add the bilingual README download landing section and clean-machine Windows acceptance checklist.
 - [x] Prepare the `0.1.1` release candidate: version metadata, bilingual notes, pre-tag state documentation, and a non-publishing dry-run contract.
+- [x] Prepare the `0.1.2` desktop-hotfix release candidate: single-source version bump, bilingual hotfix notes, pre-tag state docs, and non-publishing dry-run validation contract.
 
 ## M5 — Productization
 
