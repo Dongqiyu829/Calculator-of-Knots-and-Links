@@ -21,7 +21,8 @@ if _qt_import.returncode != 0:
 
 from PySide6.QtWidgets import QApplication, QScrollArea, QSplitter
 
-from src.desktop import DesktopMainWindow, InvariantCalculationWorkflow
+from src.braid.braid_word import BraidWord
+from src.desktop import BraidPreviewWidget, DesktopMainWindow, InvariantCalculationWorkflow
 from src.services import get_curated_example
 
 
@@ -95,3 +96,15 @@ def test_side_panels_share_one_dock_area_and_project_load_returns_to_setup(tmp_p
     window.load_project_from_path(path)
     assert workflow.page_tabs.currentWidget() is workflow.setup_page
     window.close()
+
+
+def test_qt_preview_uses_one_local_mask_and_over_redraw_per_registered_crossing() -> None:
+    _application()
+    widget = BraidPreviewWidget()
+    geometry = widget.set_braid_word(BraidWord.from_iterable(3, (1, -2, 1), label="mixed"))
+    roles = [item.data(0) for item in widget.scene.items() if item.data(0) is not None]
+
+    assert roles.count("strand") == geometry.strand_count
+    assert roles.count("under_mask") == len(geometry.crossings)
+    assert roles.count("over_redraw") == len(geometry.crossings)
+    widget.close()

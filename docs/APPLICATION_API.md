@@ -29,7 +29,7 @@ keeps integer and rational input exact, accepts the active symbolic `q`
 convention and other SymPy expressions, and reports invalid text as a typed
 service error rather than coercing it to floating point.
 
-The stable contract also includes a renderer-neutral braid-preview surface: `BraidPreviewGeometry`, `build_braid_preview_geometry`, and `render_braid_preview_svg`. Maintained desktop code consumes these through the `src.services` facade; the geometry preserves project-native Artin signs, generator order, writhe, strand identities, final permutation, and explicit over/under crossing semantics without changing evaluation behavior.
+The stable contract also includes a renderer-neutral braid-preview surface: `BraidPreviewGeometry`, `build_braid_preview_geometry`, and `render_braid_preview_svg`. Maintained desktop code consumes these through the `src.services` facade; the geometry preserves project-native Artin signs, generator order, writhe, strand identities, final permutation, and explicit over/under crossing semantics without changing evaluation behavior. Physical strands are exposed as continuous paths, while every intentional under-crossing gap is localized to a `BraidPreviewCrossing` mask/overpass description shared by both the SVG export and the Qt preview.
 
 The stable contract also includes the custom braid-operator surface:
 `parse_custom_matrix`, `validate_custom_matrix`,
@@ -101,3 +101,13 @@ Result export continues to use `format_application_braid_result`,
 helpers only select a service serializer and write its deterministic output;
 they do not reimplement mathematical formatting. Braid SVG/PNG export remains
 available through the renderer-neutral preview service and its Qt view.
+
+The maintained result-presentation layer also exposes compact frontend helpers
+through `PolynomialPresentation`, `ApplicationBranchPresentation`,
+`build_polynomial_presentation`, `build_application_branch_presentation`,
+`format_application_branch_compact`, and
+`format_application_braid_compact_result`. These descriptors sit above the
+stored evaluation DTOs: they may relabel existing symbolic outputs into exact
+standard/Atlas-comparable variable forms when the conversion is mathematically
+unambiguous, but they do not mutate or truncate the underlying deterministic
+JSON export.

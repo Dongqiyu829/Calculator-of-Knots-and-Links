@@ -171,8 +171,6 @@ class BraidPreviewWidget(QWidget):
             terminal.setFont(QFont("Segoe UI", 10))
             terminal.setPos(x - 4, geometry.height - 38)
 
-        # Under strokes are inserted first.  The over stroke receives a white
-        # halo, making the gap deterministic on every platform.
         for segment in geometry.segments:
             path = QPainterPath()
             first_x, first_y = segment.points[0]
@@ -181,15 +179,33 @@ class BraidPreviewWidget(QWidget):
                 path.lineTo(x, y)
             item = QGraphicsPathItem(path)
             item.setPen(QPen(QColor(segment.color), 4.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
-            item.setData(0, segment.role)
+            item.setData(0, "strand")
             item.setData(1, segment.strand_identity)
-            if segment.over:
-                halo = QGraphicsPathItem(path)
-                halo.setPen(QPen(QColor("#fbfcfe"), 10.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
-                scene.addItem(halo)
             scene.addItem(item)
 
         for crossing in geometry.crossings:
+            mask_path = QPainterPath()
+            first_x, first_y = crossing.under_mask_points[0]
+            mask_path.moveTo(first_x, first_y)
+            for x, y in crossing.under_mask_points[1:]:
+                mask_path.lineTo(x, y)
+            mask = QGraphicsPathItem(mask_path)
+            mask.setPen(QPen(QColor("#fbfcfe"), 11.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
+            mask.setData(0, "under_mask")
+            mask.setData(1, crossing.under_strand)
+            scene.addItem(mask)
+
+            over_path = QPainterPath()
+            first_x, first_y = crossing.over_redraw_points[0]
+            over_path.moveTo(first_x, first_y)
+            for x, y in crossing.over_redraw_points[1:]:
+                over_path.lineTo(x, y)
+            over = QGraphicsPathItem(over_path)
+            over.setPen(QPen(QColor(geometry.segments[crossing.over_strand - 1].color), 4.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
+            over.setData(0, "over_redraw")
+            over.setData(1, crossing.over_strand)
+            scene.addItem(over)
+
             suffix = "⁻¹" if crossing.generator < 0 else ""
             text = scene.addText(f"{crossing.step_index}: σ{abs(crossing.generator)}{suffix}")
             text.setDefaultTextColor(QColor("#475569"))

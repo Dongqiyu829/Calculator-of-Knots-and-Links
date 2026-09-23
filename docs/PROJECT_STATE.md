@@ -249,3 +249,8 @@ exact trace-of-mu scalar. Representative outputs, external oracle mappings,
 formal/candidate status, and all mathematical conventions remain unchanged.
 Matrix-free and Hecke/Temperley–Lieb backends are documented as future work,
 not implemented in this pass.
+
+
+### M6 — Result presentation and preview continuity
+
+Issue #54 adds one maintained post-release presentation pass without changing invariant mathematics. The braid-preview service now describes continuous physical strands plus crossing-local mask/overpass semantics shared by the Qt preview and SVG export, preventing false non-crossing strand breaks from segment-wide halos. The maintained invariant workflow also defaults to a Compact result view backed by service presentation descriptors. Symbolic sl2 results can show an exact standard Jones-variable `t` form and an Atlas-comparable `q_atlas` form when the conversion is an unambiguous Laurent relabeling; symbolic sl3 can show the maintained Atlas-comparable A2 variable form, while numeric `q` inputs remain scalar-only presentations and the spin-1 branch remains explicitly candidate-only.
