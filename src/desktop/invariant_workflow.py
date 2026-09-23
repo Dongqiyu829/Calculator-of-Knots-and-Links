@@ -81,6 +81,7 @@ class _InvariantWorker(QObject):
 
     succeeded = Signal(object)
     failed = Signal(str)
+    finished = Signal()
 
     def __init__(self, request: _InvariantRequest) -> None:
         super().__init__()
@@ -115,6 +116,8 @@ class _InvariantWorker(QObject):
             self.failed.emit(f"Unexpected evaluation failure: {exc}")
         else:
             self.succeeded.emit(result)
+        finally:
+            self.finished.emit()
 
 
 class InvariantCalculationWorkflow(QWidget):
@@ -585,14 +588,21 @@ class InvariantCalculationWorkflow(QWidget):
         worker = _InvariantWorker(request)
         worker.moveToThread(thread)
         thread.started.connect(worker.run)
-        worker.succeeded.connect(lambda result, submitted_request=request: self._calculation_succeeded(result, submitted_request))
+        worker.succeeded.connect(self._worker_succeeded)
         worker.failed.connect(self._calculation_failed)
-        worker.succeeded.connect(lambda _result, active_thread=thread: active_thread.quit())
-        worker.failed.connect(lambda _message, active_thread=thread: active_thread.quit())
-        thread.finished.connect(worker.deleteLater)
-        thread.finished.connect(lambda active_thread=thread, active_worker=worker: self._job_finished(active_thread, active_worker))
+        worker.finished.connect(thread.quit)
+        worker.finished.connect(worker.deleteLater)
+        thread.finished.connect(self._job_finished)
         self._active_jobs.append((thread, worker))
         thread.start()
+
+    @Slot(object)
+    def _worker_succeeded(self, result: object) -> None:
+        """Marshal a worker result back onto this widget's Qt thread."""
+
+        sender = self.sender()
+        request = sender._request if isinstance(sender, _InvariantWorker) else None
+        self._calculation_succeeded(result, request)
 
     def _calculation_succeeded(self, result: object, request: _InvariantRequest | None = None) -> None:
         assert isinstance(result, ApplicationBraidResult)
@@ -616,9 +626,15 @@ class InvariantCalculationWorkflow(QWidget):
     def _calculation_failed(self, message: str) -> None:
         self._set_error(message)
 
-    def _job_finished(self, thread: QThread, worker: _InvariantWorker) -> None:
-        self._active_jobs = [job for job in self._active_jobs if job != (thread, worker)]
-        self._set_busy(False)
+    @Slot()
+    def _job_finished(self) -> None:
+        """Clean up a completed QThread on the GUI object's thread."""
+
+        thread = self.sender()
+        if not isinstance(thread, QThread):
+            return
+        self._active_jobs = [job for job in self._active_jobs if job[0] is not thread]
+        self._set_busy(bool(self._active_jobs))
         thread.deleteLater()
 
     def _set_busy(self, busy: bool, message: str | None = None) -> None:
