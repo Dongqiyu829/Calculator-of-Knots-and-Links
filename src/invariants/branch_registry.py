@@ -8,6 +8,7 @@ from typing import Any, Literal
 
 import sympy as sp
 
+from src.algebra.representations import build_sl2_fundamental_representation
 from src.braid.braid_operator import BraidOperatorBuilder
 from src.braid.braid_word import BraidWord
 from src.catalog.braid_examples import BraidExample
@@ -37,14 +38,15 @@ from .sl2_3d_colored_jones_candidate import (
     current_sl2_3d_candidate_mu,
     current_sl2_3d_unknot_normalization,
 )
+from .temperley_lieb import evaluate_temperley_lieb_jones
 
 
-EvaluationBackend = Literal["explicit", "matrix_free"]
+EvaluationBackend = Literal["explicit", "matrix_free", "temperley_lieb"]
 
 
 def _validate_backend(backend: str) -> None:
-    if backend not in ("explicit", "matrix_free"):
-        raise ValueError("backend must be 'explicit' or 'matrix_free'")
+    if backend not in ("explicit", "matrix_free", "temperley_lieb"):
+        raise ValueError("backend must be 'explicit', 'matrix_free', or 'temperley_lieb'")
 
 
 @lru_cache(maxsize=32)
@@ -90,6 +92,33 @@ def evaluate_sl2_fundamental_branch(
     braid_word, source_metadata = _coerce_braid_word(target)
     parameter = q if q is not None else sp.Symbol("q", nonzero=True)
     _validate_backend(backend)
+    if backend == "temperley_lieb":
+        scalar = evaluate_temperley_lieb_jones(braid_word, q=parameter)
+        unreduced = scalar.unreduced_expression
+        reduced = scalar.reduced_expression
+        return InvariantBranchResult(
+            branch_id="sl2_fundamental",
+            representation_name=build_sl2_fundamental_representation().name(),
+            braid_word=braid_word,
+            status="formal",
+            raw_trace=None,
+            primary_output=reduced,
+            primary_output_label="Jones-compatible output",
+            normalization_label="reduced P2 by current unknot value",
+            variable_convention=DEFAULT_JONES_VARIABLE_CONVENTION,
+            notes="Temperley-Lieb scalar only; full tensor operator and ordinary raw trace were not computed.",
+            metadata={
+                **source_metadata,
+                "evaluation_backend": backend,
+                "unreduced_p2_output": str(unreduced),
+                "unknot_normalization": str(scalar.unknot_normalization),
+                "reduced_p2_output": str(reduced),
+                "jones_compatible_output": str(reduced),
+                "normalization_kind": "current P2 reduced by current unknot value",
+                "tl_markov_trace": str(scalar.closure_trace),
+                "tl_basis_term_count": scalar.basis_term_count,
+            },
+        )
     if backend == "matrix_free":
         rmatrix = _builtin_rmatrix("sl2_fundamental", parameter)
         eyb = build_sl2_fundamental_eyb_data(parameter)
@@ -155,6 +184,8 @@ def evaluate_sl3_fundamental_branch(
     parameter = q if q is not None else sp.Symbol("q", nonzero=True)
     braid_word, source_metadata = _coerce_braid_word(target)
     _validate_backend(backend)
+    if backend == "temperley_lieb":
+        raise ValueError("temperley_lieb backend supports sl2_fundamental only")
     if backend == "matrix_free":
         rmatrix = _builtin_rmatrix("sl3_fundamental", parameter)
         eyb = build_sl3_fundamental_eyb_data(parameter)
@@ -216,6 +247,8 @@ def evaluate_sl2_spin1_branch(
     parameter = q if q is not None else sp.Symbol("q", nonzero=True)
     braid_word, source_metadata = _coerce_braid_word(target)
     _validate_backend(backend)
+    if backend == "temperley_lieb":
+        raise ValueError("temperley_lieb backend supports sl2_fundamental only")
     rmatrix = _builtin_rmatrix("sl2_spin1", parameter)
     if backend == "matrix_free":
         mu = current_sl2_3d_candidate_mu(parameter)
@@ -312,6 +345,8 @@ def evaluate_current_branches(
         selected_branch_ids = {branch_id for branch_id, _evaluator in CURRENT_BRANCH_EVALUATORS}
     else:
         selected_branch_ids = set(branch_ids)
+    if backend == "temperley_lieb" and selected_branch_ids - {"sl2_fundamental"}:
+        raise ValueError("temperley_lieb backend supports sl2_fundamental only")
 
     return [
         evaluator(target, q=q, backend=backend)

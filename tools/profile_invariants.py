@@ -49,6 +49,9 @@ CASES = tuple(
 ) + (
     Case("sl3_fundamental_figure_eight_q2", "sl3_fundamental", 3, (1, -2, 1, -2), False),
     Case("sl2_spin1_figure_eight_q2", "sl2_spin1", 3, (1, -2, 1, -2), False),
+    Case("sl2_fundamental_eight_strand_cyclic_symbolic", "sl2_fundamental", 8, (1, 2, 3, 4, 5, 6, 7) * 2, True),
+    Case("sl2_fundamental_eight_strand_cyclic_q2", "sl2_fundamental", 8, (1, 2, 3, 4, 5, 6, 7) * 2, False),
+    Case("sl2_fundamental_eight_strand_long_local_q2", "sl2_fundamental", 8, (1,) * 40, False),
 )
 EVALUATORS = {
     "sl2_fundamental": evaluate_sl2_fundamental_branch,
@@ -102,11 +105,16 @@ def main() -> None:
     parser.add_argument("--case", default="all", choices=("all", *(case.name for case in CASES)))
     parser.add_argument("--profile", action="store_true", help="include top cumulative cProfile functions")
     parser.add_argument("--repeat", type=int, default=1, help="repeat within one process to show warm-cache behavior")
-    parser.add_argument("--backend", choices=("explicit", "matrix_free"), default="explicit")
+    parser.add_argument("--backend", choices=("explicit", "matrix_free", "temperley_lieb"), default="explicit")
     args = parser.parse_args()
     if args.repeat < 1:
         parser.error("--repeat must be at least 1")
     selected = CASES if args.case == "all" else tuple(case for case in CASES if case.name == args.case)
+    if args.backend == "temperley_lieb":
+        if args.case == "all":
+            selected = tuple(case for case in selected if case.branch == "sl2_fundamental")
+        elif selected[0].branch != "sl2_fundamental":
+            parser.error("temperley_lieb backend supports sl2_fundamental cases only")
     payload = {
         "python": platform.python_version(),
         "sympy": sp.__version__,

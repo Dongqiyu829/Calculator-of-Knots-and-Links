@@ -77,6 +77,45 @@ The implemented EYB formula is
   convention. Knot Atlas comparison substitutes `q -> q^2`.
 - Ordinary raw closure trace is diagnostic output and is not Markov normalized.
 
+### Derived sl2-fundamental Hecke / Temperley–Lieb calibration (issue #64)
+
+This is derived from the maintained local `check-R` and EYB data above, not
+adopted from a named textbook Jones convention. On the lexicographic basis
+`(v_1 v_1, v_1 v_2, v_2 v_1, v_2 v_2)`, source evaluation gives
+
+```text
+check-R = [[q,0,0,0], [0,0,1,0], [0,1,q-q^-1,0], [0,0,0,q]]
+E = q I - check-R
+  = [[0,0,0,0], [0,q,-1,0], [0,-1,q^-1,0], [0,0,0,0]].
+```
+
+Its established eigenvalues `(q,-q^-1)` imply the Hecke relation
+`(check-R-q I)(check-R+q^-1 I)=0`. Direct symbolic multiplication of this
+source matrix gives `E^2=delta E` with `delta=q+q^-1`, and on three tensor
+factors gives `E_1 E_2 E_1=E_1` and `E_2 E_1 E_2=E_2`. Thus the project-native
+positive generator is `g_i=q I-E_i` and its inverse is
+`g_i^-1=q^-1 I-E_i`; input factors remain left-to-right. No raw `R` is used.
+
+The source enhancement is `mu=diag(q^-1,q)`, `alpha=q^2`, `beta=1`.
+Directly, `Tr(mu)=delta` and
+`Tr(E (mu tensor mu))=delta`; consequently the two-strand positive and
+negative weighted closures are `q^2 delta` and `q^-2 delta` respectively.
+For a planar TL diagram, close each top endpoint to its corresponding bottom
+endpoint and assign `delta` per resulting loop. This trace has
+`tau_n(1)=delta^n`, `tau_{n+1}(X tensor I)=delta tau_n(X)`, and
+`tau_{n+1}((X tensor I) E_n)=tau_n(X)`. These are the closure rules calibrated
+by the actual one- and two-strand source values, then checked against the
+quantum-group reference on higher strands; they are not an independent
+normalization assumption.
+
+The resulting project Jones-compatible scalar is exactly
+`J(beta)=q^(-2 writhe(beta)) tau_n(TL(beta))/delta`, matching the current
+EYB expression divided by its one-strand unknot value. It sends the
+one-strand identity to 1. The closure rules give positive stabilization
+factor `q delta-1=q^2` and negative factor `q^-1 delta-1=q^-2` before the
+`q^-2w` correction, so both cancel under the existing Artin sign convention.
+The maintained Jones-variable presentation remains `t=q_project^-2`.
+
 ## Independent Knot Atlas calibration
 
 The offline external-oracle suite documented in `docs/EXTERNAL_VALIDATION.md`
