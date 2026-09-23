@@ -275,7 +275,7 @@ but explicitly omit ordinary raw trace and full-operator claims. Exact
 parity, archived/current fixture coverage, and benchmark measurements are
 recorded in `docs/PERFORMANCE.md`. No established convention changed.
 
-### M6 — sl2-fundamental Temperley–Lieb scalar evaluation
+### M8 — sl2-fundamental Temperley–Lieb scalar evaluation
 
 Issue #64 adds a separate, opt-in `temperley_lieb` backend for the formal
 sl2-fundamental Jones-compatible scalar. Its Hecke generator, planar loop
