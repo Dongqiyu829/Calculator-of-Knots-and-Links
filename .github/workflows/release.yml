@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Version tag to validate for a non-publishing dry run, e.g. v0.1.3"
+        description: "Version tag to validate for a non-publishing dry run, e.g. v0.1.4"
         required: true
         type: string
 
@@ -84,8 +84,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$env:RELEASE_TAG" `
-            "artifacts/Calculator-of-Knots-and-Links-Windows-x64-Setup.exe" `
-            "artifacts/Calculator-of-Knots-and-Links-Windows-x64-Portable.zip" `
-            "artifacts/SHA256SUMS.txt" `
-            --title "Calculator of Knots and Links $env:RELEASE_VERSION" --generate-notes
+          $notes = "docs/RELEASE_NOTES_$env:RELEASE_VERSION.md"
+          if (-not (Test-Path -LiteralPath $notes)) { throw "Missing maintained release notes: $notes" }
+          $assets = @(
+            "artifacts/Calculator-of-Knots-and-Links-Windows-x64-Setup.exe",
+            "artifacts/Calculator-of-Knots-and-Links-Windows-x64-Portable.zip",
+            "artifacts/SHA256SUMS.txt"
+          )
+          gh release view "$env:RELEASE_TAG" *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release edit "$env:RELEASE_TAG" --title "Calculator of Knots and Links $env:RELEASE_VERSION" --notes-file "$notes"
+            gh release upload "$env:RELEASE_TAG" @assets --clobber
+          } else {
+            gh release create "$env:RELEASE_TAG" @assets --title "Calculator of Knots and Links $env:RELEASE_VERSION" --notes-file "$notes"
+          }
