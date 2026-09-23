@@ -76,8 +76,11 @@ def test_side_panels_share_one_dock_area_and_project_load_returns_to_setup(tmp_p
     QApplication.processEvents()
     assert not window.example_browser_dock.isVisible()
     assert not window.explanation_panel_dock.isVisible()
-    assert window.example_browser_dock in window.tabifiedDockWidgets(window.explanation_panel_dock)
     window.example_browser_dock.show()
+    window.explanation_panel_dock.show()
+    QApplication.processEvents()
+    assert window.example_browser_dock in window.tabifiedDockWidgets(window.explanation_panel_dock)
+    window.example_browser_dock.raise_()
     QApplication.processEvents()
     assert window.example_browser_dock.isVisible()
     assert window.invariant_workflow.braid_preview.height() >= 380
