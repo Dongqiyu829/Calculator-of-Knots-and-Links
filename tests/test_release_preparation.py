@@ -1,4 +1,4 @@
-"""Release-candidate documentation and workflow contracts for v0.1.1."""
+"""Release-candidate documentation and workflow contracts for v0.1.2."""
 
 from __future__ import annotations
 
@@ -11,30 +11,29 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_release_candidate_version_and_notes_are_bilingual_and_conservative() -> None:
-    notes = (ROOT / "docs" / "RELEASE_NOTES_0.1.1.md").read_text(encoding="utf-8")
-    assert __version__ == "0.1.1"
+    notes = (ROOT / "docs" / "RELEASE_NOTES_0.1.2.md").read_text(encoding="utf-8")
+    assert __version__ == "0.1.2"
     assert "## English" in notes
     assert "## 中文" in notes
     for phrase in (
-        "redesigned Qt-native braid visualization",
-        "curated examples",
-        "deterministic `.knotcalc.json`",
-        "Mathematics / How it works",
-        "bilingual offline User Guide",
-        "sl2 fundamental remains the formal Jones-compatible branch",
-        "sl3 fundamental remains the formal P3/A2-style branch",
-        "sl2 spin-1 remains a candidate branch",
-        "operator-only",
+        "desktop usability hotfix release candidate",
+        "Braid setup / preview",
+        "Calculation / results",
+        "Manual braid input",
+        "tabified on the right and closed by default",
+        "No mathematical behavior changes",
     ):
         assert phrase in notes
-    assert "was published on 2026-09-23" in notes
+    assert "v0.1.1" not in notes
 
 
 def test_readme_and_distribution_describe_published_state_and_stable_assets() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     distribution = (ROOT / "docs" / "DISTRIBUTION.md").read_text(encoding="utf-8")
     assert "v0.1.1 is the latest published release" in readme
-    assert "`v0.1.1` tag and GitHub Release are published" in distribution
+    assert "source tree is prepared as the `0.1.2` release candidate" in readme
+    assert "`v0.1.1` tag and GitHub Release remain" in distribution
+    assert "maintained application version is `0.1.2`" in distribution
     for asset in (
         "Calculator-of-Knots-and-Links-Windows-x64-Setup.exe",
         "Calculator-of-Knots-and-Links-Windows-x64-Portable.zip",
@@ -45,7 +44,7 @@ def test_readme_and_distribution_describe_published_state_and_stable_assets() ->
 
 def test_manual_release_dispatch_is_non_publishing_and_uses_candidate_example() -> None:
     workflow = (ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
-    assert "non-publishing dry run, e.g. v0.1.1" in workflow
+    assert "non-publishing dry run, e.g. v0.1.2" in workflow
     assert "if: github.event_name == 'workflow_dispatch'" in workflow
     assert "if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')" in workflow
     assert "gh release create" in workflow

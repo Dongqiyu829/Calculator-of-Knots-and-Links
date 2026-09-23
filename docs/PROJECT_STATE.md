@@ -31,7 +31,7 @@ The archived P01 and P03 symbolic audit JSON outputs also reproduce exactly.
 
 ## Immediate objective
 
-M3 desktop functionality, M4 Windows distribution, and M5 productization are complete. **v0.1.1 is published as the current stable release.** It packages the post-v0.1.0 braid visualization, curated examples, project save/load, mathematical explanation UX, unified export routes, and bilingual offline user documentation without changing mathematical behavior.
+M3 desktop functionality, M4 Windows distribution, and M5 productization are complete. **v0.1.1 is published as the current stable release.** The maintained source version is now the pre-tag `0.1.2` release candidate for the post-v0.1.1 desktop usability hotfix, without changing mathematical behavior.
 
 ## Architecture direction
 
@@ -186,7 +186,7 @@ mathematical convention change is introduced.
 
 Issue #34 introduces the first maintained Windows distribution path. A checked-in PyInstaller `onedir` specification packages the PySide6 desktop application and SymPy runtime without requiring the user to install Python. A Windows GitHub Actions workflow runs the fast regression suite, builds the executable, smoke-tests the packaged application, creates a deterministic Windows ZIP, extracts it, and smoke-tests the extracted executable before upload.
 
-The first M4 step deliberately favors a reliable folder-style bundle over a fragile one-file executable. The maintained application version is sourced only from `src/version.py` as `0.1.1`; setuptools metadata, desktop `--version`, packaged `--version`, and Help/About use that source. The tag validator accepts only exact `vX.Y.Z` tags and requires equality with the maintained version. The shared Windows build script now runs fast tests, the existing onedir build, packaged and extracted portable smoke/version checks, Inno Setup 6 compilation, and expected-file/checksum verification. The tagged workflow publishes the stable installer, portable ZIP, and `SHA256SUMS.txt` only for a real tag push using `GITHUB_TOKEN`. Manual dispatch with `v0.1.1` is explicitly non-publishing and uploads the same three candidate assets for validation; clean-machine install/uninstall remains documented rather than forcing fragile silent UI automation.
+The first M4 step deliberately favors a reliable folder-style bundle over a fragile one-file executable. The maintained application version is sourced only from `src/version.py` as `0.1.2` (release-candidate source while `v0.1.1` remains the latest published stable tag); setuptools metadata, desktop `--version`, packaged `--version`, and Help/About use that source. The tag validator accepts only exact `vX.Y.Z` tags and requires equality with the maintained version. The shared Windows build script now runs fast tests, the existing onedir build, packaged and extracted portable smoke/version checks, Inno Setup 6 compilation, and expected-file/checksum verification. The tagged workflow publishes the stable installer, portable ZIP, and `SHA256SUMS.txt` only for a real tag push using `GITHUB_TOKEN`. Manual dispatch with `v0.1.2` is explicitly non-publishing and uploads the same three candidate assets for validation; clean-machine install/uninstall remains documented rather than forcing fragile silent UI automation.
 
 The `v0.1.1` tag and GitHub Release are published. The installer remains unsigned
 and installs per-user under `%LOCALAPPDATA%\Programs` without PATH changes or
@@ -232,4 +232,5 @@ explicit in the setup mode selector; the preview has a larger minimum area.
 Resizable splitters and scrollable branch selection keep the workflow usable
 at normal window size. Curated examples and Mathematics remain available from
 View as tabified side docks, closed by default. Existing services, project
-documents, exports, mathematical behavior, and application version are unchanged.
+documents, exports, and mathematical behavior are unchanged; release preparation
+bumps only the maintained application version to `0.1.2`.
