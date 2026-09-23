@@ -1,7 +1,6 @@
-# Calculator of Knots and Links v0.1.1 release candidate
+# Calculator of Knots and Links v0.1.1
 
-> This document describes the reviewed `v0.1.1` release candidate. Until the
-> tag is created, the latest published release remains `v0.1.0`.
+> `v0.1.1` was published on 2026-09-23 as the current stable Windows release.
 
 ## English
 
