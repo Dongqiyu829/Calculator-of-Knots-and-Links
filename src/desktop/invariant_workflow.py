@@ -49,10 +49,12 @@ from src.services import (
     format_application_branch_result,
     get_branch_explanation,
     list_catalog_examples,
+    list_computation_backends,
     list_evaluation_branches,
     parse_q_text,
     serialize_application_braid_result,
     validate_project_document,
+    validate_computation_backend,
 )
 
 from .braid_preview import BraidPreviewWidget
@@ -71,6 +73,7 @@ class _InvariantRequest:
     branch_ids: tuple[str, ...]
     q_parameter: Any
     q_text: str
+    backend: str
 
 
 class _InvariantWorker(QObject):
@@ -91,6 +94,7 @@ class _InvariantWorker(QObject):
                     self._request.example_label,
                     branch_ids=self._request.branch_ids,
                     q=self._request.q_parameter,
+                    backend=self._request.backend,
                 )
             else:
                 braid_word = build_custom_braid_word(
@@ -103,6 +107,7 @@ class _InvariantWorker(QObject):
                     braid_word,
                     branch_ids=self._request.branch_ids,
                     q=self._request.q_parameter,
+                    backend=self._request.backend,
                 )
         except ApplicationServiceError as exc:
             self.failed.emit(str(exc))
@@ -123,10 +128,12 @@ class InvariantCalculationWorkflow(QWidget):
         self.setObjectName("invariantCalculationWorkflow")
         self._examples = list_catalog_examples()
         self._branches = list_evaluation_branches()
+        self._backends = list_computation_backends()
         self._active_jobs: list[tuple[QThread, _InvariantWorker]] = []
         self._last_result: ApplicationBraidResult | None = None
         self._last_q_text = "2"
         self._last_q_parameter: Any = parse_q_text("2")
+        self._last_backend = "matrix_free"
         self._build_widget()
 
     @property
@@ -234,7 +241,7 @@ class InvariantCalculationWorkflow(QWidget):
             check.setToolTip(descriptor.user_note)
             branch_list_layout.addWidget(check)
             self._branch_checks.append((check, descriptor))
-            check.stateChanged.connect(lambda _state: self._emit_explanation())
+            check.stateChanged.connect(lambda _state: self._branch_selection_changed())
             check.clicked.connect(lambda _checked, branch=descriptor: self._show_branch_details(branch.branch_id))
         branch_list_layout.addStretch(1)
         branch_scroll.setWidget(branch_list)
@@ -260,6 +267,16 @@ class InvariantCalculationWorkflow(QWidget):
         self.q_input.setPlaceholderText("2, 3/2, q, or another SymPy-compatible expression")
         self.q_input.textChanged.connect(lambda _text: self._emit_explanation())
         execution_layout.addRow("q:", self.q_input)
+        self.backend_combo = QComboBox(execution_group)
+        self.backend_combo.setObjectName("invariantComputationBackend")
+        for descriptor in self._backends:
+            self.backend_combo.addItem(descriptor.display_name, descriptor.backend_id)
+        self.backend_combo.currentIndexChanged.connect(self._backend_changed)
+        execution_layout.addRow("Computation backend:", self.backend_combo)
+        self.backend_hint = QLabel(execution_group)
+        self.backend_hint.setObjectName("invariantBackendHint")
+        self.backend_hint.setWordWrap(True)
+        execution_layout.addRow(self.backend_hint)
         self.result_mode_combo = QComboBox(execution_group)
         self.result_mode_combo.setObjectName("invariantResultMode")
         self.result_mode_combo.addItem("Compact", "compact")
@@ -305,6 +322,10 @@ class InvariantCalculationWorkflow(QWidget):
         self.status_label.setObjectName("invariantCalculationStatus")
         self.status_label.setWordWrap(True)
         results_layout.addWidget(self.status_label)
+        self.result_backend_label = QLabel("No backend has been run yet.", results_panel)
+        self.result_backend_label.setObjectName("invariantResultBackend")
+        self.result_backend_label.setWordWrap(True)
+        results_layout.addWidget(self.result_backend_label)
 
         self.result_tabs = QTabWidget(results_panel)
         self.result_tabs.setObjectName("invariantResultTabs")
@@ -320,7 +341,31 @@ class InvariantCalculationWorkflow(QWidget):
         self.calculation_splitter.setSizes([300, 360])
         calculation_layout.addWidget(self.calculation_splitter, 1)
         self._update_catalog_preview()
+        self._refresh_backend_availability()
         self._emit_explanation()
+
+    def _branch_selection_changed(self) -> None:
+        self._refresh_backend_availability()
+        self._emit_explanation()
+
+    def _backend_changed(self) -> None:
+        backend_id = str(self.backend_combo.currentData())
+        descriptor = next(item for item in self._backends if item.backend_id == backend_id)
+        self.backend_hint.setText(descriptor.description)
+
+    def _refresh_backend_availability(self) -> None:
+        selected = self._selected_branch_ids()
+        tl_descriptor = next(item for item in self._backends if item.backend_id == "temperley_lieb")
+        tl_index = self.backend_combo.findData(tl_descriptor.backend_id)
+        eligible = tl_descriptor.supports_branches(selected)
+        self.backend_combo.model().item(tl_index).setEnabled(eligible)
+        if not eligible and self.backend_combo.currentData() == "temperley_lieb":
+            self.backend_combo.setCurrentIndex(self.backend_combo.findData("matrix_free"))
+            self.backend_hint.setText(
+                "Temperley–Lieb requires sl2 fundamental only. Switched to Fast scalar for the selected branches."
+            )
+        elif eligible or self.backend_combo.currentData() != "temperley_lieb":
+            self._backend_changed()
 
     def _show_branch_details(self, branch_id: str) -> None:
         explanation = get_branch_explanation(branch_id)
@@ -471,6 +516,7 @@ class InvariantCalculationWorkflow(QWidget):
             custom_notes=self.custom_notes_input.text(),
             q_text=self.q_input.text(),
             branch_ids=self._selected_branch_ids(),
+            computation_backend=str(self.backend_combo.currentData()),
             ui_state={"source_index": self.source_combo.currentIndex()},
         )
 
@@ -496,6 +542,9 @@ class InvariantCalculationWorkflow(QWidget):
         selected = set(data["branch_ids"])
         for check, descriptor in self._branch_checks:
             check.setChecked(descriptor.branch_id in selected)
+        backend = str(data.get("computation_backend", "matrix_free"))
+        self.backend_combo.setCurrentIndex(self.backend_combo.findData(backend))
+        self._refresh_backend_availability()
         self._update_braid_preview()
         self.page_tabs.setCurrentWidget(self.setup_page)
 
@@ -510,6 +559,8 @@ class InvariantCalculationWorkflow(QWidget):
             return
         try:
             parameter = parse_q_text(self.q_input.text())
+            backend = str(self.backend_combo.currentData())
+            validate_computation_backend(backend, branch_ids)
         except ApplicationServiceError as exc:
             self._set_error(str(exc))
             return
@@ -524,6 +575,7 @@ class InvariantCalculationWorkflow(QWidget):
             branch_ids=branch_ids,
             q_parameter=parameter,
             q_text=self.q_input.text(),
+            backend=backend,
         )
         self._start_worker(request)
 
@@ -548,13 +600,16 @@ class InvariantCalculationWorkflow(QWidget):
         if request is not None:
             self._last_q_text = request.q_text
             self._last_q_parameter = request.q_parameter
+            self._last_backend = request.backend
+        descriptor = next(item for item in self._backends if item.backend_id == self._last_backend)
+        self.result_backend_label.setText(f"Last result backend: {descriptor.display_name}. {descriptor.description}")
         self.resultChanged.emit(result)
         self._render_result(result)
         self.copy_selected_button.setEnabled(True)
         self.copy_all_button.setEnabled(True)
         self.copy_json_button.setEnabled(True)
         self.export_button.setEnabled(True)
-        self.status_label.setText("Calculation complete. Formal and candidate branch statuses are shown in the result tabs.")
+        self.status_label.setText(f"Calculation complete using {descriptor.display_name}. Formal and candidate statuses are shown in the result tabs.")
         self.page_tabs.setCurrentWidget(self.calculation_page)
 
     @Slot(str)
@@ -575,6 +630,7 @@ class InvariantCalculationWorkflow(QWidget):
             self.custom_label_input,
             self.custom_notes_input,
             self.q_input,
+            self.backend_combo,
             self.calculate_button,
         ):
             control.setEnabled(not busy)
@@ -603,7 +659,7 @@ class InvariantCalculationWorkflow(QWidget):
                 )
             )
         else:
-            summary.setPlainText(format_application_braid_result(result))
+            summary.setPlainText(self._detailed_backend_note() + "\n\n" + format_application_braid_result(result))
         self.result_tabs.addTab(summary, "All results")
         for branch in result.branch_results:
             card = QPlainTextEdit(self.result_tabs)
@@ -619,6 +675,7 @@ class InvariantCalculationWorkflow(QWidget):
         status_prefix = "CANDIDATE — " if branch.status == "candidate" else ""
         lines = [
             f"{status_prefix}{branch.display_name}",
+            self._detailed_backend_note(),
             f"Model id: {branch.model_id}",
             f"Branch id: {branch.branch_id}",
             f"Status: {branch.status}",
@@ -631,6 +688,16 @@ class InvariantCalculationWorkflow(QWidget):
         if branch.status == "candidate":
             lines.extend(get_branch_explanation(branch.branch_id).warnings)
         return "\n".join(lines)
+
+    def _detailed_backend_note(self) -> str:
+        descriptor = next(item for item in self._backends if item.backend_id == self._last_backend)
+        if descriptor.scalar_only:
+            return (
+                f"Computation backend: {descriptor.display_name}. Scalar output only: ordinary raw trace and "
+                "full global operator diagnostics were not computed. Choose Reference / diagnostics and "
+                "Calculate to recompute them."
+            )
+        return f"Computation backend: {descriptor.display_name}. Explicit global-matrix reference evaluation."
 
     def _result_view_mode(self) -> str:
         return str(self.result_mode_combo.currentData() or "compact")

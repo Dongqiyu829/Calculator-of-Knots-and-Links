@@ -289,3 +289,20 @@ The explicit backend remains the default/reference and matrix-free EYB remains
 a distinct option; neither sl3 nor spin-1 accepts the TL backend. Benchmark
 results and workload-dependent limitations are in `docs/PERFORMANCE.md`.
 No branch status, mathematical convention, version, or release changed.
+
+### M9 — Desktop access to verified scalar backends
+
+Issue #66 connects the three already-validated built-in backends to the
+maintained PySide6 invariant workflow. New desktop calculations choose
+`matrix_free` by default, with explicit user choices for the global-matrix
+reference/diagnostic path and the sl2-only Temperley–Lieb scalar path. The
+public `src.services` evaluation default remains `explicit` for existing
+callers. Backend selection is included in immutable worker requests for both
+catalog and manual braids; evaluation remains off the UI thread. Scalar-only
+results identify missing ordinary raw trace/full-operator diagnostics and
+offer reference recomputation rather than inventing data. TL eligibility is
+checked through the service facade and visibly reset when a new branch makes
+it incompatible. Invariant project files use an optional validated backend
+field within schema version 1; old files remain valid and load with the new
+desktop default without evaluating. Mathematical outputs, branch statuses,
+Custom R/check-R, and the published version remain unchanged.

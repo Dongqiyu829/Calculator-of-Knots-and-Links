@@ -18,6 +18,7 @@ from src.version import __version__
 from .braid_evaluation import build_catalog_braid_input, build_custom_braid_input, parse_q_text
 from .branch_catalog import validate_branch_ids
 from .custom_rmatrix import parse_custom_matrix, validate_custom_matrix
+from .computation_backends import validate_computation_backend
 from .errors import (
     ApplicationServiceError,
     ProjectFileError,
@@ -105,8 +106,13 @@ def _validate_invariant_input(data: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(branch_ids_raw, list) or any(not isinstance(item, str) for item in branch_ids_raw):
         raise ProjectValidationError("Project field 'input.branch_ids' must be a list of branch-id strings.")
     branch_ids = tuple(branch_ids_raw)
+    backend = data.get("computation_backend")
+    if backend is not None:
+        backend = _string(backend, "input.computation_backend", allow_empty=False)
     try:
         validate_branch_ids(branch_ids)
+        if backend is not None:
+            validate_computation_backend(backend, branch_ids)
         parse_q_text(q_text)
         if source_mode == "catalog":
             build_catalog_braid_input(example_label)
@@ -114,7 +120,7 @@ def _validate_invariant_input(data: dict[str, Any]) -> dict[str, Any]:
             build_custom_braid_input(num_strands, generator_text)
     except ApplicationServiceError as exc:
         raise ProjectValidationError(str(exc)) from exc
-    return {
+    validated = {
         "source_mode": source_mode,
         "example_label": example_label,
         "num_strands": num_strands,
@@ -124,6 +130,9 @@ def _validate_invariant_input(data: dict[str, Any]) -> dict[str, Any]:
         "q_text": q_text,
         "branch_ids": list(branch_ids),
     }
+    if backend is not None:
+        validated["computation_backend"] = backend
+    return validated
 
 
 def _validate_custom_rmatrix_input(data: dict[str, Any]) -> dict[str, Any]:
@@ -174,6 +183,7 @@ def build_invariant_project(
     custom_notes: str = "",
     q_text: str = "2",
     branch_ids: tuple[str, ...] | list[str] = (),
+    computation_backend: str | None = None,
     ui_state: dict[str, Any] | None = None,
 ) -> ApplicationProjectDocument:
     """Build and validate an invariant calculation setup without evaluating it."""
@@ -188,6 +198,7 @@ def build_invariant_project(
             "custom_notes": custom_notes,
             "q_text": q_text,
             "branch_ids": list(branch_ids),
+            **({"computation_backend": computation_backend} if computation_backend is not None else {}),
         }
     )
     return ApplicationProjectDocument(INVARIANT_WORKFLOW, input_data, dict(ui_state or {}))

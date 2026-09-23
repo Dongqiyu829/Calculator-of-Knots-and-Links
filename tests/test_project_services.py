@@ -48,6 +48,35 @@ def test_invariant_project_round_trip_is_deterministic_and_preserves_text() -> N
     assert payload["workflow"] == "invariant"
     assert payload["input"]["generator_text"] == "1, -2, 1"
     assert payload["input"]["q_text"] == "q"
+    assert "computation_backend" not in payload["input"]  # Older schema-1 documents remain unchanged.
+
+
+def test_optional_invariant_backend_round_trip_and_legacy_compatibility() -> None:
+    document = build_invariant_project(
+        source_mode="catalog",
+        example_label="trefoil",
+        branch_ids=["sl2_fundamental"],
+        computation_backend="temperley_lieb",
+    )
+    restored = parse_project(serialize_project(document))
+    assert restored.schema_version == 1
+    assert restored.input_data["computation_backend"] == "temperley_lieb"
+    assert serialize_project(restored) == serialize_project(document)
+    legacy = document.to_dict()
+    del legacy["input"]["computation_backend"]
+    old_document = parse_project(json.dumps(legacy))
+    assert "computation_backend" not in old_document.input_data
+
+
+@pytest.mark.parametrize("backend", ("unknown", "temperley_lieb"))
+def test_invariant_project_rejects_invalid_or_incompatible_backend(backend) -> None:
+    with pytest.raises(ProjectValidationError, match="backend|sl2_fundamental"):
+        build_invariant_project(
+            source_mode="catalog",
+            example_label="trefoil",
+            branch_ids=["sl3_fundamental"],
+            computation_backend=backend,
+        )
 
 
 def test_custom_rmatrix_project_round_trip_preserves_raw_vs_check_r_and_symbolic_text() -> None:

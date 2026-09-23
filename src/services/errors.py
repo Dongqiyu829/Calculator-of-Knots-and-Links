@@ -35,6 +35,10 @@ class UnknownEvaluationModelError(ApplicationServiceError):
     """Raised when a caller requests an unsupported frontend-facing model id."""
 
 
+class UnsupportedComputationBackendError(ApplicationServiceError):
+    """Raised for an unknown backend or an incompatible selected branch set."""
+
+
 class CustomMatrixInputError(ApplicationServiceError):
     """Raised when custom R/check-R input cannot form a validated local model."""
 
