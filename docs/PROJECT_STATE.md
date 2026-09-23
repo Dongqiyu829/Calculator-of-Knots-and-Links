@@ -306,3 +306,8 @@ it incompatible. Invariant project files use an optional validated backend
 field within schema version 1; old files remain valid and load with the new
 desktop default without evaluating. Mathematical outputs, branch statuses,
 Custom R/check-R, and the published version remain unchanged.
+
+
+### M9 — Custom R/check-R desktop layout parity
+
+Issue #70 brings the maintained Custom R/check-R operator workflow in line with the invariant workflow's desktop structure. Matrix and braid setup now live on a scrollable setup/preview page with a large resizable braid diagram, while validation controls and operator diagnostics live on a separate results page with a vertical splitter. Existing widget/service semantics, project save/load behavior, operator-only mathematical boundary, and custom matrix serialization remain unchanged. The worker lifecycle also uses bound Qt signal/slot cleanup rather than Python lambda lifecycle callbacks.

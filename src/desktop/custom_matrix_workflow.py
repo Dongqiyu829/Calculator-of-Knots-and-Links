@@ -9,20 +9,25 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from PySide6.QtCore import QObject, QThread, Signal, Slot
+from PySide6.QtCore import QObject, QThread, Qt, Signal, Slot
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QFileDialog,
     QFormLayout,
+    QFrame,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QPlainTextEdit,
     QPushButton,
+    QScrollArea,
+    QSizePolicy,
     QSpinBox,
+    QSplitter,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -65,6 +70,7 @@ class _ServiceWorker(QObject):
 
     succeeded = Signal(str, object)
     failed = Signal(str, str)
+    finished = Signal()
 
     def __init__(self, operation: str, request: _CustomMatrixRequest) -> None:
         super().__init__()
@@ -105,6 +111,8 @@ class _ServiceWorker(QObject):
             self.failed.emit(self._operation, f"Unexpected service failure: {exc}")
         else:
             self.succeeded.emit(self._operation, result)
+        finally:
+            self.finished.emit()
 
 
 class CustomMatrixWorkflow(QWidget):
@@ -123,12 +131,22 @@ class CustomMatrixWorkflow(QWidget):
 
     def _build_widget(self) -> None:
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(12)
+        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setSpacing(6)
 
-        boundary = QLabel(
-            "",
-        )
+        self.page_tabs = QTabWidget(self)
+        self.page_tabs.setObjectName("customMatrixPageTabs")
+        self.setup_page = QWidget(self.page_tabs)
+        self.results_page = QWidget(self.page_tabs)
+        self.page_tabs.addTab(self.setup_page, "Matrix & braid setup / preview")
+        self.page_tabs.addTab(self.results_page, "Validation / operator results")
+        layout.addWidget(self.page_tabs, 1)
+
+        setup_layout = QVBoxLayout(self.setup_page)
+        setup_layout.setContentsMargins(4, 8, 4, 4)
+        setup_layout.setSpacing(8)
+
+        boundary = QLabel(self.setup_page)
         boundary.setObjectName("customMatrixBoundaryNotice")
         boundary.setWordWrap(True)
         boundary.setStyleSheet("padding: 8px; background: #fff4d6; color: #5b4300;")
@@ -136,14 +154,28 @@ class CustomMatrixWorkflow(QWidget):
             f"{build_custom_rmatrix_explanation(None).summary}\n"
             f"{build_custom_rmatrix_explanation(None).normalization}"
         )
-        layout.addWidget(boundary)
+        setup_layout.addWidget(boundary)
 
-        input_group = QGroupBox("Custom local matrix", self)
+        self.setup_splitter = QSplitter(Qt.Orientation.Horizontal, self.setup_page)
+        self.setup_splitter.setObjectName("customMatrixSetupSplitter")
+        self.setup_splitter.setChildrenCollapsible(False)
+
+        input_scroll = QScrollArea(self.setup_splitter)
+        input_scroll.setObjectName("customMatrixInputScroll")
+        input_scroll.setWidgetResizable(True)
+        input_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        input_scroll.setMinimumWidth(300)
+        input_panel = QWidget(input_scroll)
+        input_panel_layout = QVBoxLayout(input_panel)
+        input_panel_layout.setContentsMargins(0, 0, 6, 0)
+        input_panel_layout.setSpacing(8)
+
+        input_group = QGroupBox("Custom local matrix", input_panel)
         input_layout = QFormLayout(input_group)
         self.matrix_input = QPlainTextEdit(input_group)
         self.matrix_input.setObjectName("customMatrixInput")
         self.matrix_input.setPlaceholderText("Example: [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]")
-        self.matrix_input.setMinimumHeight(120)
+        self.matrix_input.setMinimumHeight(180)
         self.matrix_input.textChanged.connect(lambda: self._emit_explanation())
         input_layout.addRow("Matrix text:", self.matrix_input)
 
@@ -178,9 +210,9 @@ class CustomMatrixWorkflow(QWidget):
         input_layout.addRow("", self.ybe_check)
         self.braid_relation_check.stateChanged.connect(lambda _state: self._emit_explanation())
         self.ybe_check.stateChanged.connect(lambda _state: self._emit_explanation())
-        layout.addWidget(input_group)
+        input_panel_layout.addWidget(input_group)
 
-        braid_group = QGroupBox("Braid operator", self)
+        braid_group = QGroupBox("Braid operator setup", input_panel)
         braid_layout = QFormLayout(braid_group)
         self.strand_count_spin = QSpinBox(braid_group)
         self.strand_count_spin.setObjectName("customBraidStrandCount")
@@ -188,6 +220,7 @@ class CustomMatrixWorkflow(QWidget):
         self.strand_count_spin.setValue(2)
         self.strand_count_spin.valueChanged.connect(self._update_growth_warning)
         braid_layout.addRow("Strands:", self.strand_count_spin)
+
         self.generator_input = QLineEdit(braid_group)
         self.generator_input.setObjectName("customBraidGenerators")
         self.generator_input.setPlaceholderText("Signed generators, e.g. 1 -2 1")
@@ -197,20 +230,42 @@ class CustomMatrixWorkflow(QWidget):
         self.strand_count_spin.valueChanged.connect(lambda _value: self._emit_explanation())
         self.generator_input.textChanged.connect(lambda _text: self._emit_explanation())
         braid_layout.addRow("Generators:", self.generator_input)
+
         self.growth_warning = QLabel(braid_group)
         self.growth_warning.setObjectName("customDimensionWarning")
         self.growth_warning.setWordWrap(True)
         braid_layout.addRow("Growth:", self.growth_warning)
-        layout.addWidget(braid_group)
+        input_panel_layout.addWidget(braid_group)
+        input_panel_layout.addStretch(1)
 
-        preview_group = QGroupBox("Braid diagram", self)
+        input_scroll.setWidget(input_panel)
+        self.setup_splitter.addWidget(input_scroll)
+
+        preview_group = QGroupBox("Braid diagram — wheel to zoom, drag to pan", self.setup_splitter)
         preview_layout = QVBoxLayout(preview_group)
         self.braid_preview = BraidPreviewWidget(preview_group)
-        self.braid_preview.setMinimumHeight(285)
+        self.braid_preview.setMinimumHeight(380)
+        self.braid_preview.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         preview_layout.addWidget(self.braid_preview)
-        layout.addWidget(preview_group)
+        self.setup_splitter.addWidget(preview_group)
+        self.setup_splitter.setStretchFactor(0, 0)
+        self.setup_splitter.setStretchFactor(1, 1)
+        self.setup_splitter.setSizes([390, 720])
+        setup_layout.addWidget(self.setup_splitter, 1)
 
-        buttons = QWidget(self)
+        results_layout = QVBoxLayout(self.results_page)
+        results_layout.setContentsMargins(4, 8, 4, 4)
+        results_layout.setSpacing(8)
+
+        results_intro = QLabel(
+            "Validate the local matrix or compute the braid operator. "
+            "The matrix and braid setup come from the setup / preview page.",
+            self.results_page,
+        )
+        results_intro.setWordWrap(True)
+        results_layout.addWidget(results_intro)
+
+        buttons = QWidget(self.results_page)
         buttons_layout = QHBoxLayout(buttons)
         buttons_layout.setContentsMargins(0, 0, 0, 0)
         self.validate_button = QPushButton("Validate matrix", buttons)
@@ -232,25 +287,40 @@ class CustomMatrixWorkflow(QWidget):
         buttons_layout.addStretch(1)
         buttons_layout.addWidget(self.copy_button)
         buttons_layout.addWidget(self.export_button)
-        layout.addWidget(buttons)
+        results_layout.addWidget(buttons)
 
-        self.status_label = QLabel("Choose R or check-R explicitly before validating.", self)
+        self.status_label = QLabel("Choose R or check-R explicitly before validating.", self.results_page)
         self.status_label.setObjectName("customMatrixStatus")
         self.status_label.setWordWrap(True)
-        layout.addWidget(self.status_label)
+        results_layout.addWidget(self.status_label)
 
-        self.validation_output = QPlainTextEdit(self)
+        self.results_splitter = QSplitter(Qt.Orientation.Vertical, self.results_page)
+        self.results_splitter.setObjectName("customMatrixResultsSplitter")
+        self.results_splitter.setChildrenCollapsible(False)
+
+        validation_group = QGroupBox("Matrix validation", self.results_splitter)
+        validation_layout = QVBoxLayout(validation_group)
+        self.validation_output = QPlainTextEdit(validation_group)
         self.validation_output.setObjectName("customValidationOutput")
         self.validation_output.setReadOnly(True)
         self.validation_output.setPlaceholderText("Structured validation status will appear here.")
         self.validation_output.setMaximumBlockCount(1000)
-        layout.addWidget(self.validation_output)
+        validation_layout.addWidget(self.validation_output)
+        self.results_splitter.addWidget(validation_group)
 
-        self.result_output = QPlainTextEdit(self)
+        operator_group = QGroupBox("Braid operator result", self.results_splitter)
+        operator_layout = QVBoxLayout(operator_group)
+        self.result_output = QPlainTextEdit(operator_group)
         self.result_output.setObjectName("customOperatorOutput")
         self.result_output.setReadOnly(True)
         self.result_output.setPlaceholderText("Operator dimensions, matrix, diagnostics, and warnings will appear here.")
-        layout.addWidget(self.result_output, 1)
+        operator_layout.addWidget(self.result_output)
+        self.results_splitter.addWidget(operator_group)
+        self.results_splitter.setStretchFactor(0, 0)
+        self.results_splitter.setStretchFactor(1, 1)
+        self.results_splitter.setSizes([240, 420])
+        results_layout.addWidget(self.results_splitter, 1)
+
         self._input_kind_changed()
         self._update_growth_warning()
         self._update_braid_preview()
@@ -311,10 +381,9 @@ class CustomMatrixWorkflow(QWidget):
         thread.started.connect(worker.run)
         worker.succeeded.connect(self._service_succeeded)
         worker.failed.connect(self._service_failed)
-        worker.succeeded.connect(lambda *_args, active_thread=thread: active_thread.quit())
-        worker.failed.connect(lambda *_args, active_thread=thread: active_thread.quit())
-        thread.finished.connect(worker.deleteLater)
-        thread.finished.connect(lambda active_thread=thread, active_worker=worker: self._job_finished(active_thread, active_worker))
+        worker.finished.connect(thread.quit)
+        worker.finished.connect(worker.deleteLater)
+        thread.finished.connect(self._job_finished)
         self._active_jobs.append((thread, worker))
         thread.start()
 
@@ -327,6 +396,7 @@ class CustomMatrixWorkflow(QWidget):
             self._update_growth_warning()
             self.status_label.setText(self._validation_completion_message(result))
             self._emit_explanation()
+            self.page_tabs.setCurrentWidget(self.results_page)
         else:
             assert isinstance(result, ApplicationCustomBraidOperatorResult)
             self._last_result = result
@@ -337,26 +407,42 @@ class CustomMatrixWorkflow(QWidget):
             self.export_button.setEnabled(True)
             self.status_label.setText("Braid operator computed. This result is not a knot/link invariant recipe.")
             self._update_growth_warning()
+            self.page_tabs.setCurrentWidget(self.results_page)
 
     @Slot(str, str)
     def _service_failed(self, operation: str, message: str) -> None:
         self._set_error(f"{operation.capitalize()} failed: {message}")
 
-    def _job_finished(self, thread: QThread, worker: _ServiceWorker) -> None:
-        self._active_jobs = [job for job in self._active_jobs if job != (thread, worker)]
-        self._set_busy(False)
+    @Slot()
+    def _job_finished(self) -> None:
+        thread = self.sender()
+        if not isinstance(thread, QThread):
+            return
+        self._active_jobs = [job for job in self._active_jobs if job[0] is not thread]
+        self._set_busy(bool(self._active_jobs))
         thread.deleteLater()
 
     def _set_busy(self, busy: bool, message: str | None = None) -> None:
-        self.validate_button.setEnabled(not busy)
-        self.evaluate_button.setEnabled(not busy)
-        self.load_matrix_button.setEnabled(not busy)
+        for control in (
+            self.matrix_input,
+            self.input_kind_combo,
+            self.local_dimension_spin,
+            self.braid_relation_check,
+            self.strand_count_spin,
+            self.generator_input,
+            self.validate_button,
+            self.evaluate_button,
+            self.load_matrix_button,
+        ):
+            control.setEnabled(not busy)
+        self.ybe_check.setEnabled((not busy) and self._selected_input_kind() == "R")
         if message is not None:
             self.status_label.setText(message)
 
     def _set_error(self, message: str) -> None:
         self.status_label.setText(message)
         self.validation_output.setPlainText(message)
+        self.page_tabs.setCurrentWidget(self.results_page)
 
     def _update_negative_generator_warning(self) -> None:
         try:
@@ -418,6 +504,7 @@ class CustomMatrixWorkflow(QWidget):
         self.strand_count_spin.setValue(int(data["num_strands"]))
         self.generator_input.setText(str(data["generator_text"]))
         self._update_braid_preview()
+        self.page_tabs.setCurrentWidget(self.setup_page)
 
     def load_curated_example(self, example: object) -> None:
         self.apply_project_document(example.build_project())

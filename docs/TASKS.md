@@ -112,3 +112,8 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 - [x] Expose TL only for sl2-fundamental selections, pass backend through immutable worker requests for catalog/manual input, and label scalar-only diagnostics truthfully.
 - [x] Preserve optional backend choice in compatible schema-1 invariant project files; validate legacy and incompatible files without automatic evaluation.
 - [x] Test desktop/headless routes, backend parity, worker threading, exact output preservation, and Windows packaging; document the choices and workload-dependent performance.
+
+
+## M9 — Custom R/check-R desktop layout parity
+
+- [x] Split the maintained Custom R/check-R workflow into resizable setup/preview and validation/operator-results pages, preserving operator-only mathematics and project/service behavior.

@@ -22,6 +22,7 @@ _qt_import = subprocess.run(
 if _qt_import.returncode != 0:
     pytest.skip("PySide6 Qt runtime is unavailable", allow_module_level=True)
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication
 
 from src.desktop import CustomMatrixWorkflow, DesktopMainWindow
@@ -63,6 +64,34 @@ def test_main_window_switches_to_the_dedicated_custom_matrix_mode() -> None:
     window.close()
 
 
+def test_custom_workflow_uses_two_page_resizable_layout() -> None:
+    widget = _configured_widget()
+
+    assert widget.page_tabs.count() == 2
+    assert widget.page_tabs.tabText(0) == "Matrix & braid setup / preview"
+    assert widget.page_tabs.tabText(1) == "Validation / operator results"
+    assert widget.page_tabs.currentWidget() is widget.setup_page
+    assert widget.setup_splitter.orientation() == Qt.Orientation.Horizontal
+    assert widget.results_splitter.orientation() == Qt.Orientation.Vertical
+    assert widget.braid_preview.minimumHeight() >= 380
+    widget.close()
+
+
+def test_project_load_returns_to_setup_page_without_evaluation() -> None:
+    widget = _configured_widget()
+    document = widget.current_project_document()
+    widget.page_tabs.setCurrentWidget(widget.results_page)
+
+    with patch("src.desktop.custom_matrix_workflow.evaluate_custom_braid_operator") as evaluate:
+        widget.apply_project_document(document)
+
+    evaluate.assert_not_called()
+    assert widget.page_tabs.currentWidget() is widget.setup_page
+    assert widget.matrix_input.toPlainText() == IDENTITY_4
+    assert widget.generator_input.text() == "1 -1"
+    widget.close()
+
+
 def test_input_kind_must_be_selected_explicitly_and_ybe_is_raw_r_only() -> None:
     widget = _configured_widget()
     widget.input_kind_combo.setCurrentIndex(0)
@@ -85,6 +114,7 @@ def test_valid_4x4_validation_and_result_rendering() -> None:
     validation = validate_custom_matrix(IDENTITY_4, input_kind="check-R", check_braid_relation=True)
     widget._service_succeeded("validate", validation)
 
+    assert widget.page_tabs.currentWidget() is widget.results_page
     assert "Matrix input is structurally valid: True" in widget.validation_output.toPlainText()
     assert "check-R braid relation: verified" in widget.validation_output.toPlainText()
     assert "Braid-representation status: verified" in widget.validation_output.toPlainText()
@@ -92,8 +122,10 @@ def test_valid_4x4_validation_and_result_rendering() -> None:
 
     model = build_custom_rmatrix_model(IDENTITY_4, input_kind="check-R")
     result = evaluate_custom_braid_operator(model, build_custom_braid_word(2, "1 -1"))
+    widget.page_tabs.setCurrentWidget(widget.setup_page)
     widget._service_succeeded("evaluate", result)
 
+    assert widget.page_tabs.currentWidget() is widget.results_page
     rendered = widget.result_output.toPlainText()
     assert "Operator dimensions: (4, 4)" in rendered
     assert "no trace, Markov normalization" in rendered
