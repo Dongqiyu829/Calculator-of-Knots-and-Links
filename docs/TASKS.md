@@ -90,3 +90,8 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 - [x] Add Compact and Detailed maintained result views, defaulting to Compact without changing deterministic JSON export content.
 - [x] Add exact symbolic relabeling for sl2 standard Jones-variable `t` form and maintained Atlas-comparable variable forms only when the conversion is an unambiguous Laurent rewrite.
 - [x] Keep numeric `q` results scalar-only in Compact mode and keep the sl2 spin-1 branch explicitly candidate-only without claiming a final standard colored-Jones identification.
+
+## M6 — v0.1.3 release
+
+- [x] Prepare single-source `0.1.3` version metadata, bilingual notes, and accurate pre-tag distribution documentation for merged #54/#55 work.
+- [ ] Validate the non-publishing Windows release candidate, merge the reviewed PR, then publish and verify `v0.1.3` through the existing tag-driven workflow.

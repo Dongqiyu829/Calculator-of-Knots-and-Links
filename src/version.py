@@ -8,7 +8,7 @@ import sys
 from dataclasses import dataclass
 
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 _RELEASE_TAG_PATTERN = re.compile(r"^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 
