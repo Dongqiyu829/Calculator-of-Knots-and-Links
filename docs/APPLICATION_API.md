@@ -30,10 +30,15 @@ convention and other SymPy expressions, and reports invalid text as a typed
 service error rather than coercing it to floating point.
 
 Built-in result-returning evaluation accepts `backend="explicit"` (the
-unchanged default/reference) or `backend="matrix_free"` for scalar-only EYB
-evaluation. The latter preserves primary output and formal/candidate status,
-but returns no ordinary raw trace or full operator. The custom R/check-R
-operator API is unaffected. See `docs/PERFORMANCE.md` for parity and timing.
+unchanged default/reference), `backend="matrix_free"` for scalar-only EYB
+evaluation on all three built-in branches, or opt-in
+`backend="temperley_lieb"` for the sl2-fundamental Jones-compatible scalar
+only. The scalar-only backends preserve primary output and branch status but
+return no ordinary raw trace or full operator. Selecting Temperley–Lieb with
+sl3 or spin-1 explicitly raises `ValueError`; it does not silently route those
+branches. The custom R/check-R operator API is unaffected. See
+`docs/MATH_CONVENTIONS.md` for the source-derived normalization and
+`docs/PERFORMANCE.md` for parity and timing.
 
 The stable contract also includes a renderer-neutral braid-preview surface: `BraidPreviewGeometry`, `build_braid_preview_geometry`, and `render_braid_preview_svg`. Maintained desktop code consumes these through the `src.services` facade; the geometry preserves project-native Artin signs, generator order, writhe, strand identities, final permutation, and explicit over/under crossing semantics without changing evaluation behavior. Physical strands are exposed as continuous paths, while every intentional under-crossing gap is localized to a `BraidPreviewCrossing` mask/overpass description shared by both the SVG export and the Qt preview.
 

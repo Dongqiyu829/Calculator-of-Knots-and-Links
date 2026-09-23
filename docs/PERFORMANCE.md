@@ -13,6 +13,7 @@ python -m tools.profile_invariants --case all
 python -m tools.profile_invariants --case sl2_spin1_trefoil_symbolic --profile
 python -m tools.profile_invariants --case all --repeat 2
 python -m tools.profile_invariants --case all --repeat 2 --backend matrix_free
+python -m tools.profile_invariants --case all --repeat 2 --backend temperley_lieb
 ```
 
 `--case NAME` starts a fresh process for a cold comparison. `--profile` adds
@@ -161,18 +162,52 @@ The sl3 q=2 figure-eight cold sample regressed slightly (0.034 versus
 not in the ordered all-case run. No automatic default switch or performance
 claim for all inputs is made.
 
-## Later backend designs (not implemented here)
+## Issue #64: opt-in Hecke / Temperley–Lieb Jones backend
 
-### Hecke / Temperley–Lieb Jones backend
+For **sl2 fundamental only**, `backend="temperley_lieb"` evaluates an exact
+scalar in a sparse planar-pairing basis. The source-derived local relation is
+`E_i=q I-check-R_i`, with `E_i^2=(q+q^-1)E_i`; the positive and inverse Artin
+generators are `q I-E_i` and `q^-1 I-E_i`. Diagrams multiply in input order.
+Each closed planar loop contributes `delta=q+q^-1`, and the final reduced
+scalar is `q^(-2 writhe) * planar_closure / delta`. The explicit matrix
+derivation and weighted-trace/Markov checks are in `docs/MATH_CONVENTIONS.md`.
+This is not a textbook-normalization assumption. The standard presentation
+still uses `t=q_project^-2`.
 
-For **sl2 fundamental only**, a later backend may map the current check-R
-eigenvalue convention `(q, -q^-1)` to a Hecke generator and then to the
-Temperley–Lieb quotient. Implement a basis of planar pairings with exact
-Laurent coefficients and a Markov trace calibrated to this project's current
-one-strand normalization and Artin sign/order; do not import a textbook
-normalization by name alone. Cross-validate against the quantum-group backend
-on every representative fixture, the complete offline Knot Atlas Jones set,
-two- versus three-strand trefoil presentations, q=2/3/5, symbolic q, inverse
-words, and the 5-strand control. Keep the quantum-group backend as the
-transparent reference. This is a separate, reviewable milestone rather than
-a hidden switch in issue #55.
+The implementation never constructs a tensor-space braid operator. It reports
+the planar closure and sparse basis-term count in metadata, but no ordinary
+raw operator trace. `src.services` exposes the same opt-in backend selector
+for sl2-fundamental evaluations; selecting it for sl3 or spin-1 fails
+explicitly. The explicit matrix backend remains default/reference, and the
+matrix-free EYB contraction remains an independent scalar backend.
+
+Exact tests compare source-level Hecke/TL relations and weighted traces,
+unknot/unlink, both trefoil presentations, figure-eight, positive/inverse and
+mixed-sign words, symbolic q and q=2/3/5, representative fixtures, both sides
+of archived P03 at q=2/3/5 and its symbolic difference, the complete offline Knot Atlas Jones set,
+positive/negative stabilization, and four- through eight-strand controls.
+Service tests also check exact output strings, unchanged formal status,
+standard-Jones presentation parity, and explicit rejection of unsupported
+branches. No test changes an oracle or reference output to fit the new path.
+
+Measurements below were recorded on 2026-09-23, Windows 11, Python 3.12.4,
+SymPy 1.12. Each backend/case cell was run with a separate fresh
+`--case NAME --repeat 2` process; figures are first/warm wall seconds, not
+CI thresholds. All three backends returned the **same exact primary-output
+string** per row:
+
+| sl2-fundamental case | q | explicit (s) | matrix-free (s) | TL (s) |
+| --- | --- | ---: | ---: | ---: |
+| trefoil `[1,1,1]` | symbolic | 0.193 / 0.054 | 0.146 / 0.017 | 0.139 / 0.019 |
+| figure-eight `[1,-2,1,-2]` | symbolic | 0.249 / 0.090 | 0.167 / 0.024 | 0.147 / 0.021 |
+| eight-strand cyclic `[1,…,7]` twice | symbolic | 2.218 / 2.067 | 0.241 / 0.109 | 0.417 / 0.254 |
+| eight-strand cyclic `[1,…,7]` twice | 2 | 1.834 / 1.808 | 0.048 / 0.021 | 0.086 / 0.059 |
+| eight-strand local `[1]` forty times | 2 | 1.578 / 1.506 | 0.068 / 0.040 | 0.028 / 0.002 |
+
+TL is especially effective when a long word retains few planar basis terms,
+as in the repeated single-generator row. The cyclic eight-strand word creates
+many pairings, so matrix-free EYB is faster there. Planar basis growth is
+potentially Catalan in strand count; no universal speedup or automatic
+routing is claimed. A symbolic 40-crossing eight-strand explicit-reference
+trial was stopped because it was not a practical comparison; the long-word
+benchmark instead uses exact rational q=2 output.

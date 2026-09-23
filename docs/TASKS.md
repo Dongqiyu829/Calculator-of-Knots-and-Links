@@ -99,3 +99,9 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 ## M6 — Matrix-free EYB scalar backend
 
 - [x] Profile the v0.1.3 baseline and add an opt-in exact local-contraction backend for all three built-in branches, with explicit-matrix parity and benchmark evidence. Keep explicit evaluation as the default/reference and Custom R/check-R full-operator path unchanged.
+
+## M8 — sl2-fundamental Hecke / Temperley–Lieb Jones backend
+
+- [x] Derive the Hecke eigenvalue, planar loop weight, signed generator rule, closure trace, and reduced normalization from the maintained check-R/EYB source; preserve the standard Jones variable map.
+- [x] Add an opt-in exact planar-pairing scalar backend only for sl2 fundamental. Keep explicit-matrix evaluation as default/reference and matrix-free EYB as a separate backend; reject unsupported branches.
+- [x] Verify exact representative, archived benchmark, offline Knot Atlas, Markov, mixed-sign, and higher-strand parity; record cold/warm benchmarks and workload-dependent limitations.

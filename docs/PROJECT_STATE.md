@@ -274,3 +274,18 @@ Matrix-free service results expose the same primary formal/candidate scalar
 but explicitly omit ordinary raw trace and full-operator claims. Exact
 parity, archived/current fixture coverage, and benchmark measurements are
 recorded in `docs/PERFORMANCE.md`. No established convention changed.
+
+### M8 — sl2-fundamental Temperley–Lieb scalar evaluation
+
+Issue #64 adds a separate, opt-in `temperley_lieb` backend for the formal
+sl2-fundamental Jones-compatible scalar. Its Hecke generator, planar loop
+weight, closure trace, and writhe/unknot normalization are derived from the
+maintained check-R and EYB data in `docs/MATH_CONVENTIONS.md`, not assumed
+from an external Jones convention. Exact parity checks include representative
+and archived fixtures, the complete offline Knot Atlas Jones set, positive
+and negative Markov stabilization, and higher-strand words. This backend
+does not create a global tensor-space operator or claim an ordinary raw trace.
+The explicit backend remains the default/reference and matrix-free EYB remains
+a distinct option; neither sl3 nor spin-1 accepts the TL backend. Benchmark
+results and workload-dependent limitations are in `docs/PERFORMANCE.md`.
+No branch status, mathematical convention, version, or release changed.
