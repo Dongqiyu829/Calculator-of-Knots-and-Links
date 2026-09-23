@@ -41,6 +41,7 @@ def test_release_workflow_keeps_dry_run_non_publishing_and_publishes_three_asset
     assert "packaging\\windows\\build.ps1" in workflow
     assert "if: github.event_name == 'workflow_dispatch'" in workflow
     assert "if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')" in workflow
+    assert "non-publishing dry run, e.g. v0.1.1" in workflow
     for asset in ASSET_NAMES:
         assert asset in workflow
 
@@ -63,8 +64,18 @@ def test_build_script_covers_packaged_smokes_and_artifact_checks() -> None:
     script = (ROOT / "packaging" / "windows" / "build.ps1").read_text(encoding="utf-8")
     assert "--smoke-test" in script
     assert "--version" in script
+    assert "$PackagedVersion -ne $Version" in script
+    assert "$PortableVersion -ne $Version" in script
     assert "Expand-Archive" in script
     assert "Get-FileHash" in script
     assert "Missing expected installer artifact" in script
     for asset in ASSET_NAMES:
         assert asset in script
+
+
+def test_installer_version_is_injected_not_hard_coded() -> None:
+    script = (ROOT / "packaging" / "windows" / "installer.iss").read_text(encoding="utf-8")
+    build = (ROOT / "packaging" / "windows" / "build.ps1").read_text(encoding="utf-8")
+    assert '#define MyAppVersion "0.1.1"' not in script
+    assert "AppVersion={#MyAppVersion}" in script
+    assert "/DMyAppVersion=$Version" in build

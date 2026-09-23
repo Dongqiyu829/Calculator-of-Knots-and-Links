@@ -5,9 +5,10 @@ Setup 6 installer. PySide6 and SymPy have a large runtime footprint, so the
 folder-style bundle remains the packaged source for both the installer and the
 portable ZIP; no fragile `onefile` build is introduced.
 
-The maintained application version is `0.1.0`. This PR adds and validates the
-installer/release machinery but intentionally does not create the `v0.1.0` tag
-or publish the first public release.
+The maintained application version is now `0.1.1`, sourced only from
+`src/version.py`. This PR prepares and validates the `v0.1.1` release candidate;
+it intentionally does not create the `v0.1.1` tag or publish the release. Until
+that tag is created, the latest published release remains `v0.1.0`.
 
 ## Local build
 
@@ -62,17 +63,27 @@ uses GitHub's provided token. Stable names intentionally match the README's
 
 ## Clean-machine acceptance checklist
 
-- [ ] Download the installer and `SHA256SUMS.txt`; verify the installer hash.
+- [ ] Download the `v0.1.1` candidate installer and `SHA256SUMS.txt`; verify the installer hash.
 - [ ] Install without administrator elevation into the default `%LOCALAPPDATA%\Programs` location.
 - [ ] Launch from the Start Menu; optionally verify the desktop shortcut.
+- [ ] Open the invariant tab and confirm that the braid preview renders.
+- [ ] Verify preview zoom, pan, and fit controls.
+- [ ] Load a curated example and confirm that loading does not evaluate automatically.
 - [ ] Open both the built-in invariant and Custom R/check-R application tabs.
-- [ ] Run a cheap built-in invariant example.
+- [ ] Run one cheap built-in invariant calculation.
+- [ ] Save and reopen a `.knotcalc.json` project.
+- [ ] Confirm the Mathematics / How it works panel updates with the workflow.
+- [ ] Open the offline bilingual User Guide from Help.
+- [ ] Load the custom R/check-R example and inspect its operator-only status.
+- [ ] Export the braid preview as SVG and PNG.
+- [ ] Export a result as JSON/text where applicable.
 - [ ] Close and relaunch the application.
 - [ ] Uninstall from Windows Settings and verify the per-user application directory is removed.
 - [ ] Extract the portable ZIP, run `--version`, and run the packaged smoke check.
 
 The unsigned preview binary may receive the normal Windows SmartScreen warning.
-Code signing and a published `v0.1.0` release remain outside this PR.
+Code signing and publication of the `v0.1.1` release remain outside this PR;
+the latest published release is `v0.1.0` until the final tag-and-publish sequence.
 
 ## Scope and caveats
 

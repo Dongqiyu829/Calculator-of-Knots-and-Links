@@ -38,8 +38,10 @@ if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $FrozenExecutable)) {
 
 & $FrozenExecutable --smoke-test
 if ($LASTEXITCODE -ne 0) { throw "Packaged application smoke test failed." }
-& $FrozenExecutable --version
-if ($LASTEXITCODE -ne 0) { throw "Packaged application version check failed." }
+$PackagedVersion = (& $FrozenExecutable --version | Select-Object -Last 1).Trim()
+if ($LASTEXITCODE -ne 0 -or $PackagedVersion -ne $Version) {
+    throw "Packaged application version check failed: expected $Version, got $PackagedVersion."
+}
 
 Compress-Archive -Path $FrozenDirectory -DestinationPath $PortableZip -Force
 $TempRoot = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { [IO.Path]::GetTempPath() }
@@ -50,8 +52,10 @@ $PortableExecutable = Join-Path $PortableSmokeRoot "Calculator-of-Knots-and-Link
 if (-not (Test-Path -LiteralPath $PortableExecutable)) { throw "Portable ZIP did not contain the expected executable." }
 & $PortableExecutable --smoke-test
 if ($LASTEXITCODE -ne 0) { throw "Extracted portable application smoke test failed." }
-& $PortableExecutable --version
-if ($LASTEXITCODE -ne 0) { throw "Extracted portable application version check failed." }
+$PortableVersion = (& $PortableExecutable --version | Select-Object -Last 1).Trim()
+if ($LASTEXITCODE -ne 0 -or $PortableVersion -ne $Version) {
+    throw "Extracted portable application version check failed: expected $Version, got $PortableVersion."
+}
 
 if (-not $SkipInstaller) {
     $IsccCandidates = @(

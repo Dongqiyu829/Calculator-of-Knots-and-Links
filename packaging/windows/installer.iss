@@ -1,6 +1,3 @@
-#ifndef MyAppVersion
-  #define MyAppVersion "0.1.0"
-#endif
 #ifndef MyAppSource
   #define MyAppSource "..\..\dist\Calculator-of-Knots-and-Links"
 #endif

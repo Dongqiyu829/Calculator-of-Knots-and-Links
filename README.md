@@ -24,6 +24,15 @@ The installer is unsigned, so Windows SmartScreen may show its usual warning for
 
 安装程序未进行代码签名，因此 Windows SmartScreen 可能对新下载显示常规提示；需要时请核对校验和。
 
+**Release state / 发布状态:** the current source version is **0.1.1 release
+candidate**. The latest published release remains **v0.1.0** until the reviewed
+`v0.1.1` tag is created; the stable `releases/latest/download/...` links above
+will continue to resolve to the latest published assets without README edits.
+
+**发布状态：**当前源代码版本为 **0.1.1 release candidate（候选版本）**。在审阅后的
+`v0.1.1` 标签创建前，最新公开版本仍是 **v0.1.0**；上面的稳定
+`releases/latest/download/...` 链接会继续指向最新公开资源，无需每次发布修改 README。
+
 **Install / 安装:** run the installer, keep the per-user default location, and launch from the Start Menu (an optional desktop shortcut is available). No administrator elevation or PATH change is needed.
 
 **安装说明：** 运行安装程序，保留默认的当前用户安装位置，然后从开始菜单启动（可选创建桌面快捷方式）。无需管理员权限，也不会修改 PATH。
@@ -61,8 +70,8 @@ The repository now contains:
 
 M4 distribution is complete. The supported Windows release provides a reproducible
 PyInstaller `onedir` application, a per-user Inno Setup installer, a portable ZIP,
-and SHA-256 checksums. The public `v0.1.0` release is available through the
-bilingual download links above; current main contains additional post-v0.1.0 M5 work.
+and SHA-256 checksums. The current source is the `0.1.1` release candidate;
+the latest published release remains `v0.1.0` until the new tag is created.
 
 ## Desktop application
 
@@ -225,8 +234,8 @@ The Windows GitHub Actions workflow builds the bundle, smoke-tests the packaged 
 
 See `docs/DISTRIBUTION.md` for exact local-build, release, and artifact-download
 instructions. CI builds both the portable ZIP and the Inno Setup installer;
-the public `v0.1.0` GitHub Release is published, while current main contains
-additional productization work intended for a later release.
+the manual `v0.1.1` workflow dispatch is non-publishing and uploads candidate
+assets for validation. See the [v0.1.1 release notes](docs/RELEASE_NOTES_0.1.1.md).
 
 ## Development principle
 

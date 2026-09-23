@@ -31,7 +31,7 @@ The archived P01 and P03 symbolic audit JSON outputs also reproduce exactly.
 
 ## Immediate objective
 
-M3 desktop functionality, M4 Windows distribution, and M5 productization are complete. The public `v0.1.0` release is available, while current main contains the post-v0.1.0 braid visualization, curated examples, project save/load, mathematical explanation UX, unified export routes, and bilingual offline user documentation intended for the next maintenance release.
+M3 desktop functionality, M4 Windows distribution, and M5 productization are complete. The maintained source version is now `0.1.1` as a release candidate; the latest published release remains `v0.1.0` until the reviewed `v0.1.1` tag is created. The candidate packages the post-v0.1.0 braid visualization, curated examples, project save/load, mathematical explanation UX, unified export routes, and bilingual offline user documentation without changing mathematical behavior.
 
 ## Architecture direction
 
@@ -182,13 +182,20 @@ file export use service report/serialization helpers; no live Atlas lookup or
 mathematical convention change is introduced.
 
 
-### M4 — Distribution (complete; v0.1.0 tagged)
+### M4 — Distribution (complete; v0.1.0 published; v0.1.1 candidate prepared)
 
 Issue #34 introduces the first maintained Windows distribution path. A checked-in PyInstaller `onedir` specification packages the PySide6 desktop application and SymPy runtime without requiring the user to install Python. A Windows GitHub Actions workflow runs the fast regression suite, builds the executable, smoke-tests the packaged application, creates a deterministic Windows ZIP, extracts it, and smoke-tests the extracted executable before upload.
 
-The first M4 step deliberately favors a reliable folder-style bundle over a fragile one-file executable. The maintained application version is now sourced only from `src/version.py` as `0.1.0`; setuptools metadata, desktop `--version`, packaged `--version`, and Help/About use that source. The tag validator accepts only exact `vX.Y.Z` tags and requires equality with the maintained version. The shared Windows build script now runs fast tests, the existing onedir build, packaged and extracted portable smoke/version checks, Inno Setup 6 compilation, and expected-file/checksum verification. The tagged workflow publishes the stable installer, portable ZIP, and `SHA256SUMS.txt` only for a real tag push using `GITHUB_TOKEN`. Manual dispatch is explicitly non-publishing and uploads the same three candidate assets for validation; clean-machine install/uninstall remains documented rather than forcing fragile silent UI automation.
+The first M4 step deliberately favors a reliable folder-style bundle over a fragile one-file executable. The maintained application version is sourced only from `src/version.py` as `0.1.1`; setuptools metadata, desktop `--version`, packaged `--version`, and Help/About use that source. The tag validator accepts only exact `vX.Y.Z` tags and requires equality with the maintained version. The shared Windows build script now runs fast tests, the existing onedir build, packaged and extracted portable smoke/version checks, Inno Setup 6 compilation, and expected-file/checksum verification. The tagged workflow publishes the stable installer, portable ZIP, and `SHA256SUMS.txt` only for a real tag push using `GITHUB_TOKEN`. Manual dispatch with `v0.1.1` is explicitly non-publishing and uploads the same three candidate assets for validation; clean-machine install/uninstall remains documented rather than forcing fragile silent UI automation.
 
 The `v0.1.0` tag is now published. The installer remains unsigned and installs per-user under `%LOCALAPPDATA%\Programs` without PATH changes or elevation. See `docs/DISTRIBUTION.md`.
+
+Issue #47 prepares the `v0.1.1` release candidate. The single-source version,
+bilingual release notes, README release-state wording, distribution checklist,
+and project state now describe the candidate while preserving the stable
+installer/portable/checksum asset names and the exact tag/version guard. No
+`v0.1.1` tag or GitHub Release is created by this preparation pass; the
+non-publishing workflow-dispatch dry run remains the next validation step.
 
 
 ### M5 — Productization (complete)
