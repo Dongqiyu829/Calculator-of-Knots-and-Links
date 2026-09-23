@@ -247,8 +247,8 @@ metadata and reuses one validated local construction. Bounded caches isolate
 mutable local data by copy, and the one-strand identity normalization uses its
 exact trace-of-mu scalar. Representative outputs, external oracle mappings,
 formal/candidate status, and all mathematical conventions remain unchanged.
-Matrix-free and Hecke/Temperley–Lieb backends are documented as future work,
-not implemented in this pass.
+That issue did not implement matrix-free or Hecke/Temperley–Lieb backends;
+the subsequent opt-in matrix-free work is recorded below under issue #60.
 
 
 ### M6 — Result presentation and preview continuity
@@ -262,3 +262,15 @@ Windows workflow passed packaging and smoke checks and uploaded all three
 stable assets. The existing onedir installer/portable/checksum machinery and
 tag/version guard remain intact. No matrix-free or Temperley–Lieb backend is
 part of this release.
+
+### M6 — Matrix-free EYB scalar evaluation
+
+Issue #60 adds an opt-in `matrix_free` built-in backend after the verified
+v0.1.3 release. It contracts signed local `check-R` gates and diagonal
+enhancement weights with exact SymPy arithmetic, without materializing the
+global braid-operator matrix. The explicit backend remains the default and
+diagnostic reference; Custom R/check-R operator evaluation is unchanged.
+Matrix-free service results expose the same primary formal/candidate scalar
+but explicitly omit ordinary raw trace and full-operator claims. Exact
+parity, archived/current fixture coverage, and benchmark measurements are
+recorded in `docs/PERFORMANCE.md`. No established convention changed.

@@ -12,6 +12,7 @@ From the repository root, with the `test` dependencies installed:
 python -m tools.profile_invariants --case all
 python -m tools.profile_invariants --case sl2_spin1_trefoil_symbolic --profile
 python -m tools.profile_invariants --case all --repeat 2
+python -m tools.profile_invariants --case all --repeat 2 --backend matrix_free
 ```
 
 `--case NAME` starts a fresh process for a cold comparison. `--profile` adds
@@ -103,21 +104,64 @@ the independent offline Knot Atlas oracles, local runtime-versus-validated
 matrix equality, one-strand equivalence, candidate projector metadata, and
 cache isolation. A future larger optimization must keep these constraints.
 
+## Issue #60: opt-in matrix-free EYB scalar backend
+
+The new `backend="matrix_free"` option on built-in `src.services` evaluation
+functions contracts exact local signed `check-R` gates without constructing a
+`d^n` by `d^n` operator. Each lexicographic input basis row is propagated
+through the listed gates from left to right; only its closing diagonal entry
+is retained and multiplied by that input state's diagonal `mu` weight. The
+normalization remains exactly `alpha^-w beta^-n`. The inverse is the same
+`simplify(check_R.inv())` used by the explicit builder. Non-diagonal `mu` is
+rejected, since the built-in branches use diagonal enhancement data and a
+non-diagonal weight would require a different contraction.
+
+The result contains only the weighted scalar and normalized scalar. It does
+not claim a full operator or ordinary raw closure trace. In service DTOs,
+`raw_trace` is `None` and the notes identify the matrix-free path. The
+explicit global-matrix backend remains the **default and reference path**,
+including all existing diagnostics and Custom R/check-R full-operator calls.
+This avoids changing existing diagnostic output while the opt-in path can be
+used for scalar-only workloads. It is not a Temperley–Lieb or Hecke backend.
+
+Exact parity tests compare the weighted trace and normalized scalar against
+the explicit builder for all three branches at symbolic `q` and q=2/3/5,
+one- to three-strand words, positive/inverse generators at both adjacent
+placements, and the five-strand sl2 control. Service-level tests compare
+all q=2 representative fixture strings, symbolic fixtures, and trefoil
+outputs at q=3/5; formal/candidate statuses are unchanged. Existing archived
+benchmark and offline Knot Atlas suites continue to exercise the explicit
+reference backend. Additional slow matrix-free tests reproduce both sides of
+the archived P03 benchmark at q=2/3/5 exactly and all three stored symbolic
+P03 differences, including the six-strand spin-1 candidate side.
+
+Measured on 2026-09-23, Windows 11, Python 3.12.4, SymPy 1.12. Each column
+was produced by a fresh `--case all --repeat 2` process in the same case
+order. “First” means first invocation within that process, not an independent
+fresh process per row; later branch cases can benefit from SymPy/import caches.
+Wall times are illustrative, not thresholds:
+
+| Branch / word | q | Explicit first / warm (s) | Matrix-free first / warm (s) |
+| --- | --- | ---: | ---: |
+| sl2 fundamental / trefoil | symbolic | 0.208 / 0.058 | 0.157 / 0.018 |
+| sl2 fundamental / figure-eight | symbolic | 0.149 / 0.087 | 0.053 / 0.027 |
+| sl3 fundamental / trefoil | symbolic | 0.091 / 0.048 | 0.054 / 0.028 |
+| sl2 spin-1 / trefoil | symbolic | 4.698 / 0.246 | 4.527 / 0.088 |
+| sl2 fundamental / five-strand `[1,2,3,4]` | symbolic | 0.076 / 0.060 | 0.020 / 0.011 |
+| sl2 fundamental / five-strand `[1,2,3,4]` | q=2 | 0.029 / 0.029 | 0.001 / 0.001 |
+| sl3 fundamental / figure-eight | q=2 | 0.030 / 0.016 | 0.034 / 0.003 |
+| sl2 spin-1 / figure-eight | q=2 | 0.113 / 0.025 | 0.084 / 0.003 |
+
+The spin-1 cold call remains dominated by validated local projector/R data;
+matrix-free contraction does not remove that cost. Sparse row propagation
+avoids the global matrix but still enumerates up to `d^n` input basis states,
+so it is not a polynomial-complexity solution for arbitrarily many strands.
+The sl3 q=2 figure-eight cold sample regressed slightly (0.034 versus
+0.030 s); those two rows were timed as separate fresh `--case` processes,
+not in the ordered all-case run. No automatic default switch or performance
+claim for all inputs is made.
+
 ## Later backend designs (not implemented here)
-
-### Matrix-free tensor contraction
-
-The current builder materializes a `d^n` by `d^n` matrix. For the scalar
-`alpha^-w beta^-n Tr(rho(beta) mu^tensor n)`, a later backend could represent
-each signed local check-R as a four-index tensor, attach diagonal mu weights
-at closure, and contract indices in braid order without constructing the global
-matrix. Contract identical sparse/diagonal factors first, choose an explicit
-contraction path with bounded intermediate rank, and perform all arithmetic
-exactly in SymPy. Compare every intermediate local tensor and final scalar
-against the existing builder on small braids, including inverse generators and
-both tensor placements. Preserve the full-operator path for Custom R callers
-who explicitly request a matrix and for diagnostic reporting; never label a
-matrix-free scalar as a computed full operator or raw closure trace.
 
 ### Hecke / Temperley–Lieb Jones backend
 
