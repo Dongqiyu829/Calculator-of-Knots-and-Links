@@ -18,6 +18,7 @@ from src.invariants.branch_registry import EvaluationBackend, evaluate_current_b
 from src.invariants.multibranch_benchmark import MultiBranchBenchmarkEntry
 
 from .branch_catalog import validate_branch_ids
+from .computation_backends import validate_computation_backend
 from .errors import BraidInputValidationError, GeneratorParseError, QParameterParseError, UnknownCatalogExampleError
 from .results import ApplicationBraidResult, application_braid_result_from_internal
 
@@ -109,6 +110,7 @@ def evaluate_catalog_example(
     except KeyError as exc:
         raise UnknownCatalogExampleError(f"Unknown catalog example '{example_label}'.") from exc
     selected_branch_ids = validate_branch_ids(branch_ids)
+    validate_computation_backend(backend, selected_branch_ids)
     return MultiBranchBenchmarkEntry(
         example_label=example.label,
         branch_results=tuple(evaluate_current_branches(example, branch_ids=selected_branch_ids, q=q, backend=backend)),
@@ -145,6 +147,7 @@ def evaluate_braid_word(
     """Evaluate one arbitrary validated braid word through selected branches."""
 
     selected_branch_ids = validate_branch_ids(branch_ids)
+    validate_computation_backend(backend, selected_branch_ids)
     return MultiBranchBenchmarkEntry(
         example_label=braid_word.label or "custom_braid",
         branch_results=tuple(evaluate_current_branches(braid_word, branch_ids=selected_branch_ids, q=q, backend=backend)),

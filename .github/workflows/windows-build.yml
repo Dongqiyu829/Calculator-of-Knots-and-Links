@@ -33,6 +33,14 @@ jobs:
         shell: pwsh
         run: choco install innosetup --no-progress -y
 
+      - name: Run maintained desktop backend tests offscreen
+        shell: pwsh
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          python -c "from PySide6.QtWidgets import QApplication"
+          python -m pytest -q tests/test_desktop_invariant_workflow.py tests/test_desktop_projects_and_examples.py tests/test_desktop_invariant_layout.py tests/test_computation_backend_services.py
+
       - name: Build and verify Windows release candidates
         shell: pwsh
         run: .\packaging\windows\build.ps1 -Python python

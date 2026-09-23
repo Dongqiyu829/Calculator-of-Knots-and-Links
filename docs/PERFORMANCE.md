@@ -211,3 +211,39 @@ potentially Catalan in strand count; no universal speedup or automatic
 routing is claimed. A symbolic 40-crossing eight-strand explicit-reference
 trial was stopped because it was not a practical comparison; the long-word
 benchmark instead uses exact rational q=2 output.
+
+## Issue #66: maintained desktop backend selection
+
+The PySide6 invariant workflow now defaults to `matrix_free` **only in the
+desktop request**. Public `src.services` calls that omit `backend` still use
+`explicit`. The desktop request records the chosen id immutably and forwards
+it for both catalog and manual braids. The offscreen worker test forbids
+`BraidOperatorBuilder` while running a default-shaped three-branch request;
+all three results identify `matrix_free`, demonstrating that no global braid
+operator is built. TL remains selectable only for sl2 fundamental. Scalar-only
+Detailed results accurately omit ordinary raw trace/full-operator diagnostics.
+
+For a small, reproducible desktop-shaped q=2 trefoil measurement, run each
+command in a fresh process (no GUI or CI timing threshold):
+
+```text
+python -m tools.profile_desktop_selection --backend explicit
+python -m tools.profile_desktop_selection --backend matrix_free
+python -m tools.profile_desktop_selection --backend temperley_lieb
+```
+
+Measured 2026-09-23 on Windows 11, Python 3.12.4, SymPy 1.12. Each first/warm
+pair is two calls in one process. Explicit and matrix-free use the desktop's
+three selected built-in branches; TL necessarily uses sl2 fundamental only.
+All compatible primary-output strings matched exactly:
+
+| Desktop-shaped selection | First / warm (s) | Ordinary raw trace available? |
+| --- | ---: | --- |
+| Reference / diagnostics, three branches | 0.092 / 0.013 | Yes |
+| Fast scalar, three branches | 0.086 / 0.003 | No |
+| TL, sl2 only | 0.017 / 0.0002 | No |
+
+These tiny examples are illustrative, not evidence that one backend is always
+fastest. The higher-strand comparisons above show that relative performance
+depends on the braid. The desktop control therefore exposes all compatible
+choices instead of silently auto-routing by an unverified speed rule.

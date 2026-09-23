@@ -97,11 +97,30 @@ their divider. On **Calculation / results**, select branches from the
 scrollable checklist, read the selected branch details beside it, enter `q`,
 and press **Calculate**. The control and result areas are also resizable.
 
+The **Computation backend** selector defaults to **Fast scalar
+(recommended)**, the exact matrix-free EYB calculation for all built-in
+branches. Choose **Reference / diagnostics** to recompute with the explicit
+global-matrix reference when you need ordinary raw trace or available operator
+diagnostics. **Temperley–Lieb (sl2 Jones only)** is an exact specialized scalar
+choice available only when every selected branch is sl2 fundamental; selecting
+another branch visibly returns the control to Fast scalar. All three choices
+produce the same established primary invariant for compatible inputs, but
+speed depends on the braid. Scalar-only results have no ordinary raw trace or
+full global operator diagnostics; Detailed view states this explicitly.
+
 不变量标签页分成两页。在 **Braid setup / preview** 中，通过 Input mode 选择
 **Built-in example** 或 **Manual braid input**。手动输入时填写股线数和带符号的
 生成元；大幅预览图会更新，但不会自动计算。拖动分隔线可调整输入区和预览区大小。
 在 **Calculation / results** 中，从可滚动的列表勾选分支，在旁边阅读分支详情，
 输入 `q` 后点击 **Calculate**。控制区与结果区同样可以调整大小。
+
+**Computation backend（计算后端）**默认选择 **Fast scalar（推荐）**，即适用于
+全部内置分支的精确无矩阵 EYB 标量计算。若需普通原始迹或可用的算子诊断，选择
+**Reference / diagnostics（参考／诊断）**，用显式全局矩阵重新计算。
+**Temperley–Lieb（仅 sl2 Jones）**只在全部所选分支均为 sl2 基本表示时可用；
+勾选其他分支会明确提示并切回 Fast scalar。兼容输入的主要不变量输出保持一致，
+但速度随辫子而异。标量后端不计算普通原始迹或完整全局算子诊断；Detailed 视图
+会明确说明这一点。
 
 Choose one or more branch checkboxes. The service-owned explanation identifies
 representation dimension, tensor channels, enhanced trace, normalization, and
@@ -144,7 +163,14 @@ Use **File → Save Project** or **Save Project As…** to write deterministic,
 UTF-8 `.knotcalc.json` setup state. **File → Open Project…** restores the
 appropriate workflow without trusting stored results or evaluating anything.
 
+Invariant project files also preserve the selected computation backend. Older
+schema-1 files without that optional field remain valid and open with the new
+desktop Fast scalar default. Loading never starts a calculation.
+
 使用 **File → Save Project** 或 **Save Project As…** 保存确定性的 UTF-8 `.knotcalc.json` 设置状态。**File → Open Project…** 会恢复相应工作流，不会信任文件中的结果或自动计算。
+
+不变量项目文件也会保存所选计算后端。没有该可选字段的旧版 schema-1 文件仍可
+打开，并采用新版桌面的 Fast scalar 默认值；加载不会自动开始计算。
 
 The **File → Export** submenu enables only applicable actions:
 

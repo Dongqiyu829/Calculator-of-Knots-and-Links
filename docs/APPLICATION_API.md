@@ -40,6 +40,16 @@ branches. The custom R/check-R operator API is unaffected. See
 `docs/MATH_CONVENTIONS.md` for the source-derived normalization and
 `docs/PERFORMANCE.md` for parity and timing.
 
+The maintained PySide6 invariant workflow chooses `matrix_free` for a new
+desktop calculation, while public service evaluation functions still default
+to `explicit` when callers omit `backend`. The desktop backend control uses
+`list_computation_backends` and `validate_computation_backend` from this facade
+for labels, scalar/diagnostic boundaries, and TL branch eligibility. Its
+immutable worker request passes the chosen id to catalog and manual-braid
+evaluation alike; no expensive evaluation runs in the UI thread. The control
+disables TL for non-sl2 selections and visibly resets an existing TL choice
+when the selected branches become incompatible.
+
 The stable contract also includes a renderer-neutral braid-preview surface: `BraidPreviewGeometry`, `build_braid_preview_geometry`, and `render_braid_preview_svg`. Maintained desktop code consumes these through the `src.services` facade; the geometry preserves project-native Artin signs, generator order, writhe, strand identities, final permutation, and explicit over/under crossing semantics without changing evaluation behavior. Physical strands are exposed as continuous paths, while every intentional under-crossing gap is localized to a `BraidPreviewCrossing` mask/overpass description shared by both the SVG export and the Qt preview.
 
 The stable contract also includes the custom braid-operator surface:
@@ -89,6 +99,13 @@ mismatches are informational; unsupported schemas, workflows, malformed JSON,
 invalid branch ids, braid generators, or matrix inputs raise typed `Project*Error`
 subclasses. JSON serialization is UTF-8 and deterministic, with no pickle,
 eval, or executable payloads.
+
+Issue #66 adds an optional validated `input.computation_backend` field to
+invariant setup documents without changing schema version 1. New desktop saves
+include the selected backend; older files without the field remain valid and
+load into the new desktop default (`matrix_free`) without auto-evaluation.
+Custom R/check-R project documents are unchanged. Invalid or TL-incompatible
+stored backend choices are rejected as `ProjectValidationError`.
 
 ## M5 explanations, documentation, and export boundaries
 

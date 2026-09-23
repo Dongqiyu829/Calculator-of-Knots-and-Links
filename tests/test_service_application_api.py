@@ -35,6 +35,7 @@ def test_supported_service_api_is_explicit_and_narrow() -> None:
         "ApplicationCustomBraidOperatorResult",
         "ApplicationCustomMatrixValidation",
         "ApplicationCustomRMatrixModel",
+        "ComputationBackendDescriptor",
         "BraidInputError",
         "BraidInputState",
         "BraidInputValidationError",
@@ -49,6 +50,7 @@ def test_supported_service_api_is_explicit_and_narrow() -> None:
         "UnknownCatalogExampleError",
         "UnknownEvaluationBranchError",
         "UnknownEvaluationModelError",
+        "UnsupportedComputationBackendError",
         "branch_ids_for_models",
         "application_braid_result_from_internal",
         "application_branch_result_from_internal",
@@ -74,10 +76,12 @@ def test_supported_service_api_is_explicit_and_narrow() -> None:
         "format_application_branch_compact",
         "format_application_branch_result",
         "get_evaluation_branch",
+        "get_computation_backend",
         "get_evaluation_model",
         "get_catalog_example",
         "list_catalog_examples",
         "list_evaluation_branches",
+        "list_computation_backends",
         "parse_generator_text",
         "parse_q_text",
         "parse_custom_matrix",
@@ -85,6 +89,7 @@ def test_supported_service_api_is_explicit_and_narrow() -> None:
         "render_braid_preview_svg",
         "serialize_application_braid_result",
         "validate_custom_matrix",
+        "validate_computation_backend",
     }
 
 

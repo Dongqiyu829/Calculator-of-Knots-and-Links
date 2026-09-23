@@ -105,3 +105,10 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 - [x] Derive the Hecke eigenvalue, planar loop weight, signed generator rule, closure trace, and reduced normalization from the maintained check-R/EYB source; preserve the standard Jones variable map.
 - [x] Add an opt-in exact planar-pairing scalar backend only for sl2 fundamental. Keep explicit-matrix evaluation as default/reference and matrix-free EYB as a separate backend; reject unsupported branches.
 - [x] Verify exact representative, archived benchmark, offline Knot Atlas, Markov, mixed-sign, and higher-strand parity; record cold/warm benchmarks and workload-dependent limitations.
+
+## M9 — Desktop backend selection
+
+- [x] Default new maintained invariant desktop calculations to matrix-free EYB while preserving the explicit public-service default and exposing reference/diagnostic evaluation.
+- [x] Expose TL only for sl2-fundamental selections, pass backend through immutable worker requests for catalog/manual input, and label scalar-only diagnostics truthfully.
+- [x] Preserve optional backend choice in compatible schema-1 invariant project files; validate legacy and incompatible files without automatic evaluation.
+- [x] Test desktop/headless routes, backend parity, worker threading, exact output preservation, and Windows packaging; document the choices and workload-dependent performance.

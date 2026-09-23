@@ -9,6 +9,12 @@ from .branch_catalog import (
     list_evaluation_branches,
 )
 from .catalog_examples import ApplicationCatalogExample, get_catalog_example, list_catalog_examples
+from .computation_backends import (
+    ComputationBackendDescriptor,
+    get_computation_backend,
+    list_computation_backends,
+    validate_computation_backend,
+)
 from .example_library import (
     CURATED_CATEGORIES,
     CURATED_EXAMPLES,
@@ -101,6 +107,7 @@ from .errors import (
     UnknownCatalogExampleError,
     UnknownEvaluationBranchError,
     UnknownEvaluationModelError,
+    UnsupportedComputationBackendError,
     CustomBraidOperatorError,
     CustomMatrixInputError,
     ProjectFileError,
@@ -118,6 +125,7 @@ __all__ = [
     "ApplicationCustomBraidOperatorResult",
     "ApplicationCustomMatrixValidation",
     "ApplicationCustomRMatrixModel",
+    "ComputationBackendDescriptor",
     "BraidInputError",
     "BraidInputState",
     "BraidInputValidationError",
@@ -131,6 +139,7 @@ __all__ = [
     "UnknownCatalogExampleError",
     "UnknownEvaluationBranchError",
     "UnknownEvaluationModelError",
+    "UnsupportedComputationBackendError",
     "PolynomialPresentation",
     "branch_ids_for_models",
     "application_braid_result_from_internal",
@@ -157,10 +166,12 @@ __all__ = [
     "format_application_branch_compact",
     "format_application_branch_result",
     "get_evaluation_branch",
+    "get_computation_backend",
     "get_evaluation_model",
     "get_catalog_example",
     "list_catalog_examples",
     "list_evaluation_branches",
+    "list_computation_backends",
     "parse_generator_text",
     "parse_q_text",
     "parse_custom_matrix",
@@ -168,4 +179,5 @@ __all__ = [
     "render_braid_preview_svg",
     "serialize_application_braid_result",
     "validate_custom_matrix",
+    "validate_computation_backend",
 ]
