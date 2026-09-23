@@ -23,6 +23,7 @@ _qt_import = subprocess.run(
 if _qt_import.returncode != 0:
     pytest.skip("PySide6 Qt runtime is unavailable", allow_module_level=True)
 
+from PySide6.QtCore import QThread
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import QApplication
 
@@ -333,6 +334,29 @@ def test_default_calculation_still_runs_on_a_qt_worker_thread() -> None:
     assert not workflow._active_jobs
     assert workflow._last_result is not None
     assert workflow._last_result.branch_results[0].metadata["evaluation_backend"] == "matrix_free"
+    workflow.close()
+
+
+def test_worker_success_callback_runs_on_gui_thread() -> None:
+    workflow = _workflow()
+    _sl2_only(workflow)
+    callback_threads: list[QThread] = []
+    original = workflow._calculation_succeeded
+
+    def record_thread(result, request=None):
+        callback_threads.append(QThread.currentThread())
+        original(result, request)
+
+    workflow._calculation_succeeded = record_thread
+    workflow._request_calculation()
+    deadline = time.monotonic() + 15
+    while workflow._active_jobs and time.monotonic() < deadline:
+        QApplication.processEvents()
+        time.sleep(0.01)
+
+    assert not workflow._active_jobs
+    assert callback_threads == [QApplication.instance().thread()]
+    assert workflow._last_result is not None
     workflow.close()
 
 
