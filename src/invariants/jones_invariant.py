@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from functools import lru_cache
 from typing import Any
 
 import sympy as sp
 
 from src.braid.braid_operator import BraidOperatorBuilder, BraidOperatorData
 from src.braid.braid_word import BraidWord
-from src.catalog.braid_examples import get_braid_example
 from src.rmatrix.sl2_rmatrix import build_sl2_fundamental_rmatrix
 
 from .eyb_invariant import build_sl2_fundamental_eyb_data, compute_eyb_invariant
@@ -84,10 +84,14 @@ def current_sl2_unknot_normalization(q: sp.Expr | None = None) -> sp.Expr:
     """Return the current unreduced P2-type value on the 1-strand unknot."""
 
     parameter = q if q is not None else sp.Symbol("q", nonzero=True)
-    braid_word = get_braid_example("unknot_1").to_braid_word()
-    operator_data = _coerce_sl2_operator_data(braid_word, q=parameter)
-    result = compute_eyb_invariant(operator_data, eyb_data=build_sl2_fundamental_eyb_data(parameter))
-    return sp.simplify(result.eyb_normalized_expression)
+    return _sl2_unknot_scalar(parameter)
+
+
+@lru_cache(maxsize=64)
+def _sl2_unknot_scalar(q: sp.Expr) -> sp.Expr:
+    # The one-strand identity has rho = I, writhe = 0, beta = 1; its
+    # unreduced EYB value is exactly Tr(mu), with no local R construction.
+    return sp.simplify(sp.trace(build_sl2_fundamental_eyb_data(q).mu))
 
 
 def compute_sl2_reduced_p2(

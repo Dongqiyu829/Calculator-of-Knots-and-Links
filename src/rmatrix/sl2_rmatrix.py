@@ -134,16 +134,32 @@ def _build_sl2_rmatrix_data(
     channel_projectors,
     notes: str,
     convention_notes: str,
+    diagnostics: bool = True,
 ) -> RMatrixData:
     """Build one sl2 raw matrix and braid matrix pair with shared reporting logic."""
 
     raw_matrix = _sl2_same_irrep_raw_matrix(q, highest_weight)
     braid_matrix = build_local_braiding_from_raw(raw_matrix, rep.dimension)
+    basis_order = _basis_order_from_representation(rep)
+    if not diagnostics:
+        # Built-in evaluation needs the same matrices, not an eigen/YBE audit.
+        # Research callers retain the validated construction by default.
+        return RMatrixData(
+            rep=rep,
+            matrix=raw_matrix,
+            braid_matrix=braid_matrix,
+            dim=raw_matrix.rows,
+            basis_order=basis_order,
+            eigenvalues=[],
+            minimal_polynomial=None,
+            notes=notes,
+            convention_notes=convention_notes,
+            eigenvalue_channels=eigenvalue_channels,
+        )
     braid_eigenvalues = compute_eigen_data(braid_matrix)
     raw_eigenvalues = compute_eigen_data(raw_matrix)
     minimal_polynomial = compute_minimal_polynomial(braid_matrix)
     factorized_minimal_polynomial = None if minimal_polynomial is None else sp.factor(minimal_polynomial)
-    basis_order = _basis_order_from_representation(rep)
 
     validation_container = _make_validation_container(
         rep=rep,
@@ -182,7 +198,7 @@ def _build_sl2_rmatrix_data(
     )
 
 
-def build_sl2_fundamental_rmatrix(q: sp.Expr | None = None) -> RMatrixData:
+def build_sl2_fundamental_rmatrix(q: sp.Expr | None = None, *, diagnostics: bool = True) -> RMatrixData:
     """Build the sl2 fundamental raw matrix and local braiding operator.
 
     Parameters
@@ -190,6 +206,10 @@ def build_sl2_fundamental_rmatrix(q: sp.Expr | None = None) -> RMatrixData:
     q:
         SymPy expression for the deformation parameter. If omitted, a symbolic q
         is created.
+    diagnostics:
+        Keep eigenvalue, minimal-polynomial, projector, and YBE diagnostics.
+        The validated research path is the default; built-in runtime evaluation
+        may request the identical matrices without those audits.
 
     Returns
     -------
@@ -235,10 +255,11 @@ def build_sl2_fundamental_rmatrix(q: sp.Expr | None = None) -> RMatrixData:
             "matrix stores the raw literature-facing object. braid_matrix stores the local braid generator. "
             "All later braid-word code should use braid_matrix only."
         ),
+        diagnostics=diagnostics,
     )
 
 
-def build_sl2_spin1_rmatrix(q: sp.Expr | None = None) -> RMatrixData:
+def build_sl2_spin1_rmatrix(q: sp.Expr | None = None, *, diagnostics: bool = True) -> RMatrixData:
     """Build the sl2 spin-1 raw matrix and local braiding operator.
 
     Parameters
@@ -246,6 +267,9 @@ def build_sl2_spin1_rmatrix(q: sp.Expr | None = None) -> RMatrixData:
     q:
         SymPy expression for the deformation parameter. If omitted, a symbolic q
         is created.
+    diagnostics:
+        Keep eigenvalue, minimal-polynomial, projector, and YBE diagnostics.
+        The validated research path is the default.
 
     Returns
     -------
@@ -288,37 +312,39 @@ def build_sl2_spin1_rmatrix(q: sp.Expr | None = None) -> RMatrixData:
         },
     ]
 
-    raw_matrix = _sl2_same_irrep_raw_matrix(parameter, 2)
-    braid_matrix = build_local_braiding_from_raw(raw_matrix, rep.dimension)
-    channel_projectors = [
-        build_channel_projector_data(
-            channel_label="J=2",
-            summand_label="spin2 / symmetric channel",
-            dimension=5,
-            eigenvalue=parameter**4,
-            braid_matrix=braid_matrix,
-            all_eigenvalues=[parameter**4, -sp.Integer(1), parameter**-2],
-            notes="Projector onto the spin-2 symmetric channel.",
-        ),
-        build_channel_projector_data(
-            channel_label="J=1",
-            summand_label="spin1 / antisymmetric channel",
-            dimension=3,
-            eigenvalue=-sp.Integer(1),
-            braid_matrix=braid_matrix,
-            all_eigenvalues=[parameter**4, -sp.Integer(1), parameter**-2],
-            notes="Projector onto the spin-1 antisymmetric channel.",
-        ),
-        build_channel_projector_data(
-            channel_label="J=0",
-            summand_label="spin0 / symmetric scalar channel",
-            dimension=1,
-            eigenvalue=parameter**-2,
-            braid_matrix=braid_matrix,
-            all_eigenvalues=[parameter**4, -sp.Integer(1), parameter**-2],
-            notes="Projector onto the spin-0 symmetric scalar channel.",
-        ),
-    ]
+    channel_projectors = []
+    if diagnostics:
+        raw_matrix = _sl2_same_irrep_raw_matrix(parameter, 2)
+        braid_matrix = build_local_braiding_from_raw(raw_matrix, rep.dimension)
+        channel_projectors = [
+            build_channel_projector_data(
+                channel_label="J=2",
+                summand_label="spin2 / symmetric channel",
+                dimension=5,
+                eigenvalue=parameter**4,
+                braid_matrix=braid_matrix,
+                all_eigenvalues=[parameter**4, -sp.Integer(1), parameter**-2],
+                notes="Projector onto the spin-2 symmetric channel.",
+            ),
+            build_channel_projector_data(
+                channel_label="J=1",
+                summand_label="spin1 / antisymmetric channel",
+                dimension=3,
+                eigenvalue=-sp.Integer(1),
+                braid_matrix=braid_matrix,
+                all_eigenvalues=[parameter**4, -sp.Integer(1), parameter**-2],
+                notes="Projector onto the spin-1 antisymmetric channel.",
+            ),
+            build_channel_projector_data(
+                channel_label="J=0",
+                summand_label="spin0 / symmetric scalar channel",
+                dimension=1,
+                eigenvalue=parameter**-2,
+                braid_matrix=braid_matrix,
+                all_eigenvalues=[parameter**4, -sp.Integer(1), parameter**-2],
+                notes="Projector onto the spin-0 symmetric scalar channel.",
+            ),
+        ]
 
     return _build_sl2_rmatrix_data(
         q=parameter,
@@ -338,6 +364,5 @@ def build_sl2_spin1_rmatrix(q: sp.Expr | None = None) -> RMatrixData:
             "matrix stores the raw literature-facing object. braid_matrix stores the local braid generator. "
             "Channel labels are reported for the braid_matrix eigenvalues, not for the raw matrix eigenvalues."
         ),
+        diagnostics=diagnostics,
     )
-
-

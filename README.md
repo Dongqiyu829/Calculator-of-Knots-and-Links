@@ -185,6 +185,9 @@ Current calibrated external correspondences include:
 
 The custom check-R engine is also parity-tested against the built-in sl2 fundamental braid operator on representative braids, including symbolic coverage.
 
+Measured built-in evaluation baselines, the non-CI profiling command, and
+future backend designs are recorded in [Performance](docs/PERFORMANCE.md).
+
 ## Repository contents
 
 - `src/` — mathematical engine, services, maintained PySide6 desktop application, recovered Tkinter/workbench code

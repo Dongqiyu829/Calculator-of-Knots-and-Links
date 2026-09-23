@@ -92,7 +92,7 @@ class TestGuiDataflowSmoke(unittest.TestCase):
         raw_report = render_entry_report(custom_entry, view_mode="raw")
         summary = build_entry_summary(custom_entry)
 
-        self.assertIn("sl2_fundamental", formatter_report)
+        self.assertIn("Jones / sl2 fundamental", formatter_report)
         self.assertIn('"branch_results"', raw_report)
         self.assertIn("Source mode: custom", summary)
         self.assertIn("Generators: [1, 1, 1]", summary)
