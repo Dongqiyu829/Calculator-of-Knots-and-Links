@@ -76,6 +76,6 @@ def test_build_script_covers_packaged_smokes_and_artifact_checks() -> None:
 def test_installer_version_is_injected_not_hard_coded() -> None:
     script = (ROOT / "packaging" / "windows" / "installer.iss").read_text(encoding="utf-8")
     build = (ROOT / "packaging" / "windows" / "build.ps1").read_text(encoding="utf-8")
-    assert '#define MyAppVersion "0.1.1"' not in script
+    assert "#define MyAppVersion" not in script
     assert "AppVersion={#MyAppVersion}" in script
     assert "/DMyAppVersion=$Version" in build
