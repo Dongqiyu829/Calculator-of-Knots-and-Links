@@ -122,4 +122,4 @@ Tasks are ordered by priority. Agents should not skip ahead unless a dependency 
 ## M10 — v0.1.4 release
 
 - [x] Prepare single-source `0.1.4` version metadata, bilingual release notes, README/user-guide/distribution state, and release-workflow compatibility for the completed M7–M9 work and desktop fixes.
-- [ ] Publish and verify `v0.1.4` through the tag-driven Windows workflow, including installer, portable ZIP, and `SHA256SUMS.txt`.
+- [x] Publish and verify `v0.1.4` through the tag-driven Windows workflow, including installer, portable ZIP, and `SHA256SUMS.txt`.
